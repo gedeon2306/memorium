@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: halloween --default, light, night, dark, synthwave, acid, dracula, caramellatte;
+}
+
+html {
+  scroll-behavior: smooth;
+}
