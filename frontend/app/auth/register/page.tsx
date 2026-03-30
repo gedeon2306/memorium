@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Lock, Mail, Phone, User } from "lucide-react";
-import Alert from "@/src/components/Alert";
+import toast from "react-hot-toast";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,21 +18,9 @@ export default function RegisterPage() {
     // Simulate an API call
     setTimeout(() => {
       setLoading(false);
-      handleAlert("warning", "Connexion réussie !");
+      toast.success("Compte créé") 
     }, 2000);
   }
-
-  const handleAlert = (type: "info" | "success" | "warning" | "error", message: string) => {
-    const alert = document.getElementById(`${type}-alert`);
-    const messageElement = document.getElementById(`${type}-message`)
-    if (alert && messageElement) {
-      alert.classList.remove("hidden");
-      (messageElement as HTMLElement).textContent = message;
-      setTimeout(() => {
-        alert.classList.add("hidden");
-      }, 10000);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-neutral-950 via-neutral-900 to-slate-950 text-base-content">
@@ -216,7 +204,6 @@ export default function RegisterPage() {
             </motion.div>
           </section>
         </motion.div>
-        <Alert/>
       </div>
     </div>
   );

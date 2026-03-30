@@ -1,6 +1,18 @@
 import { CircleCheck, CircleX, Info, TriangleAlert } from "lucide-react";
 
 const Alert = () => {
+    const handleAlert = (type: "info" | "success" | "warning" | "error", message: string) => {
+        const alert = document.getElementById(`${type}-alert`);
+        const messageElement = document.getElementById(`${type}-message`)
+        if (alert && messageElement) {
+            alert.classList.remove("hidden");
+            (messageElement as HTMLElement).textContent = message;
+            setTimeout(() => {
+                alert.classList.add("hidden");
+            }, 10000);
+        }
+    };
+
   return (
     <div className="absolute top-0 right-0 m-4 space-y-3">
         <div id="info-alert" role="alert" className="alert alert-info alert-soft hidden">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Montserrat, Syne } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -39,8 +40,10 @@ export default function RootLayout({
       data-theme="halloween"
       className={`${syne.variable} h-full antialiased`}
     >
-      <body style={{ fontFamily: 'var(--font-syne)' }}>{children}</body>
-      {/* <body>{children}</body> */}
+      <body style={{ fontFamily: 'var(--font-syne)' }}>
+        <div><Toaster/></div>
+        {children}
+      </body>
     </html>
   );
 }

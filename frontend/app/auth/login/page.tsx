@@ -5,7 +5,8 @@ import Image from "next/image";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Lock, Mail} from "lucide-react";
-import Alert from "@/src/components/Alert";
+import toast from "react-hot-toast";
+import { ROUTES } from "@/src/constants/routes";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,22 +19,9 @@ export default function LoginPage() {
     // Simulate an API call
     setTimeout(() => {
       setLoading(false);
-      handleAlert("warning", "Connexion réussie !");
+      toast.success("Connexion réussie !");
     }, 2000);
   }
-
-  const handleAlert = (type: "info" | "success" | "warning" | "error", message: string) => {
-    const alert = document.getElementById(`${type}-alert`);
-    const messageElement = document.getElementById(`${type}-message`)
-    if (alert && messageElement) {
-      alert.classList.remove("hidden");
-      (messageElement as HTMLElement).textContent = message;
-      setTimeout(() => {
-        alert.classList.add("hidden");
-      }, 10000);
-    }
-  };
-
 
   return (
     <div className="min-h-screen bg-linear-to-br from-neutral-950 via-neutral-900 to-slate-950 text-primary">
@@ -174,7 +162,7 @@ export default function LoginPage() {
 
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <Link
-                        href="/auth/forgot-password"
+                        href={ROUTES.AUTH.FORGOT_PASSWORD}
                         className="link link-hover text-sm text-base-content hover:text-primary transition-colors"
                       >
                         Mot de passe oublié
@@ -202,8 +190,6 @@ export default function LoginPage() {
             </motion.div>
           </section>
         </motion.div>
-
-        <Alert/>
       </div>
     </div>
   );
