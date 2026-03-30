@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: halloween --default, light, night, dark, synthwave, acid, dracula, caramellatte;
+  themes: halloween --default, night, dark, synthwave, acid, dracula, caramellatte;
 }
 
 html {
