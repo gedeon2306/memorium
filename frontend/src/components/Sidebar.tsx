@@ -48,7 +48,10 @@ export default function Sidebar({ sidebarOpen, onClose }: SidebarProps) {
 
   const handleNavClick = (href: string) => {
     router.push(href);
-    onClose?.();
+    // Ferme le sidebar seulement sur mobile
+    if (window.innerWidth < 768) {
+      onClose?.();
+    }
   };
 
   return (
@@ -88,7 +91,10 @@ export default function Sidebar({ sidebarOpen, onClose }: SidebarProps) {
             </div>
 
             {/* User info */}
-            <div className="mx-3 mt-4 rounded-2xl border border-white/8 bg-white/4 p-3">
+            <div 
+              onClick={() => handleNavClick(ROUTES.DASHBOARD.PROFILE)}
+              className="mx-3 mt-4 rounded-2xl border border-white/8 bg-white/4 p-3 cursor-pointer transition-all duration-200 hover:bg-white/8 hover:border-white/15"
+            >
               <div className="flex items-center gap-3">
                 <div className="avatar">
                   <div className="h-10 w-10 rounded-xl ring-1 ring-primary/30 overflow-hidden">
@@ -102,14 +108,18 @@ export default function Sidebar({ sidebarOpen, onClose }: SidebarProps) {
               </div>
               <div className="mt-2 flex items-center justify-between">
                 <span className="badge badge-sm badge-outline text-white/50">{user.role}</span>
-                <ChevronRight size={12} className="text-white/30" />
+                {pathname === ROUTES.DASHBOARD.PROFILE ? (
+                  <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+                ) : (
+                  <ChevronRight size={12} className="text-white/30" />
+                )}
               </div>
             </div>
 
             {/* Nav links */}
             <nav className="mt-4 flex-1 space-y-0.5 px-3 overflow-y-auto">
               {navLinks.map(({ icon: Icon, label, href }) => {
-                const isActive = pathname === href;
+                const isActive = pathname === href || (href !== ROUTES.DASHBOARD.ROOT && pathname.startsWith(href));
                 return (
                   <button
                     key={href}
