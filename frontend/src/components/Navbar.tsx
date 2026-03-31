@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Maximize2, Minimize2, Moon, Search, ChevronRight, Menu, X, LogOut } from "lucide-react";
+import { Bell, Maximize2, Minimize2, Moon, Search, ChevronRight, Menu, X, LogOut, Sun, Monitor } from "lucide-react";
 import { useState } from "react";
 
 interface NavbarProps {
@@ -17,7 +17,7 @@ const user = {
 
 export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [notifications, setNotifications] = useState(3);
+  const [notifications, setNotifications] = useState(6);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -56,18 +56,73 @@ export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
       </div>
 
       <div className="ml-auto flex items-center gap-1 shrink-0">
-        <button className="btn btn-ghost btn-sm btn-square text-white/40 hover:text-white">
-          <Moon size={17} />
-        </button>
+        {/* Theme Dropdown */}
+        <div className="dropdown dropdown-end">
+          <button className="btn btn-ghost btn-sm btn-square text-white/40 hover:text-white">
+            <Moon size={17} />
+          </button>
+          <ul className="dropdown-content z-50 menu p-2 shadow bg-neutral-900/95 rounded-lg border border-white/10">
+            <li>
+              <a>
+                <Sun size={16} /> Clair
+              </a>
+            </li>
+            <li>
+              <a>
+                <Moon size={16} /> Sombre
+              </a>
+            </li>
+            <li>
+              <a>
+                <Monitor size={16} /> Auto
+              </a>
+            </li>
+          </ul>
+        </div>
 
-        <button className="btn btn-ghost btn-sm btn-square relative text-white/40 hover:text-white">
-          <Bell size={17} />
-          {notifications > 0 && (
-            <span className="absolute right-0 top-1 flex h-3 w-3 pb-0.5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-              {notifications}
-            </span>
-          )}
-        </button>
+        {/* Notifications Dropdown */}
+        <div className="dropdown dropdown-end">
+          <button className="btn btn-ghost btn-sm btn-square relative text-white/40 hover:text-white">
+            <Bell size={17} />
+            {notifications > 0 && (
+              <span className="absolute right-0 top-1 flex h-3 w-3 pb-0.5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+                {notifications}
+              </span>
+            )}
+          </button>
+          <ul className="dropdown-content z-50 menu p-2 shadow bg-neutral-900/95 rounded-lg border border-white/10">
+            <li>
+              <a>
+                <Sun size={16} /> Notif 1
+              </a>
+            </li>
+            <li>
+              <a>
+                <Moon size={16} /> Sombre
+              </a>
+            </li>
+            <li>
+              <a>
+                <Monitor size={16} /> Auto
+              </a>
+            </li>
+            <li>
+              <a>
+                <Sun size={16} /> Notif 1
+              </a>
+            </li>
+            <li>
+              <a>
+                <Moon size={16} /> Sombre
+              </a>
+            </li>
+            <li>
+              <a>
+                <Monitor size={16} /> Auto
+              </a>
+            </li>
+          </ul>
+        </div>
 
         <button
           onClick={toggleFullscreen}
