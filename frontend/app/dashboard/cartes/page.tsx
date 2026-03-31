@@ -18,7 +18,7 @@ export default function DefuntsPage() {
         </p>
       </div>
 
-      <div className="card glass border border-white/6 bg-white/3 shadow-lg">
+      <div className="card glass border z-0 border-white/6 bg-white/3 shadow-lg">
         <div className="card-body p-8 text-center">
           <BookOpen className="w-16 h-16 mx-auto text-neutral-500 mb-4" />
           <h2 className="text-xl font-semibold text-white mb-2">Section en construction</h2>
