@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Mail,LinkIcon, ShieldAlert } from "lucide-react";
 import toast from "react-hot-toast";
-import { ROUTES } from "@/src/constants/routes";
+import { ROUTES } from "@/constants/routes";
 
 export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);

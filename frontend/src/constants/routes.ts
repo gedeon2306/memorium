@@ -11,9 +11,13 @@ export const ROUTES = {
   },
   DASHBOARD: {
     ROOT: '/dashboard',
-    BARBERS: '/dashboard/barbers',
-    TRANSACTIONS: '/dashboard/transactions',
-    SALARY: '/dashboard/salary',
+    CARTES: '/dashboard/cartes',
+    DEFUNTS: '/dashboard/defunts',
+    FAMILLES: '/dashboard/familles',
+    HELP: '/dashboard/help',
+    PAIEMENTS: '/dashboard/paiements',
     SETTINGS: '/dashboard/settings',
+    STATS: '/dashboard/stats',
+    USERS: '/dashboard/users',
   },
 } as const;
