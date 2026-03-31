@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Eye, EyeOff, Lock, RotateCw } from "lucide-react";
 import toast from "react-hot-toast";
-import { ROUTES } from "@/src/constants/routes";
+import { ROUTES } from "@/constants/routes";
 
 export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);

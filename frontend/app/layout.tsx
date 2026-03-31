@@ -37,7 +37,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      data-theme="halloween"
+      data-theme="synthwave"
       className={`${syne.variable} h-full antialiased`}
     >
       <body style={{ fontFamily: 'var(--font-syne)' }}>

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Lock, Mail} from "lucide-react";
 import toast from "react-hot-toast";
-import { ROUTES } from "@/src/constants/routes";
+import { ROUTES } from "@/constants/routes";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -180,7 +180,7 @@ export default function LoginPage() {
 
                     <p className="text-center text-sm text-base-content opacity-60">
                       Pas encore de compte ?{" "}
-                      <Link href="/auth/register" className="link link-hover text-primary">
+                      <Link href={ROUTES.AUTH.REGISTER} className="link link-hover text-primary">
                         Inscription
                       </Link>
                     </p>
