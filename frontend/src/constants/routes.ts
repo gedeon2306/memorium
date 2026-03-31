@@ -19,5 +19,6 @@ export const ROUTES = {
     SETTINGS: '/dashboard/settings',
     STATS: '/dashboard/stats',
     USERS: '/dashboard/users',
+    PROFILE: '/dashboard/profile',
   },
 } as const;
