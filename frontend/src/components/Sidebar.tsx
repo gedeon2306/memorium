@@ -16,7 +16,10 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import axios from "axios";
 import { ROUTES } from "@/constants/routes";
+import toast from "react-hot-toast";
+import { useState } from "react";
 
 const navLinks = [
   { icon: LayoutDashboard, label: "Tableau de bord", href: ROUTES.DASHBOARD.ROOT },
@@ -45,12 +48,26 @@ interface SidebarProps {
 export default function Sidebar({ sidebarOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleNavClick = (href: string) => {
     router.push(href);
     // Ferme le sidebar seulement sur mobile
     if (window.innerWidth < 768) {
       onClose?.();
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsSubmitting(true);
+    try {
+      await axios.post('/api/logout');
+      router.push(ROUTES.AUTH.LOGIN);
+      router.refresh();
+    } catch {
+      toast.error("Erreur lors de la déconnexion");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -80,7 +97,7 @@ export default function Sidebar({ sidebarOpen, onClose }: SidebarProps) {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -280, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed md:relative z-30 md:z-10 flex w-64 shrink-0 flex-col border-r border-white/5 bg-neutral-950/80 backdrop-blur-xl inset-y-0 left-0 h-full md:h-auto"
+            className="fixed md:relative z-30 md:z-10 flex w-64 shrink-0 flex-col border-r border-white/5 bg-neutral-950/80 backdrop-blur-xl inset-y-0 left-0 h-full md:h-auto overflow-hidden"
           >
             {/* Brand */}
             <div className="flex items-center gap-3 border-b border-white/5 px-5 py-5">
@@ -136,15 +153,17 @@ export default function Sidebar({ sidebarOpen, onClose }: SidebarProps) {
                   </button>
                 );
               })}
-            </nav>
-
-            {/* Logout button */}
-            <div className="border-t border-white/5 px-3 py-3">
-              <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/40 transition-all duration-200 hover:bg-rose-500/10 hover:text-error">
-                <LogOut size={16} />
-                <span>Déconnexion</span>
+              {/* Logout button */}
+              <div className="border-t border-white/5 my-2"> </div>
+              <button 
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/40 transition-all duration-200 hover:bg-rose-500/10 hover:text-error"
+                disabled={isSubmitting}
+                onClick={handleLogout}
+              >
+                {isSubmitting ? <span className="loading loading-spinner loading-xs text-error" /> : <LogOut size={16} />}
+                {isSubmitting ? <span>Déconnexion...</span> : <span>Se déconnecter</span>}
               </button>
-            </div>
+            </nav>
           </motion.aside>
         )}
       </AnimatePresence>

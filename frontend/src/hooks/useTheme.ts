@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const THEMES = ['halloween', 'light', 'night', 'dark', 'synthwave', 'acid', 'dracula', 'caramellatte'] as const;
+const THEMES = ['halloween', 'night', 'dark', 'synthwave', 'acid', 'dracula'] as const;
 export type Theme = typeof THEMES[number];
 
 export const useTheme = () => {
