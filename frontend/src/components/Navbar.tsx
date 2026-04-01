@@ -1,7 +1,8 @@
 "use client";
 
-import { Bell, Maximize2, Minimize2, Moon, Search, ChevronRight, Menu, X, LogOut, Sun, Monitor } from "lucide-react";
+import { Bell, Maximize2, Minimize2, Moon, Search, ChevronRight, Menu, X, LogOut, Sun, Monitor, Palette } from "lucide-react";
 import { useState } from "react";
+import { useTheme } from '@/hooks/useTheme';
 
 interface NavbarProps {
   sidebarOpen: boolean;
@@ -16,6 +17,7 @@ const user = {
 };
 
 export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
+  const { theme, changeTheme, themes } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [notifications, setNotifications] = useState(6);
 
@@ -62,21 +64,17 @@ export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
             <Moon size={17} />
           </button>
           <ul className="dropdown-content z-50 menu p-2 shadow bg-neutral-900/95 rounded-lg border border-white/10">
-            <li>
-              <a>
-                <Sun size={16} /> Clair
-              </a>
-            </li>
-            <li>
-              <a>
-                <Moon size={16} /> Sombre
-              </a>
-            </li>
-            <li>
-              <a>
-                <Monitor size={16} /> Auto
-              </a>
-            </li>
+            {themes.map((t) => (
+              <li key={t}>
+                <button
+                  onClick={() => changeTheme(t)}
+                  className={`${theme === t ? 'text-primary' : 'text-white/50 hover:text-white/80'}`}
+                >
+                  <Palette size={16} />
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -90,7 +88,7 @@ export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
               </span>
             )}
           </button>
-          <ul className="dropdown-content z-50 menu p-2 shadow bg-neutral-900/95 rounded-lg border border-white/10">
+          <ul className="dropdown-content z-50 menu p-2 shadow bg-neutral-900/95 text-white/50 hover:text-white/80 rounded-lg border border-white/10">
             <li>
               <a>
                 <Sun size={16} /> Notif 1
