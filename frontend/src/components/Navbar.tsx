@@ -3,6 +3,10 @@
 import { Bell, Maximize2, Minimize2, Moon, Search, ChevronRight, Menu, X, LogOut, Sun, Monitor, Palette } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from '@/hooks/useTheme';
+import axios from "axios";
+import { useRouter } from 'next/navigation';
+import { ROUTES } from "@/constants/routes";
+import toast from "react-hot-toast";
 
 interface NavbarProps {
   sidebarOpen: boolean;
@@ -20,6 +24,8 @@ export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
   const { theme, changeTheme, themes } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [notifications, setNotifications] = useState(6);
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -28,6 +34,19 @@ export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
     } else {
       document.exitFullscreen();
       setIsFullscreen(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsSubmitting(true);
+    try {
+      await axios.post('/api/logout');
+      router.push(ROUTES.AUTH.LOGIN);
+      router.refresh();
+    } catch {
+      toast.error("Erreur lors de la déconnexion");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -129,8 +148,12 @@ export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
           {isFullscreen ? <Minimize2 size={17} /> : <Maximize2 size={17} />}
         </button>
 
-        <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/40 transition-all duration-200 hover:bg-rose-500/10 hover:text-error">
-          <LogOut size={16} />
+        <button 
+          disabled={isSubmitting}
+          onClick={handleLogout}
+          className="btn btn-ghost btn-sm btn-square text-sm text-white/40 transition-all duration-200 hover:text-error"
+        >
+          {isSubmitting ? <span className="loading loading-spinner loading-xs text-error" /> : <LogOut size={16} />}
         </button>
 
         <div className="avatar ml-2">

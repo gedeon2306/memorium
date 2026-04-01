@@ -12,7 +12,7 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-neutral-950 via-neutral-900 to-slate-950 text-base-content flex overflow-hidden relative">
+    <div className="h-screen bg-linear-to-br from-neutral-950 via-neutral-900 to-slate-950 text-base-content flex overflow-hidden relative">
       {/* Decorative blobs */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
         <div className="absolute -left-24 -top-20 h-80 w-80 rounded-full bg-blue-950/30 blur-3xl" />
