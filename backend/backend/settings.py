@@ -66,8 +66,8 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'CashCut API',
-    'DESCRIPTION': 'API de gestion de salon de coiffure',
+    'TITLE': 'Mémorium API',
+    'DESCRIPTION': "API de gestion d'un cimetière privé.",
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }
