@@ -64,3 +64,24 @@ def send_password_reset_email(user):
         [user.email],
         fail_silently=False,
     )
+
+
+def send_login_email(user):
+
+    code = user.validate_code
+
+    subject = "Connexion à votre compte — Mémorium"
+    message = (
+        f"Bonjour {user.name},\n\n"
+        f"Votre code de connexion est : {code}\n\n"
+        "Ce code expire dans 10 minutes.\n\n"
+        "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email."
+    )
+
+    send_mail(
+        subject,
+        message,
+        settings.EMAIL_HOST_USER,
+        [user.email],
+        fail_silently=False,
+    )
