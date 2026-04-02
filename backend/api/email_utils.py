@@ -17,10 +17,10 @@ def send_confirmation_email(user):
 
     confirm_url = f"{settings.FRONTEND_URL.rstrip('/')}/auth/confirm?uid={uidb64}&token={token}&action={action}"
 
-    subject = "Confirmez votre inscription à DepenseFlow"
+    subject = "Confirmez votre identité — Mémorium"
     message = (
         f"Bonjour {user.name},\n\n"
-        "Merci de vous être inscrit à DepenseFlow.\n"
+        "Merci de venir tester la plateforme Mémorium.\n"
         "Pour activer votre compte et vous connecter automatiquement, cliquez sur le lien suivant :\n\n"
         f"{confirm_url}\n\n"
         "Ce lien expire dans 10 minutes.\n\n"
@@ -47,11 +47,11 @@ def send_password_reset_email(user):
 
     reset_url = f"{settings.FRONTEND_URL.rstrip('/')}/auth/confirm?uid={uidb64}&token={token}&action={action}"
 
-    subject = "Réinitialisation de votre mot de passe — DepenseFlow"
+    subject = "Réinitialisation de votre mot de passe — Mémorium"
     message = (
         f"Bonjour {user.name},\n\n"
         "Vous avez demandé la réinitialisation de votre mot de passe.\n"
-        "Cliquez sur le lien suivant pour choisir un nouveau mot de passe :\n\n"
+        "Cliquez sur le lien suivant pour définir un nouveau mot de passe :\n\n"
         f"{reset_url}\n\n"
         "Ce lien expire dans 10 minutes.\n\n"
         "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email."
