@@ -1,37 +1,53 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, name, password=None):
+    def create_user(self, email, name, password=None, **extra_fields):
         if not email:
             raise ValueError("L'email est obligatoire")
-
-        user = self.model(
-            email=self.normalize_email(email).lower(),
-            name=name,
-        )
-
+        
+        email = self.normalize_email(email).lower()
+        user = self.model(email=email, name=name, **extra_fields)
         user.set_password(password)
-
-        user.is_active = False
-
         user.save(using=self._db)
         return user
+
+    def create_superuser(self, email, name, password=None, **extra_fields):
+        # On force les droits pour le super-utilisateur
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('role', 'Administrateur')
+
+        return self.create_user(email, name, password, **extra_fields)
     
 
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
+    ROLE_CHOICES = [
+        ('Administrateur', 'Administrateur'),
+        ('Assistant', 'Assistant'),
+        ('Testeur', 'Testeur'),
+    ]
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Testeur')
     created_at = models.DateTimeField(auto_now_add=True)
+    
     is_active = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    
     validate_code = models.CharField(max_length=6, blank=True, null=True)
     
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
+
+    def __str__(self):
+        return self.email
 
 
 class Famille(models.Model):
