@@ -218,6 +218,297 @@ def resend_confirmation_email(request):
     )
 
 
+@extend_schema(
+    tags=["Auth"],
+    summary="Demander un email de réinitialisation de mot de passe",
+    description="Envoie un email de réinitialisation de mot de passe si l'email existe et est actif. Ne divulgue pas si l'email existe ou non pour des raisons de sécurité.",
+    request=inline_serializer(
+        name="ForgotPasswordRequest",
+        fields={
+            "email": drf_serializers.EmailField(),
+        }
+    ),
+    responses={
+        200: inline_serializer(
+            name="ForgotPasswordSuccess",
+            fields={"message": drf_serializers.CharField()}
+        ),
+        400: inline_serializer(
+            name="ForgotPasswordError",
+            fields={"error": drf_serializers.CharField()}
+        ),
+    },
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def forgot_password(request):
+    
+    email = request.data.get('email', '').strip().lower()
+
+    if not email:
+        return Response(
+            {"error": "L'adresse email est obligatoire."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        user = User.objects.get(email=email)
+
+        if user.is_active:
+            send_password_reset_email(user)
+        else:
+            pass
+
+    except User.DoesNotExist:
+        pass
+
+    return Response(
+        {"message": "Email de réinitialisation envoyé ! Vérifiez votre boîte mail."},
+        status=status.HTTP_200_OK
+    )
+
+
+@extend_schema(
+    tags=["Auth"],
+    summary="Confirmer le token pour reinitialiser le mot de passe",
+    description="Valide le token de réinitialisation de mot de passe. Si valide, retourne l'uid et le token pour permettre au frontend d'afficher un formulaire de nouveau mot de passe.",
+    request=inline_serializer(
+        name="PasswordConfirmRequest",
+        fields={
+            "uid": drf_serializers.CharField(),
+            "token": drf_serializers.CharField(),
+        }
+    ),
+    responses={
+        200: inline_serializer(
+            name="PasswordConfirmSuccess",
+            fields={"message": drf_serializers.CharField()}
+        ),
+        400: inline_serializer(
+            name="PasswordConfirmError",
+            fields={"error": drf_serializers.CharField()}
+        ),
+    },
+)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def password_confirm(request, uidb64, token):
+    
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return Response({"error": "Lien de confirmation invalide."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not email_confirmation_token_generator.check_token(user, token):
+        return Response(
+            {"error": "Le lien de réinitialisation est invalide ou a expiré."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    return Response(
+        {"uid": uid, "token": token},
+        status=status.HTTP_200_OK
+    )
+
+
+@extend_schema(
+    tags=["Auth"],
+    summary="Réinitialiser le mot de passe avec un token",
+    description="Valide le token de réinitialisation et change le mot de passe. Après set_password(), le token est automatiquement invalidé car Django utilise le hash du mot de passe dans le token.",
+    request=inline_serializer(
+        name="ResetPasswordConfirmRequest",
+        fields={
+            "uid": drf_serializers.CharField(),
+            "token": drf_serializers.CharField(),
+            "password": drf_serializers.CharField(),
+            "password_confirm": drf_serializers.CharField(),
+        }
+    ),
+    responses={
+        200: inline_serializer(
+            name="ResetPasswordConfirmSuccess",
+            fields={"message": drf_serializers.CharField()}
+        ),
+        400: inline_serializer(
+            name="ResetPasswordConfirmError",
+            fields={"error": drf_serializers.CharField()}
+        ),
+    },
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def reset_password_confirm(request):
+    
+    uid = request.data.get('uid', '')
+    token = request.data.get('token', '')
+    password = request.data.get('password', '')
+    password_confirm = request.data.get('password_confirm', '')
+
+    if not uid or not token or not password or not password_confirm:
+        return Response(
+            {"error": "Tous les champs sont obligatoires."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if password != password_confirm:
+        return Response(
+            {"error": "Les mots de passe ne correspondent pas."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if len(password) < 8:
+        return Response(
+            {"error": "Le mot de passe doit contenir au moins 8 caractères."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        user_id = force_str(urlsafe_base64_decode(uid))
+        user = User.objects.get(pk=user_id)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return Response(
+            {"error": "Lien de confirmation invalide."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not email_confirmation_token_generator.check_token(user, token):
+        return Response(
+            {"error": "Le lien de réinitialisation est invalide ou a expiré."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    user.set_password(password)
+    user.save()
+
+    return Response(
+        {"message": "Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter."},
+        status=status.HTTP_200_OK
+    )
+
+
+@extend_schema(
+    tags=["Profil"],
+    methods=["GET"],
+    summary="Récupérer le profil de l'utilisateur connecté",
+    description="Retourne les informations du profil de l'utilisateur connecté (id, nom, email, rôle).",
+    responses={
+        200: inline_serializer(
+            name="UserProfileResponse",
+            fields={
+                "id": drf_serializers.UUIDField(),
+                "name": drf_serializers.CharField(),
+                "email": drf_serializers.EmailField(),
+                "role": drf_serializers.CharField(),
+            }
+        ),
+    },
+)
+@extend_schema(
+    tags=["Profil"],
+    methods=["PUT"],
+    summary="Mettre à jour le profil de l'utilisateur connecté",
+    description="Permet de mettre à jour le nom et/ou l'email de l'utilisateur connecté. L'email doit être unique et valide. Si l'email est changé, un email de confirmation est envoyé et le compte doit être réactivé.",
+    request=UserSerializer,
+    responses={
+        200: inline_serializer(
+            name="UserProfileUpdateResponse",
+            fields={
+                "id": drf_serializers.UUIDField(),
+                "name": drf_serializers.CharField(),
+                "email": drf_serializers.EmailField(),
+            }
+        ),
+        400: inline_serializer(
+            name="UserProfileUpdateError",
+            fields={"error": drf_serializers.CharField()}
+        ),
+    },
+)
+@extend_schema(
+    tags=["Profil"],
+    methods=["DELETE"],
+    summary="Supprimer le compte de l'utilisateur connecté",
+    description="Supprime définitivement le compte de l'utilisateur connecté. Cette action est irréversible.",
+    responses={
+        204: inline_serializer(
+            name="UserDeleteResponse",
+            fields={"message": drf_serializers.CharField()}
+        ),
+    },
+)
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def get_user_profile(request):
+    if request.method == 'GET':
+        return Response({ "id": request.user.id, "name": request.user.name, "email": request.user.email, "role": request.user.role })
+    
+    if request.method == 'PUT':
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({ "id": request.user.id, "name": request.user.name, "email": request.user.email, "role": request.user.role })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    if request.method == 'DELETE':
+        request.user.delete()
+        return Response({"message": "Utilisateur supprimé avec succès."}, status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(
+    tags=["Profil"],
+    summary="Changer le mot de passe de l'utilisateur connecté",
+    description="Permet à l'utilisateur connecté de changer son mot de passe en fournissant le mot de passe actuel et le nouveau mot de passe. Le mot de passe actuel est vérifié avant de permettre le changement.",
+    request=inline_serializer(
+        name="UpdatePasswordRequest",
+        fields={
+            "currentPassword": drf_serializers.CharField(),
+            "newPassword": drf_serializers.CharField(),
+        }
+    ),
+    responses={
+        200: inline_serializer(
+            name="UpdatePasswordSuccess",
+            fields={"message": drf_serializers.CharField()}
+        ),
+        400: inline_serializer(
+            name="UpdatePasswordError",
+            fields={"error": drf_serializers.CharField()}
+        ),
+    },
+)
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_password(request):
+    currentPassword = request.data.get("currentPassword")
+    newPassword = request.data.get("newPassword")
+    
+    if not currentPassword or not newPassword:
+        return Response(
+            {"error": "Les champs 'password' et 'newpassword' sont obligatoires."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+        
+    if currentPassword == newPassword:
+        return Response(
+            {"error": "Le nouveau mot de passe doit être différent de l'actuel."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+        
+    user = request.user
+    if not user.check_password(currentPassword):
+        return Response(
+            {"error": "Mot de passe actuel incorrect."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+        
+    user.set_password(newPassword)
+    user.save()
+    return Response(
+        {"message": "Mot de passe mis à jour avec succès."},
+        status=status.HTTP_200_OK,
+    )
+
 
 
 
