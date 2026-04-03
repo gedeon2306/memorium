@@ -353,8 +353,11 @@ def resend_confirmation_email(request):
         elif action == "forgot-password":
             if user.is_active:
                 send_password_reset_email(user)
+                
         elif action == "login":
             if user.is_active:
+                user.validate_code = str(random.randint(100000, 999999))
+                user.save()
                 send_login_email(user)
                 
         else:
