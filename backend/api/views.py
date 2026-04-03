@@ -127,7 +127,8 @@ def register_user(request):
 )
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def confirm_email(request, uidb64, token):
+def confirm_register(request, uidb64, token):
+    
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
@@ -229,7 +230,7 @@ def login(request):
 
     return Response({
         "message": "Connexion réussie. Un email de confirmation a été envoyé.",
-        "uidb64": uidb64,
+        "uid": uidb64,
         "token": token
     }, status=status.HTTP_200_OK)
 
@@ -266,7 +267,7 @@ def login(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def confirm_login(request):
-    uidb64 = request.data.get('uidb64', '')
+    uidb64 = request.data.get('uid', '')
     token = request.data.get('token', '')
     code = request.data.get('code', '')
     
@@ -346,19 +347,19 @@ def resend_confirmation_email(request):
     try:
         user = User.objects.get(email=email)
 
-        if action == "inscription":
-            if not user.is_active:
-                send_confirmation_email(user)
-        
-        elif action == "forgot-password":
-            if user.is_active:
-                send_password_reset_email(user)
-                
-        elif action == "login":
+        if action == "login":
             if user.is_active:
                 user.validate_code = str(random.randint(100000, 999999))
                 user.save()
                 send_login_email(user)
+        
+        elif action == "register":
+            if not user.is_active:
+                send_confirmation_email(user)
+                
+        elif action == "forgot-password":
+            if user.is_active:
+                send_password_reset_email(user)
                 
         else:
             return Response(
@@ -449,7 +450,7 @@ def forgot_password(request):
 )
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def password_confirm(request, uidb64, token):
+def confirm_password(request, uidb64, token):
     
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
