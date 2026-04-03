@@ -1,26 +1,39 @@
- "use client";
-
-import Link from "next/link";
+"use client";
 import Image from "next/image";
+
+import { ROUTES } from "@/constants/routes";
 import { useState } from "react";
+import { useRouter } from 'next/navigation';
+import Link from "next/link";
+import axios from 'axios'
+import toast from "react-hot-toast";
+
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Lock, Mail} from "lucide-react";
-import toast from "react-hot-toast";
-import { ROUTES } from "@/constants/routes";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-
-    // Simulate an API call
-    setTimeout(() => {
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+    try {
+      await axios.post('/api/login/', data);
+      router.push(ROUTES.DASHBOARD.ROOT);
+      router.refresh();
+    } catch (err: any) {
+      if(err?.response?.status === 401){
+        toast.error(err?.response?.data.error);
+      }else{
+        toast.error("Problème de connexion au serveur");
+      }
+    } finally {
       setLoading(false);
-      toast.success("Connexion réussie !");
-    }, 2000);
+    }
   }
 
   return (
@@ -45,7 +58,7 @@ export default function LoginPage() {
             <div className="card glass border p-8 shadow-2xl">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-base-400/10 ring-1 ring-primary/20">
-                  <Image src="/icon.png" alt="Logo" width={36} height={36} />
+                  <Image src="/icon.png" alt="Logo" width={36} height={36} priority />
                 </div>
                 <div>
                   <p className="text-sm text-primary/60">Memorium</p>
@@ -178,7 +191,7 @@ export default function LoginPage() {
                       {loading ? "Connexion..." : "Se connecter"}
                     </button>
 
-                    <p className="text-center text-sm text-base-content opacity-60">
+                    <p className="text-center text-sm text-base-content">
                       Pas encore de compte ?{" "}
                       <Link href={ROUTES.AUTH.REGISTER} className="link link-hover text-primary">
                         Inscription

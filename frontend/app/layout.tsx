@@ -41,6 +41,7 @@ export default function RootLayout({
       lang="fr"
       suppressHydrationWarning
       data-theme="synthwave"
+      data-scroll-behavior="smooth"
       className={`${syne.variable} h-full antialiased`}
     >
       <head>
