@@ -1,32 +1,223 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Settings } from "lucide-react";
+import { Settings, Shield, Bell, Palette, LogOut, Trash2, AlertTriangle } from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function SettingsPage() {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmation !== "SUPPRIMER MON COMPTE") {
+      toast.error("Veuillez taper 'SUPPRIMER MON COMPTE' pour confirmer");
+      return;
+    }
+    
+    try {
+      // API call to delete account
+      // await deleteAccount();
+      toast.success("Compte supprimé avec succès");
+      // Redirect to home page
+      // router.push("/");
+    } catch (error) {
+      toast.error("Erreur lors de la suppression du compte");
+    }
+  };
+
+  const containerVariants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.1 } },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-8 pb-12"
     >
-      <div>
-        <h1 className="text-3xl font-bold text-white">Paramètres</h1>
+      {/* Header */}
+      <motion.div variants={itemVariants}>
+        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+          <Settings className="w-8 h-8" />
+          Paramètres
+        </h1>
         <p className="mt-2 text-base text-neutral-400">
-          Configurez vos préférences et les paramètres de l'application.
+          Configurez vos préférences et les paramètres de sécurité.
         </p>
-      </div>
+      </motion.div>
 
-      <div className="card glass border border-white/6 bg-white/3 shadow-lg">
-        <div className="card-body p-8 text-center">
-          <Settings className="w-16 h-16 mx-auto text-neutral-500 mb-4" />
-          <h2 className="text-xl font-semibold text-white mb-2">Section en construction</h2>
-          <p className="text-neutral-400">
-            Cette page sera bientôt disponible pour configurer vos paramètres.
-          </p>
+      {/* Profil Section */}
+      <motion.div variants={itemVariants} className="card glass border border-white/6 bg-white/3">
+        <div className="card-body p-8">
+          <h2 className="card-title text-white text-xl mb-6 flex items-center gap-2">
+            <Shield className="w-5 h-5 text-sky-400" />
+            Profil & Sécurité
+          </h2>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center pb-4 border-b border-white/10">
+              <div>
+                <p className="text-white font-semibold">Adresse email</p>
+                <p className="text-sm text-neutral-400">user@example.com</p>
+              </div>
+              <button className="btn btn-sm btn-ghost text-sky-400">Modifier</button>
+            </div>
+            <div className="flex justify-between items-center pb-4 border-b border-white/10">
+              <div>
+                <p className="text-white font-semibold">Mot de passe</p>
+                <p className="text-sm text-neutral-400">Dernière modification il y a 3 mois</p>
+              </div>
+              <button className="btn btn-sm btn-ghost text-sky-400">Changer</button>
+            </div>
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-white font-semibold">Authentification à deux facteurs</p>
+                <p className="text-sm text-neutral-400">Désactivée</p>
+              </div>
+              <button className="btn btn-sm btn-ghost text-emerald-400">Activer</button>
+            </div>
+          </div>
         </div>
-      </div>
+      </motion.div>
+
+      {/* Notifications Section */}
+      <motion.div variants={itemVariants} className="card glass border border-white/6 bg-white/3">
+        <div className="card-body p-8">
+          <h2 className="card-title text-white text-xl mb-6 flex items-center gap-2">
+            <Bell className="w-5 h-5 text-amber-400" />
+            Notifications
+          </h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white font-semibold">Notifications par email</p>
+                <p className="text-sm text-neutral-400">Recevoir des alertes importantes</p>
+              </div>
+              <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+            </div>
+            <div className="divider my-2"></div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white font-semibold">Newsletters</p>
+                <p className="text-sm text-neutral-400">Recevoir nos dernières actualités</p>
+              </div>
+              <input type="checkbox" className="toggle toggle-primary" />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Appearance Section */}
+      <motion.div variants={itemVariants} className="card glass border border-white/6 bg-white/3">
+        <div className="card-body p-8">
+          <h2 className="card-title text-white text-xl mb-6 flex items-center gap-2">
+            <Palette className="w-5 h-5 text-violet-400" />
+            Apparence
+          </h2>
+          <div className="grid grid-cols-2 gap-4">
+            <button className="p-4 rounded-lg border-2 border-white/20 hover:border-white/40 transition text-white text-sm font-semibold">
+              Thème Sombre
+            </button>
+            <button className="p-4 rounded-lg border-2 border-white/20 hover:border-white/40 transition text-neutral-400 text-sm font-semibold">
+              Thème Clair
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Danger Zone - Account Deletion */}
+      <motion.div 
+        variants={itemVariants} 
+        className="card border-2 border-rose-500/30 bg-rose-500/5"
+      >
+        <div className="card-body p-8">
+          <h2 className="card-title text-rose-400 text-xl mb-4 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5" />
+            Zone Dangereuse
+          </h2>
+          <p className="text-neutral-300 mb-6">
+            Les actions dans cette section sont irréversibles. Soyez prudent.
+          </p>
+          <button 
+            onClick={() => setShowDeleteModal(true)}
+            className="btn btn-outline btn-error w-full justify-start gap-3"
+          >
+            <Trash2 className="w-4 h-4" />
+            Supprimer mon compte
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="card glass border border-rose-500/30 w-full max-w-md bg-rose-500/10 shadow-2xl"
+          >
+            <div className="card-body p-8">
+              <h3 className="card-title text-rose-400 text-lg mb-2 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                Supprimer le compte ?
+              </h3>
+              <p className="text-neutral-300 mb-6">
+                Cette action ne peut pas être annulée. Toutes vos données seront supprimées définitivement.
+              </p>
+
+              {/* Confirmation Input */}
+              <div className="form-control mb-6">
+                <label className="label">
+                  <span className="label-text text-neutral-300">
+                    Tapez <span className="font-semibold text-rose-400">"SUPPRIMER MON COMPTE"</span> pour confirmer :
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="SUPPRIMER MON COMPTE"
+                  value={deleteConfirmation}
+                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  className="input input-bordered bg-white/5 border-rose-500/30 text-white placeholder-neutral-500"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="card-actions justify-between gap-3">
+                <button 
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeleteConfirmation("");
+                  }}
+                  className="btn btn-ghost flex-1"
+                >
+                  Annuler
+                </button>
+                <button 
+                  onClick={handleDeleteAccount}
+                  disabled={deleteConfirmation !== "SUPPRIMER MON COMPTE"}
+                  className="btn btn-error flex-1"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Supprimer définitivement
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }
