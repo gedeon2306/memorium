@@ -6,9 +6,9 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
 
-        await api.post('auth/register/', body);
+         const res = await api.post('auth/register/', body);
 
-        return NextResponse.json({ success: true }, { status: 201 });
+        return NextResponse.json({ message: res.data.message }, { status: 201 });
 
     } catch (error: any) {
         const errorData = error.response?.data || { error: "Échec de l'inscription" };

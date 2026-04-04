@@ -12,21 +12,23 @@ import { useRouter, useSearchParams } from "next/navigation";
 function ConfirmCodeContent() {
     const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
     const [loading, setLoading] = useState(false);
-    const [resendloading, setResendLoading] = useState(false);
+    const [resendLoading, setResendLoading] = useState(false);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const email = searchParams.get('email');
-    const uid = searchParams.get('uid');
-    const token = searchParams.get('token');
+    const [email, setEmail] = useState(searchParams.get('email'));
+    const [uid, setUid] = useState(searchParams.get('uid'));
+    const [token, setToken] = useState(searchParams.get('token'));
     const action = "login";
 
-    // if (!email || !uid || !token) {
-    //     toast.error('Page non trouvée');
-    //     router.replace(ROUTES.AUTH.LOGIN);
-    //     return;
-    // }
+    useEffect(() => {
+        if (!email || !uid || !token) {
+            toast.error('Page non trouvée');
+            router.replace(ROUTES.AUTH.LOGIN);
+            return;
+        }
+    }, [email, uid, token, router]);
 
     // Handle input change
     const handleChange = (index: number, value: string) => {
@@ -111,10 +113,15 @@ function ConfirmCodeContent() {
     const handleResend = async() => {
         setResendLoading(true);
         try {
-            await axios.post('/api/resend-confirmation', { email, action });
-            toast.success('Email renvoyé !');
+            const res = await axios.post('/api/resend-email', { email, action });
+            const { message, newUid, newToken } = res.data;
+
+            setUid(newUid)
+            setToken(newToken)
+
+            toast.success(message);
         } catch (err: any) {
-            toast.error(err?.response?.data?.error || "Erreur lors du renvoi de l'email.");
+            toast.error(err?.response?.data?.error);
         } finally {
             setResendLoading(false);
         }
@@ -205,11 +212,19 @@ function ConfirmCodeContent() {
                             {/* Code resend button */}
                             <button
                                 onClick={handleResend}
-                                disabled={loading}
+                                disabled={resendLoading}
                                 className="btn btn-ghost btn-block mt-3 gap-2"
                             >
-                                <RotateCcw className="h-4 w-4" />
-                                Renvoyer le code
+                                {resendLoading ? (
+                                    <span className="loading loading-spinner h-4 w-4 text-primary"></span>
+                                ) : (
+                                    <RotateCcw className="h-4 w-4" />
+                                )}
+                                {resendLoading ? (
+                                    "En cours..."
+                                ) : (
+                                    "Renvoyer le code"
+                                )}
                             </button>
 
                             {/* Navigation back to login */}
