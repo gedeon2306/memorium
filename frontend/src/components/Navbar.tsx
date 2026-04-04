@@ -1,16 +1,27 @@
 "use client";
 
-import { Bell, Maximize2, Minimize2, Moon, Search, ChevronRight, Menu, X, LogOut, Sun, Monitor, Palette } from "lucide-react";
+import {
+  Bell,
+  Maximize2,
+  Minimize2,
+  Moon,
+  Search,
+  ChevronRight,
+  Menu,
+  X,
+  LogOut,
+  Sun,
+  Monitor,
+  Palette,
+} from "lucide-react";
 import { useState } from "react";
-import { useTheme } from '@/hooks/useTheme';
-import axios from "axios";
-import { useRouter } from 'next/navigation';
-import { ROUTES } from "@/constants/routes";
-import toast from "react-hot-toast";
+import { useTheme } from "@/hooks/useTheme";
 
 interface NavbarProps {
   sidebarOpen: boolean;
   onSidebarToggle: (open: boolean) => void;
+  onLogout: () => void;
+  isLoggingOut: boolean;
 }
 
 const user = {
@@ -20,12 +31,15 @@ const user = {
   role: "Administratrice",
 };
 
-export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
+export default function Navbar({
+  sidebarOpen,
+  onSidebarToggle,
+  onLogout,
+  isLoggingOut,
+}: NavbarProps) {
   const { theme, changeTheme, themes } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [notifications, setNotifications] = useState(6);
-  const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [notifications] = useState(6);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -34,19 +48,6 @@ export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
     } else {
       document.exitFullscreen();
       setIsFullscreen(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    setIsSubmitting(true);
-    try {
-      await axios.post('/api/logout');
-      router.push(ROUTES.AUTH.LOGIN);
-      router.refresh();
-    } catch {
-      toast.error("Erreur lors de la déconnexion");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -68,7 +69,10 @@ export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
 
       {/* Search */}
       <div className="relative mx-2 hidden sm:flex flex-1 max-w-xs">
-        <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+        <Search
+          size={14}
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/30"
+        />
         <input
           type="text"
           placeholder="Rechercher..."
@@ -87,7 +91,11 @@ export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
               <li key={t}>
                 <button
                   onClick={() => changeTheme(t)}
-                  className={`${theme === t ? 'text-primary' : 'text-white/50 hover:text-white/80'}`}
+                  className={`${
+                    theme === t
+                      ? "text-primary"
+                      : "text-white/50 hover:text-white/80"
+                  }`}
                 >
                   <Palette size={16} />
                   {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -123,21 +131,6 @@ export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
                 <Monitor size={16} /> Auto
               </a>
             </li>
-            <li>
-              <a>
-                <Sun size={16} /> Notif 1
-              </a>
-            </li>
-            <li>
-              <a>
-                <Moon size={16} /> Sombre
-              </a>
-            </li>
-            <li>
-              <a>
-                <Monitor size={16} /> Auto
-              </a>
-            </li>
           </ul>
         </div>
 
@@ -148,12 +141,17 @@ export default function Navbar({ sidebarOpen, onSidebarToggle }: NavbarProps) {
           {isFullscreen ? <Minimize2 size={17} /> : <Maximize2 size={17} />}
         </button>
 
-        <button 
-          disabled={isSubmitting}
-          onClick={handleLogout}
+        {/* Logout */}
+        <button
+          disabled={isLoggingOut}
+          onClick={onLogout}
           className="btn btn-ghost btn-sm btn-square text-sm text-white/40 transition-all duration-200 hover:text-error"
         >
-          {isSubmitting ? <span className="loading loading-spinner loading-xs text-error" /> : <LogOut size={16} />}
+          {isLoggingOut ? (
+            <span className="loading loading-spinner loading-xs text-error" />
+          ) : (
+            <LogOut size={16} />
+          )}
         </button>
 
         <div className="avatar ml-2">
