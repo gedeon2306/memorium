@@ -31,7 +31,9 @@ export default function RegisterPage() {
     const data = Object.fromEntries(formData);
 
     try {
-      await axios.post('/api/register', data);
+      const res = await axios.post('/api/register', data);
+
+      toast.success(res.data.message);
 
       const email = formData.get('email') as string;
       const action = 'register';

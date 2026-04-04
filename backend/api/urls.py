@@ -6,7 +6,7 @@ from .views import (
     confirm_register,
     login,
     confirm_login,
-    resend_confirmation_email,
+    resend_email,
     forgot_password,
     confirm_password,
     reset_password_confirm,
@@ -32,7 +32,7 @@ urlpatterns = [
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # Renvoi de l'email de confirmation (si le lien(token) a expiré)
-    path('auth/resend-email/', resend_confirmation_email, name='resend_email'),
+    path('auth/resend-email/', resend_email, name='resend_email'),
     
     # Mot de passe oublié
     path('auth/forgot-password/', forgot_password, name='forgot_password'),

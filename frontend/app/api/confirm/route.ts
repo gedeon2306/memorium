@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import api from '@/constants/api';
-import { Console } from 'console';
 
 export async function POST(request: NextRequest) {
   try {

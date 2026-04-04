@@ -96,7 +96,7 @@ def register(request):
         send_confirmation_email(user)
         
         return Response({
-            "message": "Utilisateur créé ! Vérifiez votre boîte mail pour votre identité.",
+            "message": "Compte créé ! Vérifiez votre boîte mail pour votre identité.",
             "user": {"email": user.email, "name": user.name}
         }, status=status.HTTP_201_CREATED)
 
@@ -156,7 +156,11 @@ def confirm_register(request, uidb64, token):
     access = str(refresh.access_token)
     refresh_str = str(refresh)
 
-    return Response({"access": access, "refresh": refresh_str}, status=status.HTTP_200_OK)
+    return Response({
+        "message": f"Bienvenue {user.name} !",
+        "access": str(refresh.access_token),
+        "refresh": str(refresh)
+    }, status=status.HTTP_200_OK)
 
 
 @extend_schema(
@@ -334,7 +338,7 @@ def confirm_login(request):
 )
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def resend_confirmation_email(request):
+def resend_email(request):
     email = request.data.get('email', '').strip().lower()
     action = request.data.get('action', '')
 
@@ -351,9 +355,16 @@ def resend_confirmation_email(request):
             if user.is_active:
                 user.validate_code = str(random.randint(100000, 999999))
                 user.save()
+                
+                uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+                token = email_confirmation_token_generator.make_token(user)
+                
                 send_login_email(user)
-                return Response(
-                    {"message": "Un nouveau code a été envoyé à votre email."},
+                return Response({
+                    "message": "Un nouveau code a été envoyé à votre email.",
+                    "uid": uidb64,
+                    "token": token,
+                    },
                     status=status.HTTP_200_OK
                 )
         
