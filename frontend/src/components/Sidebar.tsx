@@ -16,10 +16,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import axios from "axios";
 import { ROUTES } from "@/constants/routes";
-import toast from "react-hot-toast";
-import { useState } from "react";
 
 const navLinks = [
   { icon: LayoutDashboard, label: "Tableau de bord", href: ROUTES.DASHBOARD.ROOT },
@@ -43,37 +40,29 @@ const user = {
 interface SidebarProps {
   sidebarOpen: boolean;
   onClose?: () => void;
+  onLogout: () => void;
+  isLoggingOut: boolean;
 }
 
-export default function Sidebar({ sidebarOpen, onClose }: SidebarProps) {
+export default function Sidebar({
+  sidebarOpen,
+  onClose,
+  onLogout,
+  isLoggingOut,
+}: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleNavClick = (href: string) => {
     router.push(href);
-    // Ferme le sidebar seulement sur mobile
     if (window.innerWidth < 768) {
       onClose?.();
     }
   };
 
-  const handleLogout = async () => {
-    setIsSubmitting(true);
-    try {
-      await axios.post('/api/logout');
-      router.push(ROUTES.AUTH.LOGIN);
-      router.refresh();
-    } catch {
-      toast.error("Erreur lors de la déconnexion");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <>
-      {/* Overlay backdrop — ferme le sidebar au clic extérieur sur mobile */}
+      {/* Overlay backdrop */}
       <AnimatePresence initial={false}>
         {sidebarOpen && (
           <motion.div
@@ -104,11 +93,13 @@ export default function Sidebar({ sidebarOpen, onClose }: SidebarProps) {
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/30">
                 <Image src="/icon.png" alt="Logo" width={36} height={36} />
               </div>
-              <span className="text-lg font-semibold tracking-tight text-primary">Memorium</span>
+              <span className="text-lg font-semibold tracking-tight text-primary">
+                Memorium
+              </span>
             </div>
 
             {/* User info */}
-            <div 
+            <div
               onClick={() => handleNavClick(ROUTES.DASHBOARD.PROFILE)}
               className="mx-3 mt-4 rounded-2xl border border-white/8 bg-white/4 p-3 cursor-pointer transition-all duration-200 hover:bg-white/8 hover:border-white/15"
             >
@@ -119,12 +110,16 @@ export default function Sidebar({ sidebarOpen, onClose }: SidebarProps) {
                   </div>
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-white">{user.name}</p>
+                  <p className="truncate text-sm font-medium text-white">
+                    {user.name}
+                  </p>
                   <p className="truncate text-xs text-white/40">{user.email}</p>
                 </div>
               </div>
               <div className="mt-2 flex items-center justify-between">
-                <span className="badge badge-sm badge-outline text-white/50">{user.role}</span>
+                <span className="badge badge-sm badge-outline text-white/50">
+                  {user.role}
+                </span>
                 {pathname === ROUTES.DASHBOARD.PROFILE ? (
                   <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
                 ) : (
@@ -136,7 +131,10 @@ export default function Sidebar({ sidebarOpen, onClose }: SidebarProps) {
             {/* Nav links */}
             <nav className="mt-4 flex-1 space-y-0.5 px-3 overflow-y-auto">
               {navLinks.map(({ icon: Icon, label, href }) => {
-                const isActive = pathname === href || (href !== ROUTES.DASHBOARD.ROOT && pathname.startsWith(href));
+                const isActive =
+                  pathname === href ||
+                  (href !== ROUTES.DASHBOARD.ROOT &&
+                    pathname.startsWith(href));
                 return (
                   <button
                     key={href}
@@ -149,19 +147,30 @@ export default function Sidebar({ sidebarOpen, onClose }: SidebarProps) {
                   >
                     <Icon size={16} />
                     <span>{label}</span>
-                    {isActive && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
+                    {isActive && (
+                      <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+                    )}
                   </button>
                 );
               })}
+
               {/* Logout button */}
-              <div className="border-t border-white/5 my-2"> </div>
-              <button 
+              <div className="border-t border-white/5 my-2" />
+              <button
+                disabled={isLoggingOut}
+                onClick={onLogout}
                 className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/40 transition-all duration-200 hover:bg-rose-500/10 hover:text-error"
-                disabled={isSubmitting}
-                onClick={handleLogout}
               >
-                {isSubmitting ? <span className="loading loading-spinner loading-xs text-error" /> : <LogOut size={16} />}
-                {isSubmitting ? <span>Déconnexion...</span> : <span>Se déconnecter</span>}
+                {isLoggingOut ? (
+                  <span className="loading loading-spinner loading-xs text-error" />
+                ) : (
+                  <LogOut size={16} />
+                )}
+                {isLoggingOut ? (
+                  <span>Déconnexion...</span>
+                ) : (
+                  <span>Se déconnecter</span>
+                )}
               </button>
             </nav>
           </motion.aside>
