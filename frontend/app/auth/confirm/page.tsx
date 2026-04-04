@@ -37,7 +37,7 @@ function ConfirmContent() {
 
           await axios.post('/api/confirm', { uid, token, action });
           router.replace(`${ROUTES.AUTH.RESET_PASSWORD}?uid=${encodeURIComponent(uid)}&token=${encodeURIComponent(token)}`);
-        
+
         } else {
           toast.error('Données invalides');
           router.replace(ROUTES.HOME);

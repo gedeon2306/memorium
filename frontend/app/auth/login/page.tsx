@@ -22,13 +22,18 @@ export default function LoginPage() {
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData);
     try {
-      await axios.post('/api/login/', data);
-      router.push(ROUTES.DASHBOARD.ROOT);
+      const res = await axios.post('/api/login/', data);
+
+      toast.success(res.data.message);
+      const email = formData.get('email') as string;
+
+      router.push(`${ROUTES.AUTH.CONFIRM_CODE}?email=${encodeURIComponent(email)}&uid=${res.data.uid}&token=${res.data.token}`);
       router.refresh();
+
     } catch (err: any) {
-      if(err?.response?.status === 401){
-        toast.error(err?.response?.data.error);
-      }else{
+      if (err?.response?.status === 400) {
+        toast.error(err?.response?.data?.error);
+      } else {
         toast.error("Problème de connexion au serveur");
       }
     } finally {
