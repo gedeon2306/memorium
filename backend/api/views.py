@@ -60,7 +60,7 @@ def landing_view(request):
 )
 @api_view(['POST'])
 @permission_classes([AllowAny]) # Tout le monde peut s'inscrire
-def register_user(request):
+def register(request):
 
     if len(request.data.get('password', '')) < 8:
         return Response(
@@ -352,6 +352,10 @@ def resend_confirmation_email(request):
                 user.validate_code = str(random.randint(100000, 999999))
                 user.save()
                 send_login_email(user)
+                return Response(
+                    {"message": "Un nouveau code a été envoyé à votre email."},
+                    status=status.HTTP_200_OK
+                )
         
         elif action == "register":
             if not user.is_active:
@@ -371,7 +375,7 @@ def resend_confirmation_email(request):
         pass
 
     return Response(
-        {"message": "Si un compte existe avec cet email, un nouveau lien a été envoyé."},
+        {"message": "Un nouveau lien a été envoyé."},
         status=status.HTTP_200_OK
     )
 

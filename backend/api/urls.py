@@ -2,7 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     landing_view,
-    register_user,
+    register,
     confirm_register,
     login,
     confirm_login,
@@ -17,7 +17,7 @@ from .views import (
 urlpatterns = [
     ## Auth routes
     # Inscription (envoi d'un email de confirmation)
-    path('auth/register/', register_user, name='register'),
+    path('auth/register/', register, name='register'),
     
     # Confirmation de l'email (lien cliqué dans le mail)
     path('auth/confirm-register/<str:uidb64>/<str:token>/', confirm_register, name='confirm_register'),
