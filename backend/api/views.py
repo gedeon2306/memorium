@@ -221,6 +221,15 @@ def login(request):
             {"error": "Email ou mot de passe incorrect."},
             status=status.HTTP_400_BAD_REQUEST
         )
+    
+    if not user.dfa:
+        refresh = TokenObtainPairSerializer.get_token(user)
+        return Response({
+            "message": f"Connexion réussie, bienvenue {user.name} .",
+            "dfa": user.dfa,
+            "access": str(refresh.access_token),
+            "refresh": str(refresh)
+        }, status=status.HTTP_200_OK)
 
     code = str(random.randint(100000, 999999))
     user.validate_code = code
@@ -234,6 +243,7 @@ def login(request):
 
     return Response({
         "message": "Connexion réussie. Un email de confirmation a été envoyé.",
+        "dfa": user.dfa,
         "uid": uidb64,
         "token": token
     }, status=status.HTTP_200_OK)
