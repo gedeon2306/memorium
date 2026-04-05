@@ -2,13 +2,13 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     landing_view,
-    register_user,
-    confirm_email,
+    register,
+    confirm_register,
     login,
     confirm_login,
-    resend_confirmation_email,
+    resend_email,
     forgot_password,
-    password_confirm,
+    confirm_password,
     reset_password_confirm,
     get_user_profile,
     update_password,
@@ -17,10 +17,10 @@ from .views import (
 urlpatterns = [
     ## Auth routes
     # Inscription (envoi d'un email de confirmation)
-    path('auth/register/', register_user, name='register'),
+    path('auth/register/', register, name='register'),
     
     # Confirmation de l'email (lien cliqué dans le mail)
-    path('auth/confirm/<str:uidb64>/<str:token>/', confirm_email, name='confirm_email'),
+    path('auth/confirm-register/<str:uidb64>/<str:token>/', confirm_register, name='confirm_register'),
     
     # Connexion (envoi du mail avec le code de connexion)
     path('auth/login/', login, name='login'),
@@ -32,11 +32,11 @@ urlpatterns = [
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # Renvoi de l'email de confirmation (si le lien(token) a expiré)
-    path('auth/resend-email/', resend_confirmation_email, name='resend_email'),
+    path('auth/resend-email/', resend_email, name='resend_email'),
     
     # Mot de passe oublié
     path('auth/forgot-password/', forgot_password, name='forgot_password'),
-    path('auth/password-confirm/<str:uidb64>/<str:token>/', password_confirm, name='password_confirm'),
+    path('auth/confirm-password/<str:uidb64>/<str:token>/', confirm_password, name='confirm_password'),
     path('auth/reset-password-confirm/', reset_password_confirm, name='reset_password_confirm'),
     
     ## User profile routes

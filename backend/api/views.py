@@ -60,7 +60,7 @@ def landing_view(request):
 )
 @api_view(['POST'])
 @permission_classes([AllowAny]) # Tout le monde peut s'inscrire
-def register_user(request):
+def register(request):
 
     if len(request.data.get('password', '')) < 8:
         return Response(
@@ -96,7 +96,7 @@ def register_user(request):
         send_confirmation_email(user)
         
         return Response({
-            "message": "Utilisateur créé ! Vérifiez votre boîte mail pour votre identité.",
+            "message": "Compte créé ! Vérifiez votre boîte mail pour votre identité.",
             "user": {"email": user.email, "name": user.name}
         }, status=status.HTTP_201_CREATED)
 
@@ -127,7 +127,8 @@ def register_user(request):
 )
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def confirm_email(request, uidb64, token):
+def confirm_register(request, uidb64, token):
+    
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
@@ -155,7 +156,11 @@ def confirm_email(request, uidb64, token):
     access = str(refresh.access_token)
     refresh_str = str(refresh)
 
-    return Response({"access": access, "refresh": refresh_str}, status=status.HTTP_200_OK)
+    return Response({
+        "message": f"Bienvenue {user.name} !",
+        "access": str(refresh.access_token),
+        "refresh": str(refresh)
+    }, status=status.HTTP_200_OK)
 
 
 @extend_schema(
@@ -229,7 +234,7 @@ def login(request):
 
     return Response({
         "message": "Connexion réussie. Un email de confirmation a été envoyé.",
-        "uidb64": uidb64,
+        "uid": uidb64,
         "token": token
     }, status=status.HTTP_200_OK)
 
@@ -266,7 +271,7 @@ def login(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def confirm_login(request):
-    uidb64 = request.data.get('uidb64', '')
+    uidb64 = request.data.get('uid', '')
     token = request.data.get('token', '')
     code = request.data.get('code', '')
     
@@ -333,7 +338,7 @@ def confirm_login(request):
 )
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def resend_confirmation_email(request):
+def resend_email(request):
     email = request.data.get('email', '').strip().lower()
     action = request.data.get('action', '')
 
@@ -346,19 +351,30 @@ def resend_confirmation_email(request):
     try:
         user = User.objects.get(email=email)
 
-        if action == "inscription":
-            if not user.is_active:
-                send_confirmation_email(user)
-        
-        elif action == "forgot-password":
-            if user.is_active:
-                send_password_reset_email(user)
-                
-        elif action == "login":
+        if action == "login":
             if user.is_active:
                 user.validate_code = str(random.randint(100000, 999999))
                 user.save()
+                
+                uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+                token = email_confirmation_token_generator.make_token(user)
+                
                 send_login_email(user)
+                return Response({
+                    "message": "Un nouveau code a été envoyé à votre email.",
+                    "uid": uidb64,
+                    "token": token,
+                    },
+                    status=status.HTTP_200_OK
+                )
+        
+        elif action == "register":
+            if not user.is_active:
+                send_confirmation_email(user)
+                
+        elif action == "forgot-password":
+            if user.is_active:
+                send_password_reset_email(user)
                 
         else:
             return Response(
@@ -370,7 +386,7 @@ def resend_confirmation_email(request):
         pass
 
     return Response(
-        {"message": "Si un compte existe avec cet email, un nouveau lien a été envoyé."},
+        {"message": "Un nouveau lien a été envoyé."},
         status=status.HTTP_200_OK
     )
 
@@ -449,7 +465,7 @@ def forgot_password(request):
 )
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def password_confirm(request, uidb64, token):
+def confirm_password(request, uidb64, token):
     
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))

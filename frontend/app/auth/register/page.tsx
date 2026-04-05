@@ -1,26 +1,62 @@
- "use client";
-
-import Link from "next/link";
+"use client";
 import Image from "next/image";
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Eye, EyeOff, Lock, Mail, Phone, User } from "lucide-react";
-import toast from "react-hot-toast";
+
 import { ROUTES } from "@/constants/routes";
+import { useState } from "react";
+import { useRouter } from 'next/navigation';
+import Link from "next/link";
+import axios from 'axios'
+import toast from "react-hot-toast";
+
+import { motion } from "framer-motion";
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState('');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (password.length < 8) {
+      toast.error('Le mot de passe doit contenir au moins 8 caractères');
+      return;
+    }
+
     setLoading(true);
 
-    // Simulate an API call
-    setTimeout(() => {
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+
+    try {
+      const res = await axios.post('/api/register', data);
+
+      toast.success(res.data.message);
+
+      const email = formData.get('email') as string;
+      const action = 'register';
+
+      router.push(`${ROUTES.AUTH.EMAIL_SEND}?email=${encodeURIComponent(email)}&action=${action}`);
+      router.refresh();
+
+    } catch (err: any) {
+      if (err?.response?.status === 400) {
+        if(err?.response?.data?.email && err?.response?.data?.email == "user with this email already exists."){
+          toast.error("Cet email est déjà utilisé");
+        } else if(err?.response?.data?.email) {
+          toast.error(err?.response?.data?.email);
+        }else{
+          toast.error(err?.response?.data?.error);
+        }
+      } else {
+        toast.error("Problème de connexion au serveur");
+      }
+    } finally {
       setLoading(false);
-      toast.success("Compte créé") 
-    }, 2000);
+    }
+
   }
 
   return (
@@ -45,7 +81,7 @@ export default function RegisterPage() {
             <div className="card glass border p-8 shadow-2xl">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-base-400/10 ring-1 ring-primary/20">
-                  <Image src="/icon.png" alt="Logo" width={36} height={36} />
+                  <Image src="/icon.png" alt="Logo" width={36} height={36} priority />
                 </div>
                 <div>
                   <p className="text-sm text-primary">Memorium</p>
@@ -122,8 +158,8 @@ export default function RegisterPage() {
                         <input
                           className="input input-bordered focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full bg-transparent pl-10"
                           type="text"
-                          name="fullName"
-                          autoComplete="name"
+                          name="name"
+                          autoComplete="nom"
                           placeholder="Votre nom"
                           required
                         />
@@ -163,7 +199,7 @@ export default function RegisterPage() {
                           className="input input-bordered focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full bg-transparent pl-10 pr-12"
                           type={showPassword ? "text" : "password"}
                           name="password"
-                          autoComplete="new-password"
+                          onChange={(e) => setPassword(e.target.value)}
                           placeholder="Créer un mot de passe"
                           required
                         />
@@ -187,18 +223,12 @@ export default function RegisterPage() {
                       {loading ? "Création..." : "Créer mon compte"}
                     </button>
 
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <p className="text-sm text-base-content/60">
+                    <p className="text-center text-sm text-base-content">
                         Déjà un compte ?{" "}
-                        <Link href={ROUTES.AUTH.LOGIN} className="link link-hover">
+                        <Link href={ROUTES.AUTH.LOGIN} className="link link-hover text-primary">
                           Connexion
                         </Link>
                       </p>
-                      <div className="flex items-center gap-2 text-sm text-base-content/60">
-                        <Phone size={16} />
-                        <span>Support (UI)</span>
-                      </div>
-                    </div>
                   </form>
                 </div>
               </div>
