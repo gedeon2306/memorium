@@ -38,6 +38,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    dfa = models.BooleanField(default=True)
     
     validate_code = models.CharField(max_length=6, blank=True, null=True)
     
