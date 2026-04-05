@@ -81,7 +81,7 @@ export default function SettingsPage() {
                 <p className="text-white font-semibold">Authentification à deux facteurs</p>
                 <p className="text-sm text-neutral-400">Désactivée</p>
               </div>
-              <button className="btn btn-sm btn-ghost text-emerald-400">Activer</button>
+              <input type="checkbox" className="toggle toggle-primary" defaultChecked />
             </div>
           </div>
         </div>
@@ -110,24 +110,6 @@ export default function SettingsPage() {
               </div>
               <input type="checkbox" className="toggle toggle-primary" />
             </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Appearance Section */}
-      <motion.div variants={itemVariants} className="card glass border border-white/6 bg-white/3">
-        <div className="card-body p-8">
-          <h2 className="card-title text-white text-xl mb-6 flex items-center gap-2">
-            <Palette className="w-5 h-5 text-violet-400" />
-            Apparence
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
-            <button className="p-4 rounded-lg border-2 border-white/20 hover:border-white/40 transition text-white text-sm font-semibold">
-              Thème Sombre
-            </button>
-            <button className="p-4 rounded-lg border-2 border-white/20 hover:border-white/40 transition text-neutral-400 text-sm font-semibold">
-              Thème Clair
-            </button>
           </div>
         </div>
       </motion.div>
