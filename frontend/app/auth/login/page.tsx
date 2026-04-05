@@ -24,10 +24,20 @@ export default function LoginPage() {
     try {
       const res = await axios.post('/api/login/', data);
 
-      toast.success(res.data.message);
+      const { message, dfa, access, refresh, uid, token } = res.data;
+
+      if (!dfa) {
+        await axios.post('/api/confirm-login', { access, refresh });
+        toast.success(message);
+        router.replace(ROUTES.DASHBOARD.ROOT);
+        return
+      }
+      
+      toast.success(message);
+
       const email = formData.get('email') as string;
 
-      router.push(`${ROUTES.AUTH.CONFIRM_CODE}?email=${encodeURIComponent(email)}&uid=${res.data.uid}&token=${res.data.token}`);
+      router.push(`${ROUTES.AUTH.CONFIRM_CODE}?email=${encodeURIComponent(email)}&uid=${uid}&token=${token}`);
       router.refresh();
 
     } catch (err: any) {
