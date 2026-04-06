@@ -100,7 +100,7 @@ export default function Sidebar({
 
             {/* User info */}
             <div
-              onClick={() => handleNavClick(ROUTES.DASHBOARD.PROFILE)}
+              onClick={() => handleNavClick(ROUTES.DASHBOARD.PROFIL)}
               className="mx-3 mt-4 rounded-2xl border border-white/8 bg-white/4 p-3 cursor-pointer transition-all duration-200 hover:bg-white/8 hover:border-white/15"
             >
               <div className="flex items-center gap-3">
@@ -120,7 +120,7 @@ export default function Sidebar({
                 <span className="badge badge-sm badge-outline text-white/50">
                   {user.role}
                 </span>
-                {pathname === ROUTES.DASHBOARD.PROFILE ? (
+                {pathname === ROUTES.DASHBOARD.PROFIL ? (
                   <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
                 ) : (
                   <ChevronRight size={12} className="text-white/30" />

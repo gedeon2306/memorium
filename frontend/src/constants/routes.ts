@@ -20,6 +20,6 @@ export const ROUTES = {
     SETTINGS: '/dashboard/settings',
     STATS: '/dashboard/stats',
     USERS: '/dashboard/users',
-    PROFILE: '/dashboard/profile',
+    PROFIL: '/dashboard/profil',
   },
 } as const;
