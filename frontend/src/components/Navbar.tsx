@@ -25,10 +25,10 @@ interface NavbarProps {
 }
 
 const user = {
-  name: "Elise Fontaine",
-  email: "elise@memorium.app",
+  name: "Gédéon Gangoué",
+  email: "contact@jihreldev.com",
   avatar: "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka",
-  role: "Administratrice",
+  role: "Administrateur",
 };
 
 export default function Navbar({

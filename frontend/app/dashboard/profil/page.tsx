@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { User, Camera, ShieldCheck, Mail, Key, Save, Pencil } from "lucide-react";
+import { User, Camera, ShieldCheck, Mail, Key, Save, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
@@ -10,7 +10,7 @@ export default function ProfilePage() {
     "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka"
   );
   const [name, setName] = useState("Gédéon Gangoué");
-  const [email, setEmail] = useState("user@example.com");
+  const [email, setEmail] = useState("contact@jihreldev.com");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -141,6 +141,15 @@ export default function ProfilePage() {
               className="w-full h-full object-cover"
             />
           </div>
+
+          {/* Bouton supprimer photo */}
+          <button 
+            disabled={profileImage == "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka"}
+            onClick={() => {if(profileImage != "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka") setProfileImage("https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka")} }
+            className="btn btn-secondary absolute top-1 left-0 w-9 h-9 rounded-full flex items-center p-0 justify-center"
+          >
+            <Trash2 className="w-4 h-4 text-white" />
+          </button>
 
           {/* Bouton modifier photo */}
           <label className="absolute bottom-2 right-0 w-9 h-9 bg-primary transition-colors rounded-full flex items-center justify-center cursor-pointer shadow-lg">
