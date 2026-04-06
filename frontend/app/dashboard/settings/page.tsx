@@ -62,24 +62,10 @@ export default function SettingsPage() {
             Profil & Sécurité
           </h2>
           <div className="space-y-4">
-            <div className="flex justify-between items-center pb-4 border-b border-white/10">
-              <div>
-                <p className="text-white font-semibold">Adresse email</p>
-                <p className="text-sm text-neutral-400">user@example.com</p>
-              </div>
-              <button className="btn btn-sm btn-ghost text-sky-400">Modifier</button>
-            </div>
-            <div className="flex justify-between items-center pb-4 border-b border-white/10">
-              <div>
-                <p className="text-white font-semibold">Mot de passe</p>
-                <p className="text-sm text-neutral-400">Dernière modification il y a 3 mois</p>
-              </div>
-              <button className="btn btn-sm btn-ghost text-sky-400">Changer</button>
-            </div>
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-white font-semibold">Authentification à deux facteurs</p>
-                <p className="text-sm text-neutral-400">Désactivée</p>
+                <p className="text-sm text-neutral-400">Activée</p>
               </div>
               <input type="checkbox" className="toggle toggle-primary" defaultChecked />
             </div>
@@ -117,10 +103,10 @@ export default function SettingsPage() {
       {/* Danger Zone - Account Deletion */}
       <motion.div 
         variants={itemVariants} 
-        className="card border-2 border-rose-500/30 bg-rose-500/5"
+        className="card border-2 border-error bg-error/10"
       >
         <div className="card-body p-8">
-          <h2 className="card-title text-rose-400 text-xl mb-4 flex items-center gap-2">
+          <h2 className="card-title text-error text-xl mb-4 flex items-center gap-2">
             <AlertTriangle className="w-5 h-5" />
             Zone Dangereuse
           </h2>
@@ -129,7 +115,7 @@ export default function SettingsPage() {
           </p>
           <button 
             onClick={() => setShowDeleteModal(true)}
-            className="btn btn-outline btn-error w-full justify-start gap-3"
+            className="btn btn-outline btn-error w-fit gap-3"
           >
             <Trash2 className="w-4 h-4" />
             Supprimer mon compte
@@ -149,22 +135,22 @@ export default function SettingsPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="card glass border border-rose-500/30 w-full max-w-md bg-rose-500/10 shadow-2xl"
+            className="card glass w-full max-w-md bg-error/10 shadow-2xl"
           >
             <div className="card-body p-8">
-              <h3 className="card-title text-rose-400 text-lg mb-2 flex items-center gap-2">
+              <h3 className="card-title text-error text-lg mb-2 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
                 Supprimer le compte ?
               </h3>
-              <p className="text-neutral-300 mb-6">
+              <p className="text-neutral-300 mb-3">
                 Cette action ne peut pas être annulée. Toutes vos données seront supprimées définitivement.
               </p>
 
               {/* Confirmation Input */}
               <div className="form-control mb-6">
-                <label className="label">
+                <label className="label mb-4">
                   <span className="label-text text-neutral-300">
-                    Tapez <span className="font-semibold text-rose-400">"SUPPRIMER MON COMPTE"</span> pour confirmer :
+                    Tapez <span className="font-semibold text-error">"SUPPRIMER MON COMPTE"</span> pour confirmer :
                   </span>
                 </label>
                 <input
@@ -172,7 +158,7 @@ export default function SettingsPage() {
                   placeholder="SUPPRIMER MON COMPTE"
                   value={deleteConfirmation}
                   onChange={(e) => setDeleteConfirmation(e.target.value)}
-                  className="input input-bordered bg-white/5 border-rose-500/30 text-white placeholder-neutral-500"
+                  className="input input-bordered focus:outline-none focus:ring-2 focus:ring-error w-full focus:border-transparent border-error placeholder-neutral-500"
                 />
               </div>
 
@@ -193,7 +179,7 @@ export default function SettingsPage() {
                   className="btn btn-error flex-1"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Supprimer définitivement
+                  Supprimer
                 </button>
               </div>
             </div>
