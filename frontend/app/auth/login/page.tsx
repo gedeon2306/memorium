@@ -133,8 +133,6 @@ export default function LoginPage() {
                     </div>
                   </div>
 
-                  
-
                   <form
                     onSubmit={handleSubmit}
                     className="mt-4 space-y-4 text-base-content"

@@ -33,7 +33,7 @@ const navLinks = [
 const user = {
   name: "Elise Fontaine",
   email: "elise@memorium.app",
-  avatar: "https://api.dicebear.com/9.x/personas/svg?seed=Elise",
+  avatar: "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka",
   role: "Administratrice",
 };
 
