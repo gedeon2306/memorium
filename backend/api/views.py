@@ -4,10 +4,11 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.auth.models import BaseUserManager
 
 from .tokens import email_confirmation_token_generator
 from django.core.mail import send_mail
-from .email_utils import send_confirmation_email, send_password_reset_email, send_login_email
+from .email_utils import send_confirmation_email, send_password_reset_email, send_login_email, send_new_email_code
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -574,12 +575,13 @@ def reset_password_confirm(request):
     tags=["Profil"],
     methods=["GET"],
     summary="Récupérer le profil de l'utilisateur connecté",
-    description="Retourne les informations du profil de l'utilisateur connecté (id, nom, email, rôle).",
+    description="Retourne les informations du profil de l'utilisateur connecté (id, photo, nom, email, rôle).",
     responses={
         200: inline_serializer(
             name="UserProfileResponse",
             fields={
                 "id": drf_serializers.UUIDField(),
+                "photo": drf_serializers.CharField(),
                 "name": drf_serializers.CharField(),
                 "email": drf_serializers.EmailField(),
                 "role": drf_serializers.CharField(),
@@ -589,9 +591,31 @@ def reset_password_confirm(request):
 )
 @extend_schema(
     tags=["Profil"],
+    methods=["POST"],
+    summary="Confirmer le nouvel email de l'utilisateur connecté",
+    description="L'email doit être unique et valide. Email de confirmation est envoyé avec un code.",
+    request=inline_serializer(
+        name="ConfirmEmailRequest",
+        fields={
+            "email": drf_serializers.EmailField(),
+        }
+    ),
+    responses={
+        200: inline_serializer(
+            name="ConfirmEmailSuccess",
+            fields={"message": drf_serializers.CharField()}
+        ),
+        400: inline_serializer(
+            name="ConfirmEmailError",
+            fields={"error": drf_serializers.CharField()}
+        ),
+    },
+)
+@extend_schema(
+    tags=["Profil"],
     methods=["PUT"],
     summary="Mettre à jour le profil de l'utilisateur connecté",
-    description="Permet de mettre à jour le nom et/ou l'email de l'utilisateur connecté. L'email doit être unique et valide. Si l'email est changé, un email de confirmation est envoyé et le compte doit être réactivé.",
+    description="Permet de mettre à jour le nom et/ou la photo de l'utilisateur connecté.",
     request=UserSerializer,
     responses={
         200: inline_serializer(
@@ -599,7 +623,7 @@ def reset_password_confirm(request):
             fields={
                 "id": drf_serializers.UUIDField(),
                 "name": drf_serializers.CharField(),
-                "email": drf_serializers.EmailField(),
+                "photo": drf_serializers.CharField(),
             }
         ),
         400: inline_serializer(
@@ -620,22 +644,99 @@ def reset_password_confirm(request):
         ),
     },
 )
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
-def get_user_profile(request):
+def profil(request):
     if request.method == 'GET':
-        return Response({ "id": request.user.id, "name": request.user.name, "email": request.user.email, "role": request.user.role })
+        return Response({ "id": request.user.id, "photo": request.user.photo, "name": request.user.name, "email": request.user.email, "role": request.user.role, "dfa": request.user.dfa })
     
+    if request.method == 'POST':
+        email_input = request.data.get('email')
+        
+        if not email_input:
+            return Response({"error": "L'email est requis."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        email = BaseUserManager.normalize_email(email_input).lower()
+        
+        if email == request.user.email:
+            return Response({"error": "Cet email est déjà le vôtre."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        email_exists = User.objects.filter(email=email).exclude(id=request.user.id).exists()
+
+        if email_exists:
+            return Response(
+                {"error": "Email indisponible."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        code = str(random.randint(100000, 999999))
+        user = request.user
+        user.validate_code = code
+        user.save()
+        send_new_email_code(email, code)
+        
+        return Response({
+            "message": "Un email de confirmation a été envoyé à votre nouvelle adresse email.",
+        }, status=status.HTTP_200_OK)
+            
     if request.method == 'PUT':
         serializer = UserSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({ "id": request.user.id, "name": request.user.name, "email": request.user.email, "role": request.user.role })
+            return Response({ "id": request.user.id, "photo": request.user.photo, "name": request.user.name, "email": request.user.email, "role": request.user.role, "dfa": request.user.dfa })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     if request.method == 'DELETE':
         request.user.delete()
         return Response({"message": "Utilisateur supprimé avec succès."}, status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(
+    tags=["Profil"],
+    methods=["PUT"],
+    summary="Confirmer et mettre à jour l'email",
+    description="Vérifie le code reçu par email et met à jour l'adresse email de l'utilisateur.",
+    request=inline_serializer(
+        name="ConfirmEmailRequest",
+        fields={
+            "email": drf_serializers.EmailField(),
+            "code": drf_serializers.CharField(),
+        }
+    ),
+    responses={
+        200: inline_serializer(
+            name="ConfirmEmailSuccess",
+            fields={"message": drf_serializers.CharField()}
+        ),
+        400: inline_serializer(
+            name="ConfirmEmailError",
+            fields={"error": drf_serializers.CharField()}
+        ),
+    },
+)
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def confirm_new_email(request):
+    email_raw = request.data.get('email')
+    code = request.data.get('code')
+    
+    if not email_raw or not code:
+        return Response({"error": "L'email et le code sont requis."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    email = BaseUserManager.normalize_email(email_raw).lower()
+    user = request.user
+
+    if not user.validate_code or user.validate_code != code:
+        return Response({"error": "Code de confirmation incorrect."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if User.objects.filter(email=email).exclude(id=user.id).exists():
+        return Response({"error": "Cet email est désormais utilisé par un autre compte."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user.email = email
+    user.validate_code = ""
+    user.save()
+    
+    return Response({"message": "Votre adresse email a été mise à jour avec succès."}, status=status.HTTP_200_OK)
 
 
 @extend_schema(
