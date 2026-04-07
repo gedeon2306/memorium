@@ -84,3 +84,21 @@ def send_password_reset_email(user):
         [user.email],
         fail_silently=False,
     )
+
+
+def send_new_email_code(email, code):
+
+    subject = "Changer mon adresse Email — Mémorium"
+    message = (
+        f"Votre code de connexion est : {code}\n\n"
+        "Ce code expire dans 10 minutes.\n\n"
+        "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email."
+    )
+
+    send_mail(
+        subject,
+        message,
+        settings.EMAIL_HOST_USER,
+        [email],
+        fail_silently=False,
+    )
