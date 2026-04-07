@@ -131,10 +131,7 @@ export default function Sidebar({
             {/* Nav links */}
             <nav className="mt-4 flex-1 space-y-0.5 px-3 overflow-y-auto">
               {navLinks.map(({ icon: Icon, label, href }) => {
-                const isActive =
-                  pathname === href ||
-                  (href !== ROUTES.DASHBOARD.ROOT &&
-                    pathname.startsWith(href));
+                const isActive = pathname === href || (href !== ROUTES.DASHBOARD.ROOT && pathname.startsWith(href));
                 return (
                   <button
                     key={href}
