@@ -117,7 +117,7 @@ export default function Sidebar({
                 </div>
               </div>
               <div className="mt-2 flex items-center justify-between">
-                <span className="badge badge-sm badge-outline text-white/50">
+                <span className="badge badge-sm badge-outline badge-ghost">
                   {user.role}
                 </span>
                 {pathname === ROUTES.DASHBOARD.PROFIL ? (
