@@ -10,7 +10,8 @@ from .views import (
     forgot_password,
     confirm_password,
     reset_password_confirm,
-    get_user_profile,
+    profil,
+    confirm_new_email,
     update_password,
 )
 
@@ -40,8 +41,11 @@ urlpatterns = [
     path('auth/reset-password-confirm/', reset_password_confirm, name='reset_password_confirm'),
     
     ## User profile routes
-    # Récupération du profil utilisateur, mettre à jour les infos du profil (sauf mot de passe), et supprimer le compte 
-    path('user/profile/', get_user_profile, name='user_profile'),
+    # Récupération du profil utilisateur, envoyer un code pour mettre a jour l'email, mettre à jour les infos du profil (sauf mot de passe et email), et supprimer le compte 
+    path('user/profil/', profil, name='user_profil'),
+    
+    # Confirmer et mettre à jour l'email
+    path('user/confirm-new-email/', confirm_new_email, name='confirm_new_email'),
     
     # Mise à jour du mot de passe
     path('user/update-password/', update_password, name='update_password'),
