@@ -40,7 +40,7 @@ export default function Navbar({
 }: NavbarProps) {
   const { theme, changeTheme, themes } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [notifications] = useState(9);
+  const [notifications] = useState(2);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
