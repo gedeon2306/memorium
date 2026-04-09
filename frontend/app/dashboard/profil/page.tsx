@@ -1,21 +1,22 @@
 "use client";
 
+import { getUserProfil, updateUserProfil } from "@/app/actions/actions";
 import { ROUTES } from "@/constants/routes";
 import { motion } from "framer-motion";
 import { User, Camera, ShieldCheck, Key, Save, Mail, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
-export default function ProfilePage() {
-  const [profileImage, setProfileImage] = useState<string>(
-    "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka"
-  );
+export default function ProfilPage() {
+  const [userImage, setUserImage] = useState<string>("https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka");
   const [name, setName] = useState("Gédéon Gangoué");
   const [email, setEmail] = useState("contact@jihreldev.com");
+  const [role, setRole] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,7 +28,6 @@ export default function ProfilePage() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
-  const role = "Administrateur";
 
   const containerVariants = {
     hidden: {},
@@ -39,54 +39,75 @@ export default function ProfilePage() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
+  useEffect(() => {
+    const loadProfil = async () => {
+      const res = await getUserProfil();
+      setName(res.name)
+      setEmail(res.email)
+      setRole(res.role)
+      setUserImage(res.photo ?? "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka")
+    };
+    loadProfil();
+  }, []);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setProfileImage(event.target?.result as string);
+        setUserImage(event.target?.result as string);
         toast.success("Photo de profil mise à jour");
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSaveName = () => {
+  const handleSaveName = async() => {
     if (!name.trim()) {
       toast.error("Le nom ne peut pas être vide");
       return;
     }
+    
+    const data = {
+      name : name,
+    }
+
+    const action = "updateName"
 
     setLoadingName(true)
-    setTimeout(()=>{
-      try {
-        toast.success("Nom mis à jour avec succès");
-      } catch (error) {
-        toast.error("Erreur lors de la mise à jour du nom");
-      } finally {
-        setIsEditingName(false);
-        setLoadingName(false)
-      }
-    }, 3000)
+    try {
+      const result = await updateUserProfil(data, action);
+      toast.success(result.message);
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour du nom");
+    } finally {
+      setIsEditingName(false);
+      setLoadingName(false)
+    }
   };
 
-  const handleSaveEmail = () => {
+  const handleSaveEmail = async() => {
     if (!email.includes("@")) {
       toast.error("Email invalide");
       return;
     }
+
+    const data = {
+      email : email,
+    }
+
+    const action = "updateEmail"
     
     setLoadingEmail(true)
-    setTimeout(()=>{
-      try {
-        confirmModalRef.current?.showModal();
-      } catch (error) {
-        toast.error("Erreur lors de la mise à jour de l'email");
-      } finally {
-        setIsEditingEmail(false);
-        setLoadingEmail(false)
-      }
-    }, 3000)
+    try {
+      const result = await updateUserProfil(data, action);
+      confirmModalRef.current?.showModal();
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour de l'email");
+    } finally {
+      setIsEditingEmail(false);
+      setLoadingEmail(false)
+    }
     
   };
 
@@ -120,7 +141,6 @@ export default function ProfilePage() {
     }, 3000)
   };
 
-  // Handle input change
   const handleChange = (index: number, value: string) => {
     // Only allow digits
     if (!/^\d*$/.test(value)) return;
@@ -135,7 +155,6 @@ export default function ProfilePage() {
     }
   };
 
-  // Handle backspace
   const handleKeyDown = (
     index: number,
     e: React.KeyboardEvent<HTMLInputElement>
@@ -145,7 +164,6 @@ export default function ProfilePage() {
     }
   };
 
-  // Handle paste
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData("text");
@@ -171,7 +189,6 @@ export default function ProfilePage() {
     }
   };
 
-  // Check if all fields are filled
   const isCodeComplete = code.every((digit) => digit !== "");
 
   const handleConfirm = async() => {
@@ -216,7 +233,7 @@ export default function ProfilePage() {
         <div className="relative group">
           <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white/10 shadow-xl">
             <img
-              src={profileImage}
+              src={userImage}
               alt="Photo de profil"
               className="w-full h-full object-cover"
             />
@@ -224,8 +241,8 @@ export default function ProfilePage() {
 
           {/* Bouton supprimer photo */}
           <button 
-            disabled={profileImage == "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka"}
-            onClick={() => {if(profileImage != "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka") setProfileImage("https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka")} }
+            disabled={userImage == "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka"}
+            onClick={() => {if(userImage != "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka") setUserImage("https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka")} }
             className="btn btn-secondary absolute top-1 left-0 w-9 h-9 rounded-full flex items-center p-0 justify-center"
           >
             <Trash2 className="w-4 h-4 text-white" />
