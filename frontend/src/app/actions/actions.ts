@@ -52,11 +52,15 @@ export async function getUserProfil() {
       try {
         const response = await api.get('user/profil/', config(newToken))
         return response.data;
-      } catch (retryError) {
-        throw retryError;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error || "Erreur lors de la mise à jour" };
       }
     }
-    throw error;
+
+    const errorMessage = error.response?.data?.error || 
+                         error.response?.data?.message || 
+                         "Une erreur est survenue";
+    return { error: errorMessage };
   }
 }
 
@@ -74,7 +78,7 @@ export async function updateUserProfil(data: {}, action: string) {
     const response = action === 'updateName' 
       ? await api.put('user/profil/', data, config(token))
       : await api.post('user/profil/', data, config(token));
-    return response.data;
+    return { success: true, data: response.data };
   } catch (error: any) {
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
@@ -83,12 +87,16 @@ export async function updateUserProfil(data: {}, action: string) {
         const retryResponse = action === 'updateName'
           ? await api.put('user/profil/', data, config(newToken))
           : await api.post('user/profil/', data, config(newToken));
-        return retryResponse.data;
-      } catch (retryError) {
-        throw retryError;
+        return { success: true, data: retryResponse.data };
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error || "Erreur lors de la mise à jour" };
       }
     }
-    throw error;
+
+    const errorMessage = error.response?.data?.error || 
+                         error.response?.data?.message || 
+                         "Une erreur est survenue";
+    return { error: errorMessage };
   }
 }
 
@@ -104,18 +112,65 @@ export async function confirmNewEmail(data: {}) {
 
   try {
       const response = await api.put('user/confirm-new-email/', data, config(token))
-      return response.data;
+      return { success: true, data: response.data };
   } catch (error: any) {
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
       if (!newToken) return null;
       try {
         const response = await api.put('user/confirm-new-email/', data, config(newToken))
-        return response.data;
-      } catch (retryError) {
-        throw retryError;
+        return { success: true, data: response.data };
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error || "Erreur lors de la mise à jour" };
       }
     }
-    throw error;
+
+    const errorMessage = error.response?.data?.error || 
+                         error.response?.data?.message || 
+                         "Une erreur est survenue";
+    return { error: errorMessage };
   }
 }
+
+
+export async function updatePassword(formData: FormData) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+  if (!token) throw new Error("Non authentifié");
+
+  const config = (t: string) => ({
+    headers: { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' }
+  });
+
+  const data = {
+    currentPassword: formData.get('currentPassword'),
+    newPassword: formData.get('newPassword'),
+  };
+
+  try {
+    const response = await api.put('user/update-password/', data, config(token));
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return { error: "Session expirée" };
+      
+      try {
+        const response = await api.put('user/update-password/', data, config(newToken));
+        return { success: true, data: response.data };
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error || "Erreur lors de la mise à jour" };
+      }
+    }
+
+    const errorMessage = error.response?.data?.error || 
+                         error.response?.data?.message || 
+                         "Une erreur est survenue";
+    return { error: errorMessage };
+  }
+}
+
+
+
+
+
