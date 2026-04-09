@@ -58,3 +58,30 @@ export async function getUserProfil() {
     return null;
   }
 }
+
+
+export async function updateUserProfil(data: {}) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+  if (!token) return null;
+
+  try {
+    const response = await api.put('user/profil/', data, {
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return null;
+      try {
+        const response = await api.put('user/profil/', data, {
+          headers: { Authorization: `Bearer ${newToken}`, 'Content-Type': 'application/json' }
+        });
+        return response.data;
+      } catch { return null; }
+    }
+    console.error('Erreur modification profil:', error);
+    return null;
+  }
+}
