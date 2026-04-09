@@ -1,8 +1,10 @@
 "use client";
 
+import { ROUTES } from "@/constants/routes";
 import { motion } from "framer-motion";
-import { User, Camera, ShieldCheck, Mail, Key, Save, Pencil, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { User, Camera, ShieldCheck, Key, Save, Mail, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 export default function ProfilePage() {
@@ -19,6 +21,11 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [loadingName, setLoadingName] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState(false);
+  
+  const confirmModalRef = useRef<HTMLDialogElement>(null);
+  const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   const role = "Administrateur";
 
@@ -72,7 +79,7 @@ export default function ProfilePage() {
     setLoadingEmail(true)
     setTimeout(()=>{
       try {
-        toast.success("Email mis à jour avec succès");
+        confirmModalRef.current?.showModal();
       } catch (error) {
         toast.error("Erreur lors de la mise à jour de l'email");
       } finally {
@@ -112,6 +119,79 @@ export default function ProfilePage() {
       }
     }, 3000)
   };
+
+  // Handle input change
+  const handleChange = (index: number, value: string) => {
+    // Only allow digits
+    if (!/^\d*$/.test(value)) return;
+
+    const newCode = [...code];
+    newCode[index] = value.slice(-1); // Keep only last character
+    setCode(newCode);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  // Handle backspace
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Backspace" && !code[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  // Handle paste
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text");
+    const pastedCode = pastedData
+      .split("")
+      .filter((char) => /^\d$/.test(char));
+
+    if (pastedCode.length <= 6) {
+      const newCode = [...code];
+      pastedCode.forEach((char, index) => {
+          if (index < 6) {
+              newCode[index] = char;
+          }
+      });
+      setCode(newCode);
+
+      // Focus last input if all filled
+      if (pastedCode.length === 6) {
+        inputRefs.current[5]?.blur();
+      } else if (pastedCode.length > 0) {
+        inputRefs.current[pastedCode.length - 1]?.focus();
+      }
+    }
+  };
+
+  // Check if all fields are filled
+  const isCodeComplete = code.every((digit) => digit !== "");
+
+  const handleConfirm = async() => {
+    if (!isCodeComplete) return;
+
+    setConfirmLoading(true);
+    const codeString = code.join("");
+
+    setTimeout(()=>{
+      try {
+        toast.success("Email mis à jour avec succès");
+        confirmModalRef.current?.close();
+      } catch (error) {
+        toast.error("Erreur lors de la mise à jour de l'email");
+      } finally {
+        setConfirmLoading(false);
+        setCode(["", "", "", "", "", ""])
+      }
+    }, 3000)
+  }
 
   return (
     <motion.div
@@ -308,6 +388,74 @@ export default function ProfilePage() {
           </form>
         </div>
       </motion.div>
+
+      <dialog ref={confirmModalRef} className="modal backdrop-blur">
+        <div className="modal-box">
+          <form method="dialog">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+              ✕
+            </button>
+          </form>
+          <h3 className="font-bold text-lg">Confirmation du nouveau mail</h3>
+          <div
+            // className="flex flex-col gap-4 mt-4"
+          >
+            <div className="card-body">
+
+              {/* Code verification inputs */}
+              <div className="mt-6">
+                <label className="label">
+                  <span className="label-text text-base-content/70">
+                    Code de vérification
+                  </span>
+                </label>
+                <div className="mt-2 flex justify-center gap-3">
+                  {code.map((digit, index) => (
+                    <input
+                      key={index}
+                      ref={(el) => {
+                        inputRefs.current[index] = el;
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleChange(index, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      onPaste={handlePaste}
+                      disabled={confirmLoading}
+                      className={`input input-bordered h-14 w-12 text-center text-lg font-bold transition-all duration-200 ${loading ? "opacity-50 cursor-not-allowed" : ""
+                        } ${digit ? "input-primary" : ""}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Info message about sent email */}
+              <div className="mt-6 rounded-lg border border-info/30 bg-info/5 p-4">
+                <p className="text-sm text-base-content/80">
+                  Un email de confirmation a été envoyé à votre adresse email.
+                  Veuillez vérifier votre boîte de réception et votre dossier
+                  spam.
+                </p>
+              </div>
+
+              {/* Verification button */}
+              <button
+                onClick={handleConfirm}
+                disabled={!isCodeComplete || confirmLoading}
+                className="btn btn-primary btn-block mt-6"
+              >
+                {confirmLoading ? (
+                    <span className="loading loading-spinner loading-sm text-primary"></span>
+                ) : (
+                    "Vérifier le code"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </dialog>
     </motion.div>
   );
 }
