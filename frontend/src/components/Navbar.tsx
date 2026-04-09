@@ -17,25 +17,26 @@ import {
 import { useState } from "react";
 import { useTheme } from "@/hooks/useTheme";
 
+type user = {
+  id: string,
+  photo: string,
+  name: string,
+}
+
 interface NavbarProps {
   sidebarOpen: boolean;
   onSidebarToggle: (open: boolean) => void;
   onLogout: () => void;
   isLoggingOut: boolean;
+  user: user | null;
 }
-
-const user = {
-  name: "Gédéon Gangoué",
-  email: "contact@jihreldev.com",
-  avatar: "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka",
-  role: "Administrateur",
-};
 
 export default function Navbar({
   sidebarOpen,
   onSidebarToggle,
   onLogout,
   isLoggingOut,
+  user,
 }: NavbarProps) {
   const { theme, changeTheme, themes } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -156,7 +157,10 @@ export default function Navbar({
 
         <div className="avatar ml-2">
           <div className="h-8 w-8 rounded-xl overflow-hidden ring-1 ring-primary/30">
-            <img src={user.avatar} alt={user.name} />
+            <img 
+              src={user?.photo ?? 'https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka'} 
+              alt={`${user?.name}${user?.id}`} 
+            />
           </div>
         </div>
       </div>

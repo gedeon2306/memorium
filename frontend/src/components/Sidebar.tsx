@@ -31,6 +31,7 @@ const navLinks = [
 ];
 
 type user = {
+  id: string,
   photo: string, 
   name: string, 
   email: string, 
@@ -110,7 +111,7 @@ export default function Sidebar({
                   <div className="h-10 w-10 rounded-xl ring-1 ring-primary/30 overflow-hidden">
                     <img 
                       src={user?.photo ?? 'https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka'} 
-                      alt={user?.name} 
+                      alt={`${user?.name}${user?.id}`} 
                     />
                   </div>
                 </div>

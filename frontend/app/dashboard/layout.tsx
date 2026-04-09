@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { getUserProfil } from '@/app/actions/actions';
 
 type user = {
+  id: string,
   photo: string, 
   name: string, 
   email: string, 
@@ -72,6 +73,7 @@ export default function DashboardLayout({
           onSidebarToggle={setSidebarOpen}
           onLogout={handleLogout}
           isLoggingOut={isLoggingOut}
+          user={user}
         />
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-7">
