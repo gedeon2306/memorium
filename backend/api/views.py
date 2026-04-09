@@ -683,7 +683,9 @@ def profil(request):
         serializer = UserSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({ "id": request.user.id, "photo": request.user.photo, "name": request.user.name, "email": request.user.email, "role": request.user.role, "dfa": request.user.dfa })
+            return Response({
+                "message": "Données mise à jour avec succès.",
+            }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     if request.method == 'DELETE':
