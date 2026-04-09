@@ -30,18 +30,20 @@ const navLinks = [
   { icon: HelpCircle, label: "Aide", href: ROUTES.DASHBOARD.HELP },
 ];
 
-const user = {
-  name: "Gédéon Gangoué",
-  email: "contact@jihreldev.com",
-  avatar: "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka",
-  role: "Administrateur",
-};
+type user = {
+  id: string,
+  photo: string, 
+  name: string, 
+  email: string, 
+  role: string
+}
 
 interface SidebarProps {
   sidebarOpen: boolean;
   onClose?: () => void;
   onLogout: () => void;
   isLoggingOut: boolean;
+  user: user | null;
 }
 
 export default function Sidebar({
@@ -49,6 +51,7 @@ export default function Sidebar({
   onClose,
   onLogout,
   isLoggingOut,
+  user,
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -106,19 +109,22 @@ export default function Sidebar({
               <div className="flex items-center gap-3">
                 <div className="avatar">
                   <div className="h-10 w-10 rounded-xl ring-1 ring-primary/30 overflow-hidden">
-                    <img src={user.avatar} alt={user.name} />
+                    <img 
+                      src={user?.photo ?? 'https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka'} 
+                      alt={`${user?.name}${user?.id}`} 
+                    />
                   </div>
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium text-white">
-                    {user.name}
+                    {user?.name}
                   </p>
-                  <p className="truncate text-xs text-white/40">{user.email}</p>
+                  <p className="truncate text-xs text-white/40">{user?.email}</p>
                 </div>
               </div>
               <div className="mt-2 flex items-center justify-between">
                 <span className="badge badge-sm badge-outline badge-ghost">
-                  {user.role}
+                  {user?.role}
                 </span>
                 {pathname === ROUTES.DASHBOARD.PROFIL ? (
                   <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />

@@ -2,11 +2,20 @@
 
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 import toast from "react-hot-toast";
+import { getUserProfil } from '@/app/actions/actions';
+
+type user = {
+  id: string,
+  photo: string, 
+  name: string, 
+  email: string, 
+  role: string
+}
 
 export default function DashboardLayout({
   children,
@@ -15,7 +24,16 @@ export default function DashboardLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [user, setUser] = useState<user | null>(null)
   const router = useRouter();
+
+  useEffect(() => {
+    const loadProfil = async () => {
+      const res = await getUserProfil();
+      setUser(res)
+    };
+    loadProfil();
+  }, []);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -45,6 +63,7 @@ export default function DashboardLayout({
         onClose={() => setSidebarOpen(false)}
         onLogout={handleLogout}
         isLoggingOut={isLoggingOut}
+        user={user}
       />
       {/* Main Content */}
       <div className="relative z-10 flex flex-1 flex-col min-w-0 overflow-hidden">
@@ -54,6 +73,7 @@ export default function DashboardLayout({
           onSidebarToggle={setSidebarOpen}
           onLogout={handleLogout}
           isLoggingOut={isLoggingOut}
+          user={user}
         />
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-7">
