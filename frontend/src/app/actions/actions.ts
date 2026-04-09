@@ -36,26 +36,27 @@ async function refreshAccessToken(): Promise<string | null> {
 export async function getUserProfil() {
   const cookieStore = await cookies();
   const token = cookieStore.get('access_token')?.value;
-  if (!token) return null;
+  if (!token) throw new Error("Non authentifié");
+
+  const config = (t: string) => ({
+    headers: { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' }
+  });
 
   try {
-    const response = await api.get('user/profil/', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const response = await api.get('user/profil/', config(token))
     return response.data;
   } catch (error: any) {
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
       if (!newToken) return null;
       try {
-        const response = await api.get('user/profil/', {
-          headers: { Authorization: `Bearer ${newToken}` }
-        });
+        const response = await api.get('user/profil/', config(newToken))
         return response.data;
-      } catch { return null; }
+      } catch (retryError) {
+        throw retryError;
+      }
     }
-    console.error('Erreur profil utilisateur:', error);
-    return null;
+    throw error;
   }
 }
 
@@ -63,32 +64,58 @@ export async function getUserProfil() {
 export async function updateUserProfil(data: {}, action: string) {
   const cookieStore = await cookies();
   const token = cookieStore.get('access_token')?.value;
-  if (!token) return null;
+  if (!token) throw new Error("Non authentifié");
+
+  const config = (t: string) => ({
+    headers: { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' }
+  });
 
   try {
-    if(action == 'updateName'){
-      const response = await api.put('user/profil/', data, {
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
-      });
-      return response.data;
-    } else {
-      const response = await api.post('user/profil/', data, {
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
-      });
-      return response.data;
+    const response = action === 'updateName' 
+      ? await api.put('user/profil/', data, config(token))
+      : await api.post('user/profil/', data, config(token));
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) throw error;
+      try {
+        const retryResponse = action === 'updateName'
+          ? await api.put('user/profil/', data, config(newToken))
+          : await api.post('user/profil/', data, config(newToken));
+        return retryResponse.data;
+      } catch (retryError) {
+        throw retryError;
+      }
     }
+    throw error;
+  }
+}
+
+
+export async function confirmNewEmail(data: {}) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+  if (!token) throw new Error("Non authentifié");
+
+  const config = (t: string) => ({
+    headers: { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' }
+  });
+
+  try {
+      const response = await api.put('user/confirm-new-email/', data, config(token))
+      return response.data;
   } catch (error: any) {
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
       if (!newToken) return null;
       try {
-        const response = await api.put('user/profil/', data, {
-          headers: { Authorization: `Bearer ${newToken}`, 'Content-Type': 'application/json' }
-        });
+        const response = await api.put('user/confirm-new-email/', data, config(newToken))
         return response.data;
-      } catch { return null; }
+      } catch (retryError) {
+        throw retryError;
+      }
     }
-    console.error('Erreur modification profil:', error);
-    return null;
+    throw error;
   }
 }
