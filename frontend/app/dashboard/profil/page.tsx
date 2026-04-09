@@ -1,6 +1,6 @@
 "use client";
 
-import { confirmNewEmail, getUserProfil, updateUserProfil } from "@/app/actions/actions";
+import { confirmNewEmail, getUserProfil, updatePassword, updateUserProfil } from "@/app/actions/actions";
 import { ROUTES } from "@/constants/routes";
 import { motion } from "framer-motion";
 import { User, Camera, ShieldCheck, Key, Save, Mail, Pencil, Trash2 } from "lucide-react";
@@ -77,10 +77,14 @@ export default function ProfilPage() {
     setLoadingName(true)
     try {
       const result = await updateUserProfil(data, action);
-      toast.success(result.message);
+      if (result.error) {
+        toast.error(result.error);
+        return
+      } else {
+        toast.success(result.data?.message || "Nom mis à jour !");
+      }
     } catch (error: any) {
-      const backendMessage = error.response?.data?.error || "Erreur lors de la mise à jour";
-      toast.error(backendMessage);
+      toast.error("Erreur de connexion au serveur");
     } finally {
       setIsEditingName(false);
       setLoadingName(false)
@@ -101,11 +105,14 @@ export default function ProfilPage() {
     
     setLoadingEmail(true)
     try {
-      await updateUserProfil(data, action);
+      const result = await updateUserProfil(data, action);
+      if (result.error) {
+        toast.error(result.error);
+        return
+      }
       confirmModalRef.current?.showModal();
     } catch (error: any) {
-      const backendMessage = error.response?.data?.error || "Erreur lors de la mise à jour";
-      toast.error(backendMessage);
+      toast.error("Erreur de connexion au serveur");
     } finally {
       setIsEditingEmail(false);
       setLoadingEmail(false)
@@ -119,6 +126,10 @@ export default function ProfilPage() {
       toast.error("Tous les champs sont obligatoires");
       return;
     }
+    if (currentPassword == newPassword) {
+      toast.error("Le nouveau mot de passe ne doit etre different du mot de passe actuel");
+      return;
+    }
     if (newPassword !== confirmPassword) {
       toast.error("Les nouveaux mots de passe ne correspondent pas");
       return;
@@ -129,18 +140,24 @@ export default function ProfilPage() {
     }
 
     setLoading(true);
-    setTimeout(()=>{
-      try {
-        toast.success("Mot de passe modifié avec succès");
-        // setCurrentPassword("");
-        // setNewPassword("");
-        // setConfirmPassword("");
-      } catch (error) {
-        toast.error("Erreur lors du changement de mot de passe");
-      } finally {
-        setLoading(false);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const result = await updatePassword(formData);
+
+      if (result.error) {
+        toast.error(result.error);
+        return
+      } else {
+        toast.success(result.data?.message || "Mot de passe mis à jour !");
       }
-    }, 3000)
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      toast.error("Erreur de connexion au serveur");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (index: number, value: string) => {
@@ -206,11 +223,15 @@ export default function ProfilPage() {
 
     try {
       const result = await confirmNewEmail(data);
-      toast.success(result.message);
+      if (result?.error) {
+        toast.error(result.error);
+        return
+      } else {
+        toast.success(result?.data?.message || "Email mis à jour !");
+      }
       confirmModalRef.current?.close();
     } catch (error: any) {
-      const backendMessage = error.response?.data?.error || "Erreur lors de la mise à jour";
-      toast.error(backendMessage);
+      toast.error("Erreur de connexion au serveur");
     } finally {
       setConfirmLoading(false);
       setCode(["", "", "", "", "", ""])
@@ -365,7 +386,7 @@ export default function ProfilPage() {
               <input
                 className="input input-bordered focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full bg-transparent"
                 type="password"
-                name="password"
+                name="currentPassword"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="••••••••"
@@ -393,7 +414,7 @@ export default function ProfilPage() {
               <input
                 className="input input-bordered focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full bg-transparent"
                 type="password"
-                name="confirmePassword"
+                name="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
