@@ -60,16 +60,23 @@ export async function getUserProfil() {
 }
 
 
-export async function updateUserProfil(data: {}) {
+export async function updateUserProfil(data: {}, action: string) {
   const cookieStore = await cookies();
   const token = cookieStore.get('access_token')?.value;
   if (!token) return null;
 
   try {
-    const response = await api.put('user/profil/', data, {
+    if(action == 'updateName'){
+      const response = await api.put('user/profil/', data, {
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
-    });
-    return response.data;
+      });
+      return response.data;
+    } else {
+      const response = await api.post('user/profil/', data, {
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+      });
+      return response.data;
+    }
   } catch (error: any) {
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();

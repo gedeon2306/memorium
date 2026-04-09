@@ -72,11 +72,12 @@ export default function ProfilPage() {
       name : name,
     }
 
+    const action = "updateName"
+
     setLoadingName(true)
     try {
-      const result = await updateUserProfil(data);
-      console.log(result)
-      toast.success("Nom mis à jour avec succès");
+      const result = await updateUserProfil(data, action);
+      toast.success(result.message);
     } catch (error) {
       toast.error("Erreur lors de la mise à jour du nom");
     } finally {
@@ -94,10 +95,12 @@ export default function ProfilPage() {
     const data = {
       email : email,
     }
+
+    const action = "updateEmail"
     
     setLoadingEmail(true)
     try {
-      const result = await updateUserProfil(data);
+      const result = await updateUserProfil(data, action);
       confirmModalRef.current?.showModal();
     } catch (error) {
       toast.error("Erreur lors de la mise à jour de l'email");
