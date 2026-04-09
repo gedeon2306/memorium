@@ -1,6 +1,6 @@
 "use client";
 
-import { getUserProfil, updateUserProfil } from "@/app/actions/actions";
+import { confirmNewEmail, getUserProfil, updateUserProfil } from "@/app/actions/actions";
 import { ROUTES } from "@/constants/routes";
 import { motion } from "framer-motion";
 import { User, Camera, ShieldCheck, Key, Save, Mail, Pencil, Trash2 } from "lucide-react";
@@ -78,8 +78,9 @@ export default function ProfilPage() {
     try {
       const result = await updateUserProfil(data, action);
       toast.success(result.message);
-    } catch (error) {
-      toast.error("Erreur lors de la mise à jour du nom");
+    } catch (error: any) {
+      const backendMessage = error.response?.data?.error || "Erreur lors de la mise à jour";
+      toast.error(backendMessage);
     } finally {
       setIsEditingName(false);
       setLoadingName(false)
@@ -100,10 +101,11 @@ export default function ProfilPage() {
     
     setLoadingEmail(true)
     try {
-      const result = await updateUserProfil(data, action);
+      await updateUserProfil(data, action);
       confirmModalRef.current?.showModal();
-    } catch (error) {
-      toast.error("Erreur lors de la mise à jour de l'email");
+    } catch (error: any) {
+      const backendMessage = error.response?.data?.error || "Erreur lors de la mise à jour";
+      toast.error(backendMessage);
     } finally {
       setIsEditingEmail(false);
       setLoadingEmail(false)
@@ -197,17 +199,22 @@ export default function ProfilPage() {
     setConfirmLoading(true);
     const codeString = code.join("");
 
-    setTimeout(()=>{
-      try {
-        toast.success("Email mis à jour avec succès");
-        confirmModalRef.current?.close();
-      } catch (error) {
-        toast.error("Erreur lors de la mise à jour de l'email");
-      } finally {
-        setConfirmLoading(false);
-        setCode(["", "", "", "", "", ""])
-      }
-    }, 3000)
+    const data = {
+      email: email,
+      code: codeString,
+    }
+
+    try {
+      const result = await confirmNewEmail(data);
+      toast.success(result.message);
+      confirmModalRef.current?.close();
+    } catch (error: any) {
+      const backendMessage = error.response?.data?.error || "Erreur lors de la mise à jour";
+      toast.error(backendMessage);
+    } finally {
+      setConfirmLoading(false);
+      setCode(["", "", "", "", "", ""])
+    }
   }
 
   return (
