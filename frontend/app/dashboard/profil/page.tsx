@@ -39,14 +39,19 @@ export default function ProfilPage() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
-  useEffect(() => {
-    const loadProfil = async () => {
+  const loadProfil = async () => {
+    try {
       const res = await getUserProfil();
       setName(res.name)
       setEmail(res.email)
       setRole(res.role)
       setUserImage(res.photo ?? "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka")
-    };
+    } catch (err) {
+      toast.error("Erreur lors du chargement");
+    }
+  };
+
+  useEffect(() => {
     loadProfil();
   }, []);
 
