@@ -75,7 +75,7 @@ export async function updateUserProfil(data: {}, action: string) {
   });
 
   try {
-    const response = action === 'updateName' 
+    const response = action === 'updatePut' 
       ? await api.put('user/profil/', data, config(token))
       : await api.post('user/profil/', data, config(token));
     return { success: true, data: response.data };
@@ -84,7 +84,7 @@ export async function updateUserProfil(data: {}, action: string) {
       const newToken = await refreshAccessToken();
       if (!newToken) throw error;
       try {
-        const retryResponse = action === 'updateName'
+        const retryResponse = action === 'updatePut'
           ? await api.put('user/profil/', data, config(newToken))
           : await api.post('user/profil/', data, config(newToken));
         return { success: true, data: retryResponse.data };

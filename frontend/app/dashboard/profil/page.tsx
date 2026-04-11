@@ -72,7 +72,7 @@ export default function ProfilPage() {
       name : name,
     }
 
-    const action = "updateName"
+    const action = "updatePut"
 
     setLoadingName(true)
     try {
@@ -101,7 +101,7 @@ export default function ProfilPage() {
       email : email,
     }
 
-    const action = "updateEmail"
+    const action = "updatePost"
     
     setLoadingEmail(true)
     try {

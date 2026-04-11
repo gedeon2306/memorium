@@ -1,13 +1,53 @@
 "use client";
 
+import { getUserProfil, updateUserProfil } from "@/app/actions/actions";
 import { motion } from "framer-motion";
 import { Settings, Shield, Bell, Palette, LogOut, Trash2, AlertTriangle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 export default function SettingsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [dfa, setDfa] = useState(true)
+  const [loading, setLoading] = useState(true)
+
+  const loadProfil = async () => {
+    setLoading(true);
+    try {
+      const res = await getUserProfil();
+      setDfa(res.dfa);
+    } catch (err) {
+      toast.error("Erreur lors du chargement");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProfil();
+  }, []);
+
+  const handleChangeDfa = async () => {
+    const newValue = !dfa;
+    const data = { dfa: newValue };
+    const action = "updatePut";
+
+    setLoading(true);
+    try {
+      const result = await updateUserProfil(data, action);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(result.data?.message || "Mise à jour réussie !");
+        setDfa(newValue); 
+      }
+    } catch (error) {
+      toast.error("Erreur de connexion au serveur");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmation !== "SUPPRIMER MON COMPTE") {
@@ -67,7 +107,13 @@ export default function SettingsPage() {
                 <p className="text-white font-semibold">Authentification à deux facteurs</p>
                 <p className="text-sm text-neutral-400">Activée</p>
               </div>
-              <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+              <input 
+                type="checkbox" 
+                className="toggle toggle-primary" 
+                checked={dfa}
+                disabled={loading}
+                onChange={handleChangeDfa}
+              />
             </div>
           </div>
         </div>
