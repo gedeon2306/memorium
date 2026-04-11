@@ -45,7 +45,9 @@ export default function ProfilPage() {
       setName(res.name)
       setEmail(res.email)
       setRole(res.role)
-      setUserImage(res.photo ? res.photo : "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka")
+      if(res.photo){
+        setUserImage(res.photo)
+      }
     } catch (err) {
       toast.error("Erreur lors du chargement");
     }
@@ -107,7 +109,7 @@ export default function ProfilPage() {
     }
 
     const data = {
-      photo : "",
+      photo : null,
     }
 
     const action = "updatePut"
@@ -120,6 +122,7 @@ export default function ProfilPage() {
         return
       } else {
         toast.success("Photo de profil supprimé !");
+        setUserImage("https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka")
         await loadProfil();
       }
     } catch (error: any) {
