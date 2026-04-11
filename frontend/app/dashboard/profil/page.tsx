@@ -8,8 +8,8 @@ import toast from "react-hot-toast";
 
 export default function ProfilPage() {
   const [userImage, setUserImage] = useState<string>("https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka");
-  const [name, setName] = useState("Gédéon Gangoué");
-  const [email, setEmail] = useState("contact@jihreldev.com");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
