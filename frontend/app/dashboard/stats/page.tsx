@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { BookOpen } from "lucide-react";
+import { BookOpen, ChartSpline } from "lucide-react";
 
 export default function DefuntsPage() {
   return (
@@ -12,7 +12,10 @@ export default function DefuntsPage() {
       className="space-y-6"
     >
       <div>
-        <h1 className="text-3xl font-bold text-white">Statistiques</h1>
+        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+          <ChartSpline className="w-8 h-8" />
+          Statistiques
+        </h1>
         <p className="mt-2 text-base text-neutral-400">
           Gérez et consultez vos souvenirs enregistrés.
         </p>

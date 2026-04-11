@@ -12,7 +12,10 @@ export default function HelpPage() {
       className="space-y-6"
     >
       <div>
-        <h1 className="text-3xl font-bold text-white">Aide</h1>
+        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+          <HelpCircle className="w-8 h-8" />
+          Aide
+        </h1>
         <p className="mt-2 text-base text-neutral-400">
           Trouvez de l'aide et des ressources pour utiliser Memorium.
         </p>

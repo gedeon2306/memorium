@@ -4,7 +4,7 @@ import { deleteUserProfil, getUserProfil, updateUserProfil } from "@/app/actions
 import { ROUTES } from "@/constants/routes";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { Settings, Shield, Bell, Palette, LogOut, Trash2, AlertTriangle } from "lucide-react";
+import { Settings, Shield, Bell, Trash2, AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import toast from "react-hot-toast";

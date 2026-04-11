@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Archive } from "lucide-react";
+import { Archive, ContactRound } from "lucide-react";
 
 export default function FamillesPage() {
   return (
@@ -12,7 +12,10 @@ export default function FamillesPage() {
       className="space-y-6"
     >
       <div>
-        <h1 className="text-3xl font-bold text-white">Familles</h1>
+        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+          <ContactRound className="w-8 h-8" />
+          Familles
+        </h1>
         <p className="mt-2 text-base text-neutral-400">
           Consultez vos archives et éléments archivés.
         </p>
