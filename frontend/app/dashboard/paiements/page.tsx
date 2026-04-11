@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { CreditCard, Star } from "lucide-react";
 
 export default function PaiementsPage() {
   return (
@@ -12,7 +12,10 @@ export default function PaiementsPage() {
       className="space-y-6"
     >
       <div>
-        <h1 className="text-3xl font-bold text-white">Paiements</h1>
+        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+          <CreditCard className="w-8 h-8" />
+          Paiements
+        </h1>
         <p className="mt-2 text-base text-neutral-400">
           Accédez à vos mémoires favoris.
         </p>

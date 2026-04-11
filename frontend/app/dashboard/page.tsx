@@ -14,6 +14,7 @@ import {
   Cuboid,
   User,
   PackageOpen,
+  LayoutDashboard,
 } from "lucide-react";
 
 const cards = [
@@ -74,7 +75,10 @@ export default function DashboardPage() {
       {/* Header row */}
       <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-white">Tableau de bord</h1>
+          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <LayoutDashboard className="w-8 h-8" />
+            Tableau de bord
+          </h1>
           <p className="mt-2 text-base text-neutral-400">
             Bienvenue, {user.name.split(" ")[0]} — voici votre vue d'ensemble.
           </p>
