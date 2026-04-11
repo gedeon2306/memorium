@@ -20,6 +20,7 @@ export default function ProfilPage() {
   const [loading, setLoading] = useState(false);
   const [loadingName, setLoadingName] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState(false);
+  const [loadingImage, setLoadingImage] = useState(false);
   
   const confirmModalRef = useRef<HTMLDialogElement>(null);
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
@@ -43,7 +44,7 @@ export default function ProfilPage() {
       setName(res.name)
       setEmail(res.email)
       setRole(res.role)
-      setUserImage(res.photo ?? "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka")
+      setUserImage(res.photo ? res.photo : "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka")
     } catch (err) {
       toast.error("Erreur lors du chargement");
     }
@@ -54,6 +55,10 @@ export default function ProfilPage() {
   }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if(loadingImage){
+      return
+    }
+
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -72,6 +77,11 @@ export default function ProfilPage() {
   };
 
   const uploadPhotoToBackend = async (file: File) => {
+    if(loadingImage){
+      return
+    }
+
+    setLoadingImage(true)
     try {
       const result = await uploadProfilPhoto(file);
 
@@ -85,8 +95,38 @@ export default function ProfilPage() {
     } catch (error: any) {
       console.error("Erreur upload:", error);
       toast.error("Erreur de connexion au serveur");
+    } finally {
+      setLoadingImage(false)
     }
   };
+
+  const handleDeleteImageProfil = async() => {
+    if(loadingImage){
+      return
+    }
+
+    const data = {
+      photo : "",
+    }
+
+    const action = "updatePut"
+
+    setLoadingImage(true)
+    try {
+      const result = await updateUserProfil(data, action);
+      if (result.error) {
+        toast.error("Erreur lors de la suppression de l'image");
+        return
+      } else {
+        toast.success("Photo de profil supprimé !");
+        await loadProfil();
+      }
+    } catch (error: any) {
+      toast.error("Erreur de connexion au serveur");
+    } finally {
+      setLoadingImage(false);
+    }
+  }
 
   const handleSaveName = async() => {
     if (!name.trim()) {
@@ -296,15 +336,15 @@ export default function ProfilPage() {
           {/* Bouton supprimer photo */}
           <button 
             disabled={userImage == "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka"}
-            onClick={() => {if(userImage != "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka") setUserImage("https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka")} }
+            onClick={handleDeleteImageProfil}
             className="btn btn-secondary absolute top-1 left-0 w-9 h-9 rounded-full flex items-center p-0 justify-center"
           >
-            <Trash2 className="w-4 h-4 text-white" />
+            {loadingImage ? <span className="loading loading-spinner w-4 h-4 text-white"></span> : <Trash2 className="w-4 h-4 text-white" />}
           </button>
 
           {/* Bouton modifier photo */}
-          <label className="absolute bottom-2 right-0 w-9 h-9 bg-primary transition-colors rounded-full flex items-center justify-center cursor-pointer shadow-lg">
-            <Camera className="w-4 h-4 text-white" />
+          <label className="absolute bottom-2 right-0 w-9 h-9 bg-primary transition-colors rounded-full flex items-center justify-center cursor-pointer shadow-lg"> 
+            {loadingImage ? <span className="loading loading-spinner w-4 h-4 text-white"></span> : <Camera className="w-4 h-4 text-white" />}
             <input
               type="file"
               accept="image/*"
