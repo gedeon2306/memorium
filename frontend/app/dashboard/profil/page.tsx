@@ -2,14 +2,14 @@
 
 import { confirmNewEmail, getUserProfil, updatePassword, updateUserProfil, uploadProfilPhoto } from "@/app/actions/actions";
 import { motion } from "framer-motion";
-import { User, Camera, ShieldCheck, Key, Save, Mail, Pencil, Trash2 } from "lucide-react";
+import { User, Camera, ShieldCheck, Key, Save, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 export default function ProfilPage() {
   const [userImage, setUserImage] = useState<string>("https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka");
-  const [name, setName] = useState("Gédéon Gangoué");
-  const [email, setEmail] = useState("contact@jihreldev.com");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -20,7 +20,8 @@ export default function ProfilPage() {
   const [loading, setLoading] = useState(false);
   const [loadingName, setLoadingName] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState(false);
-  const [loadingImage, setLoadingImage] = useState(false);
+  const [loadingChangeImage, setLoadingChangeImage] = useState(false);
+  const [loadingDeleteImage, setLoadingDeleteImage] = useState(false);
   
   const confirmModalRef = useRef<HTMLDialogElement>(null);
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
@@ -55,7 +56,7 @@ export default function ProfilPage() {
   }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if(loadingImage){
+    if(loadingChangeImage || loadingDeleteImage){
       return
     }
 
@@ -77,11 +78,11 @@ export default function ProfilPage() {
   };
 
   const uploadPhotoToBackend = async (file: File) => {
-    if(loadingImage){
+    if(loadingChangeImage || loadingDeleteImage){
       return
     }
 
-    setLoadingImage(true)
+    setLoadingChangeImage(true)
     try {
       const result = await uploadProfilPhoto(file);
 
@@ -96,12 +97,12 @@ export default function ProfilPage() {
       console.error("Erreur upload:", error);
       toast.error("Erreur de connexion au serveur");
     } finally {
-      setLoadingImage(false)
+      setLoadingChangeImage(false)
     }
   };
 
   const handleDeleteImageProfil = async() => {
-    if(loadingImage){
+    if(loadingChangeImage || loadingDeleteImage){
       return
     }
 
@@ -111,7 +112,7 @@ export default function ProfilPage() {
 
     const action = "updatePut"
 
-    setLoadingImage(true)
+    setLoadingDeleteImage(true)
     try {
       const result = await updateUserProfil(data, action);
       if (result.error) {
@@ -124,7 +125,7 @@ export default function ProfilPage() {
     } catch (error: any) {
       toast.error("Erreur de connexion au serveur");
     } finally {
-      setLoadingImage(false);
+      setLoadingDeleteImage(false);
     }
   }
 
@@ -339,12 +340,12 @@ export default function ProfilPage() {
             onClick={handleDeleteImageProfil}
             className="btn btn-secondary absolute top-1 left-0 w-9 h-9 rounded-full flex items-center p-0 justify-center"
           >
-            {loadingImage ? <span className="loading loading-spinner w-4 h-4 text-white"></span> : <Trash2 className="w-4 h-4 text-white" />}
+            {loadingDeleteImage ? <span className="loading loading-spinner w-4 h-4 text-white"></span> : <Trash2 className="w-4 h-4 text-white" />}
           </button>
 
           {/* Bouton modifier photo */}
           <label className="absolute bottom-2 right-0 w-9 h-9 bg-primary transition-colors rounded-full flex items-center justify-center cursor-pointer shadow-lg"> 
-            {loadingImage ? <span className="loading loading-spinner w-4 h-4 text-white"></span> : <Camera className="w-4 h-4 text-white" />}
+            {loadingChangeImage ? <span className="loading loading-spinner w-4 h-4 text-white"></span> : <Camera className="w-4 h-4 text-white" />}
             <input
               type="file"
               accept="image/*"
