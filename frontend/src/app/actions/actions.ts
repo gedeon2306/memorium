@@ -210,5 +210,38 @@ export async function deleteUserProfil() {
 }
 
 
+export async function uploadProfilPhoto(file: File) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+  if (!token) throw new Error("Non authentifié");
+
+  const config = (t: string) => ({
+    headers: { Authorization: `Bearer ${t}` }
+  });
+
+  const formData = new FormData();
+  formData.append("photo", file);
+
+  try {
+    const response = await api.post('user/upload-photo/', formData, config(token));
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) throw error;
+      try {
+        const retryResponse = await api.post('user/upload-photo/', formData, config(newToken));
+        return { success: true, data: retryResponse.data };
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error || "Erreur lors de l'upload" };
+      }
+    }
+
+    const errorMessage = error.response?.data?.error || 
+                         error.response?.data?.message || 
+                         "Erreur lors de l'upload";
+    return { error: errorMessage };
+  }
+}
 
 

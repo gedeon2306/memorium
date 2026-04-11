@@ -1,10 +1,8 @@
 "use client";
 
-import { confirmNewEmail, getUserProfil, updatePassword, updateUserProfil } from "@/app/actions/actions";
-import { ROUTES } from "@/constants/routes";
+import { confirmNewEmail, getUserProfil, updatePassword, updateUserProfil, uploadProfilPhoto } from "@/app/actions/actions";
 import { motion } from "framer-motion";
 import { User, Camera, ShieldCheck, Key, Save, Mail, Pencil, Trash2 } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -58,12 +56,35 @@ export default function ProfilPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("La photo doit faire moins de 5MB");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (event) => {
         setUserImage(event.target?.result as string);
-        toast.success("Photo de profil mise à jour");
       };
       reader.readAsDataURL(file);
+
+      uploadPhotoToBackend(file);
+    }
+  };
+
+  const uploadPhotoToBackend = async (file: File) => {
+    try {
+      const result = await uploadProfilPhoto(file);
+
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success("Photo de profil mise à jour");
+      await loadProfil();
+    } catch (error: any) {
+      console.error("Erreur upload:", error);
+      toast.error("Erreur de connexion au serveur");
     }
   };
 
