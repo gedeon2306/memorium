@@ -13,6 +13,7 @@ from .views import (
     profil,
     confirm_new_email,
     update_password,
+    upload_profil_photo,
 )
 
 urlpatterns = [
@@ -49,4 +50,7 @@ urlpatterns = [
     
     # Mise à jour du mot de passe
     path('user/update-password/', update_password, name='update_password'),
+    
+    # Upload de la photo de profil
+    path('user/upload-photo/', upload_profil_photo, name='upload_profil_photo'),
 ]

@@ -110,7 +110,7 @@ export default function Sidebar({
                 <div className="avatar">
                   <div className="h-10 w-10 rounded-xl ring-1 ring-primary/30 overflow-hidden">
                     <img 
-                      src={user?.photo ?? 'https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka'} 
+                      src={user?.photo ? user?.photo : "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka"} 
                       alt={`${user?.name}${user?.id}`} 
                     />
                   </div>

@@ -75,7 +75,7 @@ export async function updateUserProfil(data: {}, action: string) {
   });
 
   try {
-    const response = action === 'updateName' 
+    const response = action === 'updatePut' 
       ? await api.put('user/profil/', data, config(token))
       : await api.post('user/profil/', data, config(token));
     return { success: true, data: response.data };
@@ -84,7 +84,7 @@ export async function updateUserProfil(data: {}, action: string) {
       const newToken = await refreshAccessToken();
       if (!newToken) throw error;
       try {
-        const retryResponse = action === 'updateName'
+        const retryResponse = action === 'updatePut'
           ? await api.put('user/profil/', data, config(newToken))
           : await api.post('user/profil/', data, config(newToken));
         return { success: true, data: retryResponse.data };
@@ -171,6 +171,77 @@ export async function updatePassword(formData: FormData) {
 }
 
 
+export async function deleteUserProfil() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+  if (!token) throw new Error("Non authentifié");
 
+  const config = (t: string) => ({
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${t}`}
+  });
+
+  const baseURL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+  const url = `${baseURL}api/user/profil/`;
+
+  try {
+    const response = await fetch(url, config(token));
+
+    if (response.status === 204 || response.status === 200) {
+      return true;
+    }
+
+    if (response.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return false;
+
+      const retryResponse = await fetch(url, config(newToken));
+
+      return retryResponse.status === 204 || retryResponse.status === 200;
+    }
+
+    console.error('Erreur suppression, status:', response.status);
+    return false;
+
+  } catch (error) {
+    console.error('Erreur suppression compte:', error);
+    return false;
+  }
+}
+
+
+export async function uploadProfilPhoto(file: File) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+  if (!token) throw new Error("Non authentifié");
+
+  const config = (t: string) => ({
+    headers: { Authorization: `Bearer ${t}` }
+  });
+
+  const formData = new FormData();
+  formData.append("photo", file);
+
+  try {
+    const response = await api.post('user/upload-photo/', formData, config(token));
+    return { success: true, data: response.data };
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) throw error;
+      try {
+        const retryResponse = await api.post('user/upload-photo/', formData, config(newToken));
+        return { success: true, data: retryResponse.data };
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error || "Erreur lors de l'upload" };
+      }
+    }
+
+    const errorMessage = error.response?.data?.error || 
+                         error.response?.data?.message || 
+                         "Erreur lors de l'upload";
+    return { error: errorMessage };
+  }
+}
 
 

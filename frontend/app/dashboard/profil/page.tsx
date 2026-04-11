@@ -1,10 +1,8 @@
 "use client";
 
-import { confirmNewEmail, getUserProfil, updatePassword, updateUserProfil } from "@/app/actions/actions";
-import { ROUTES } from "@/constants/routes";
+import { confirmNewEmail, getUserProfil, updatePassword, updateUserProfil, uploadProfilPhoto } from "@/app/actions/actions";
 import { motion } from "framer-motion";
 import { User, Camera, ShieldCheck, Key, Save, Mail, Pencil, Trash2 } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -22,6 +20,7 @@ export default function ProfilPage() {
   const [loading, setLoading] = useState(false);
   const [loadingName, setLoadingName] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState(false);
+  const [loadingImage, setLoadingImage] = useState(false);
   
   const confirmModalRef = useRef<HTMLDialogElement>(null);
   const [code, setCode] = useState<string[]>(["", "", "", "", "", ""]);
@@ -39,28 +38,95 @@ export default function ProfilPage() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
-  useEffect(() => {
-    const loadProfil = async () => {
+  const loadProfil = async () => {
+    try {
       const res = await getUserProfil();
       setName(res.name)
       setEmail(res.email)
       setRole(res.role)
-      setUserImage(res.photo ?? "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka")
-    };
+      setUserImage(res.photo ? res.photo : "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka")
+    } catch (err) {
+      toast.error("Erreur lors du chargement");
+    }
+  };
+
+  useEffect(() => {
     loadProfil();
   }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if(loadingImage){
+      return
+    }
+
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("La photo doit faire moins de 5MB");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (event) => {
         setUserImage(event.target?.result as string);
-        toast.success("Photo de profil mise à jour");
       };
       reader.readAsDataURL(file);
+
+      uploadPhotoToBackend(file);
     }
   };
+
+  const uploadPhotoToBackend = async (file: File) => {
+    if(loadingImage){
+      return
+    }
+
+    setLoadingImage(true)
+    try {
+      const result = await uploadProfilPhoto(file);
+
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success("Photo de profil mise à jour");
+      await loadProfil();
+    } catch (error: any) {
+      console.error("Erreur upload:", error);
+      toast.error("Erreur de connexion au serveur");
+    } finally {
+      setLoadingImage(false)
+    }
+  };
+
+  const handleDeleteImageProfil = async() => {
+    if(loadingImage){
+      return
+    }
+
+    const data = {
+      photo : "",
+    }
+
+    const action = "updatePut"
+
+    setLoadingImage(true)
+    try {
+      const result = await updateUserProfil(data, action);
+      if (result.error) {
+        toast.error("Erreur lors de la suppression de l'image");
+        return
+      } else {
+        toast.success("Photo de profil supprimé !");
+        await loadProfil();
+      }
+    } catch (error: any) {
+      toast.error("Erreur de connexion au serveur");
+    } finally {
+      setLoadingImage(false);
+    }
+  }
 
   const handleSaveName = async() => {
     if (!name.trim()) {
@@ -72,7 +138,7 @@ export default function ProfilPage() {
       name : name,
     }
 
-    const action = "updateName"
+    const action = "updatePut"
 
     setLoadingName(true)
     try {
@@ -101,7 +167,7 @@ export default function ProfilPage() {
       email : email,
     }
 
-    const action = "updateEmail"
+    const action = "updatePost"
     
     setLoadingEmail(true)
     try {
@@ -270,15 +336,15 @@ export default function ProfilPage() {
           {/* Bouton supprimer photo */}
           <button 
             disabled={userImage == "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka"}
-            onClick={() => {if(userImage != "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka") setUserImage("https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka")} }
+            onClick={handleDeleteImageProfil}
             className="btn btn-secondary absolute top-1 left-0 w-9 h-9 rounded-full flex items-center p-0 justify-center"
           >
-            <Trash2 className="w-4 h-4 text-white" />
+            {loadingImage ? <span className="loading loading-spinner w-4 h-4 text-white"></span> : <Trash2 className="w-4 h-4 text-white" />}
           </button>
 
           {/* Bouton modifier photo */}
-          <label className="absolute bottom-2 right-0 w-9 h-9 bg-primary transition-colors rounded-full flex items-center justify-center cursor-pointer shadow-lg">
-            <Camera className="w-4 h-4 text-white" />
+          <label className="absolute bottom-2 right-0 w-9 h-9 bg-primary transition-colors rounded-full flex items-center justify-center cursor-pointer shadow-lg"> 
+            {loadingImage ? <span className="loading loading-spinner w-4 h-4 text-white"></span> : <Camera className="w-4 h-4 text-white" />}
             <input
               type="file"
               accept="image/*"

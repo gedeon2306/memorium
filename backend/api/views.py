@@ -1,4 +1,7 @@
 import random
+import base64
+import io
+from io import BytesIO
 
 from django.shortcuts import render, redirect
 from django.conf import settings
@@ -20,6 +23,8 @@ from drf_spectacular.types import OpenApiTypes
 
 from rest_framework import serializers as drf_serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+from PIL import Image
 
 from .models import User, Famille, Defunt, Paiement
 from .serializers import UserSerializer, FamilleSerializer, DefuntSerializer, PaiementSerializer
@@ -796,6 +801,133 @@ def update_password(request):
     )
 
 
+def process_and_save_image(image_file, max_size_mb=5, output_size=(400, 400)):
+    """
+    Traite une image : valide, redimensionne et convertit en base64.
+    
+    Args:
+        image_file: Fichier image du request
+        max_size_mb: Taille maximale en MB (défaut 5)
+        output_size: Tuple (width, height) pour le redimensionnement
+        
+    Returns:
+        Dict avec {'success': bool, 'data': str ou 'error': str}
+    """
+    try:
+        # Vérifier la taille du fichier
+        file_size_mb = image_file.size / (1024 * 1024)
+        if file_size_mb > max_size_mb:
+            return {
+                'success': False,
+                'error': f'Fichier trop volumineux. Maximum {max_size_mb}MB, vous avez {file_size_mb:.2f}MB.'
+            }
+        
+        # Valider que c'est une image
+        try:
+            img = Image.open(image_file)
+            img.verify()
+            # Réouvrir l'image après verify (qui la ferme)
+            image_file.seek(0)
+            img = Image.open(image_file)
+        except Exception as e:
+            return {
+                'success': False,
+                'error': 'Le fichier n\'est pas une image valide.'
+            }
+        
+        # Convertir en RGB si nécessaire (pour les PNG avec transparence, etc.)
+        if img.mode in ('RGBA', 'LA', 'P'):
+            # Créer une image blanche comme fond
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            img = background
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        # Redimensionner l'image (maintenir l'aspect ratio)
+        img.thumbnail(output_size, Image.Resampling.LANCZOS)
+        
+        # Optionnel : compresser l'image JPEG
+        output = BytesIO()
+        img.save(output, format='JPEG', quality=85, optimize=True)
+        output.seek(0)
+        
+        # Convertir en base64 avec le préfixe data URI
+        image_data = base64.b64encode(output.getvalue()).decode('utf-8')
+        data_uri = f'data:image/jpeg;base64,{image_data}'
+        
+        return {
+            'success': True,
+            'data': data_uri
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'Erreur lors du traitement de l\'image : {str(e)}'
+        }
+
+
+@extend_schema(
+    tags=["Profil"],
+    summary="Uploader une photo de profil",
+    description="Upload et traite une photo de profil. L'image est redimensionnée, compressée et stockée en base64.",
+    request=inline_serializer(
+        name="UploadPhotoRequest",
+        fields={
+            "photo": drf_serializers.FileField(),
+        }
+    ),
+    responses={
+        200: inline_serializer(
+            name="UploadPhotoSuccess",
+            fields={"message": drf_serializers.CharField()}
+        ),
+        400: inline_serializer(
+            name="UploadPhotoError",
+            fields={"error": drf_serializers.CharField()}
+        ),
+    },
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_profil_photo(request):
+    """
+    Endpoint pour uploader la photo de profil.
+    Reçoit une image, la traite et l'enregistre.
+    """
+    if 'photo' not in request.FILES:
+        return Response(
+            {"error": "Aucun fichier image fourni. Utilisez la clé 'photo'."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    image_file = request.FILES['photo']
+    
+    # Traiter l'image
+    result = process_and_save_image(image_file)
+    
+    if not result['success']:
+        return Response(
+            {"error": result['error']},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Enregistrer dans la base de données
+    try:
+        user = request.user
+        user.photo = result['data']
+        user.save()
+        
+        return Response(
+            {"message": "Photo de profil mise à jour avec succès."},
+            status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        return Response(
+            {"error": f"Erreur lors de l'enregistrement : {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 

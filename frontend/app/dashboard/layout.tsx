@@ -27,11 +27,16 @@ export default function DashboardLayout({
   const [user, setUser] = useState<user | null>(null)
   const router = useRouter();
 
-  useEffect(() => {
-    const loadProfil = async () => {
+  const loadProfil = async () => {
+    try {
       const res = await getUserProfil();
       setUser(res)
-    };
+    } catch (err) {
+      toast.error("Erreur lors du chargement");
+    }
+  };
+
+  useEffect(() => {
     loadProfil();
   }, []);
 
