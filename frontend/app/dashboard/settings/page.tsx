@@ -132,7 +132,7 @@ export default function SettingsPage() {
                 <p className="text-white font-semibold">Notifications par email</p>
                 <p className="text-sm text-neutral-400">Recevoir des alertes importantes</p>
               </div>
-              <input type="checkbox" className="toggle toggle-primary" defaultChecked />
+              <input type="checkbox" className="toggle toggle-primary" defaultChecked disabled />
             </div>
             <div className="divider my-2"></div>
             <div className="flex items-center justify-between">
@@ -140,7 +140,7 @@ export default function SettingsPage() {
                 <p className="text-white font-semibold">Newsletters</p>
                 <p className="text-sm text-neutral-400">Recevoir nos dernières actualités</p>
               </div>
-              <input type="checkbox" className="toggle toggle-primary" />
+              <input type="checkbox" className="toggle toggle-primary" defaultChecked disabled />
             </div>
           </div>
         </div>
