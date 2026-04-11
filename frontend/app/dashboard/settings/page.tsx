@@ -1,12 +1,16 @@
 "use client";
 
-import { getUserProfil, updateUserProfil } from "@/app/actions/actions";
+import { deleteUserProfil, getUserProfil, updateUserProfil } from "@/app/actions/actions";
+import { ROUTES } from "@/constants/routes";
+import axios from "axios";
 import { motion } from "framer-motion";
 import { Settings, Shield, Bell, Palette, LogOut, Trash2, AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
 import toast from "react-hot-toast";
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [dfa, setDfa] = useState(true)
@@ -54,15 +58,24 @@ export default function SettingsPage() {
       toast.error("Veuillez taper 'SUPPRIMER MON COMPTE' pour confirmer");
       return;
     }
-    
+
+    setLoading(true);
     try {
-      // API call to delete account
-      // await deleteAccount();
-      toast.success("Compte supprimé avec succès");
-      // Redirect to home page
-      // router.push("/");
+      const success = await deleteUserProfil();
+      if (success) {
+        toast.success('Compte supprimé avec succès.');
+        setLoading(true)
+        
+        await axios.post('/api/logout');
+        router.replace(ROUTES.AUTH.LOGIN);
+
+      } else {
+        toast.error('Erreur lors de la suppression du compte.');
+      }
     } catch (error) {
       toast.error("Erreur lors de la suppression du compte");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -221,7 +234,7 @@ export default function SettingsPage() {
                 </button>
                 <button 
                   onClick={handleDeleteAccount}
-                  disabled={deleteConfirmation !== "SUPPRIMER MON COMPTE"}
+                  disabled={deleteConfirmation !== "SUPPRIMER MON COMPTE" || loading}
                   className="btn btn-error flex-1"
                 >
                   <Trash2 className="w-4 h-4" />

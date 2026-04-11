@@ -171,6 +171,44 @@ export async function updatePassword(formData: FormData) {
 }
 
 
+export async function deleteUserProfil() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+  if (!token) throw new Error("Non authentifié");
+
+  const config = (t: string) => ({
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${t}`}
+  });
+
+  const baseURL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+  const url = `${baseURL}api/user/profil/`;
+
+  try {
+    const response = await fetch(url, config(token));
+
+    if (response.status === 204 || response.status === 200) {
+      return true;
+    }
+
+    if (response.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return false;
+
+      const retryResponse = await fetch(url, config(newToken));
+
+      return retryResponse.status === 204 || retryResponse.status === 200;
+    }
+
+    console.error('Erreur suppression, status:', response.status);
+    return false;
+
+  } catch (error) {
+    console.error('Erreur suppression compte:', error);
+    return false;
+  }
+}
+
 
 
 
