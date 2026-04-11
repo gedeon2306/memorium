@@ -158,7 +158,7 @@ export default function Navbar({
         <div className="avatar ml-2">
           <div className="h-8 w-8 rounded-xl overflow-hidden ring-1 ring-primary/30">
             <img 
-              src={user?.photo ?? 'https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka'} 
+              src={user?.photo ? user?.photo : "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka"} 
               alt={`${user?.name}${user?.id}`} 
             />
           </div>
