@@ -2,6 +2,7 @@ import random
 import base64
 import io
 from io import BytesIO
+from PIL import Image
 
 from django.shortcuts import render, redirect
 from django.conf import settings
@@ -22,12 +23,9 @@ from drf_spectacular.utils import extend_schema, inline_serializer
 from drf_spectacular.types import OpenApiTypes
 
 from rest_framework import serializers as drf_serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
-from PIL import Image
 
 from .models import User, Famille, Defunt, Paiement
-from .serializers import UserSerializer, FamilleSerializer, DefuntSerializer, PaiementSerializer
+from .serializers import UserSerializer, FamilleSerializer, DefuntSerializer, PaiementSerializer, MyTokenObtainPairSerializer
 
 
 def landing_view(request):
@@ -148,7 +146,7 @@ def confirm_register(request, uidb64, token):
         }, status=status.HTTP_400_BAD_REQUEST)
 
     if user.is_active:
-        refresh = TokenObtainPairSerializer.get_token(user)
+        refresh = MyTokenObtainPairSerializer.get_token(user)
         return Response({
             "message": f"Bienvenue {user.name} !",
             "access": str(refresh.access_token),
@@ -158,7 +156,7 @@ def confirm_register(request, uidb64, token):
     user.is_active = True
     user.save()
 
-    refresh = TokenObtainPairSerializer.get_token(user)
+    refresh = MyTokenObtainPairSerializer.get_token(user)
     access = str(refresh.access_token)
     refresh_str = str(refresh)
 
@@ -229,7 +227,7 @@ def login(request):
         )
     
     if not user.dfa:
-        refresh = TokenObtainPairSerializer.get_token(user)
+        refresh = MyTokenObtainPairSerializer.get_token(user)
         return Response({
             "message": f"Connexion réussie, bienvenue {user.name} .",
             "dfa": user.dfa,
@@ -313,7 +311,7 @@ def confirm_login(request):
     user.save()
 
     if user.is_active:
-        refresh = TokenObtainPairSerializer.get_token(user)
+        refresh = MyTokenObtainPairSerializer.get_token(user)
         return Response({
             "message": f"Connexion réussie, bienvenue {user.name} .",
             "access": str(refresh.access_token),
@@ -323,7 +321,7 @@ def confirm_login(request):
     user.is_active = True
     user.save()
 
-    refresh = TokenObtainPairSerializer.get_token(user)
+    refresh = MyTokenObtainPairSerializer.get_token(user)
     access = str(refresh.access_token)
     refresh_str = str(refresh)
 
@@ -928,6 +926,12 @@ def upload_profil_photo(request):
             {"error": f"Erreur lors de l'enregistrement : {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+
+
+
+
 
 
 

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import User, Famille, Defunt, Paiement
 
 class UserSerializer(serializers.ModelSerializer):
@@ -50,3 +51,15 @@ class PaiementSerializer(serializers.ModelSerializer):
             'defunt', 'defunt_nom', 'user', 'user_name'
         ]
         read_only_fields = ['user', 'id', 'date_paiement']
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        token['role'] = user.role
+        token['name'] = user.name
+        
+        return token
+    
