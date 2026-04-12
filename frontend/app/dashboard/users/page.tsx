@@ -70,7 +70,7 @@ export default function UsersPage() {
     >
       <motion.div
         variants={itemVariants}
-        className="flex flex-wrap items-start justify-between gap-4"
+        className="flex flex-wrap items-center justify-between gap-4"
       >
         <div className="min-w-0">
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
