@@ -76,6 +76,8 @@ from datetime import timedelta
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'SIGNING_KEY': SECRET_KEY, 
+    'ALGORITHM': 'HS256',
 }
 
 AUTH_USER_MODEL = 'api.User'
