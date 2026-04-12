@@ -928,6 +928,171 @@ def upload_profil_photo(request):
         )
 
 
+def _users_admin_forbidden():
+    return Response(
+        {"error": "Vous n'avez pas les droits pour gérer les utilisateurs."},
+        status=status.HTTP_403_FORBIDDEN,
+    )
+
+
+def _is_users_admin(user):
+    return user.role == "Administrateur" or user.is_staff
+
+
+@extend_schema(
+    tags=["Utilisateurs"],
+    methods=["GET"],
+    summary="Lister les utilisateurs",
+    description="Retourne la liste des utilisateurs (réservé aux administrateurs).",
+    responses={
+        200: UserSerializer(many=True),
+        403: inline_serializer(
+            name="UsersListForbidden",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@extend_schema(
+    tags=["Utilisateurs"],
+    methods=["POST"],
+    summary="Créer un utilisateur",
+    description="Crée un compte utilisateur actif (réservé aux administrateurs). Le mot de passe doit contenir au moins 8 caractères.",
+    request=UserSerializer,
+    responses={
+        201: UserSerializer,
+        400: inline_serializer(
+            name="UsersCreateError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        403: inline_serializer(
+            name="UsersCreateForbidden",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@extend_schema(
+    tags=["Utilisateurs"],
+    methods=["PUT"],
+    summary="Mettre à jour un utilisateur",
+    description="Met à jour un utilisateur par son identifiant (réservé aux administrateurs). Champs modifiables selon UserSerializer.",
+    request=UserSerializer,
+    responses={
+        200: inline_serializer(
+            name="UsersUpdateResponse",
+            fields={"message": drf_serializers.CharField()},
+        ),
+        400: inline_serializer(
+            name="UsersUpdateError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        403: inline_serializer(
+            name="UsersUpdateForbidden",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="UsersUpdateNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@extend_schema(
+    tags=["Utilisateurs"],
+    methods=["DELETE"],
+    summary="Supprimer un utilisateur",
+    description="Supprime un utilisateur par son identifiant (réservé aux administrateurs). Passer l'id en query (?id=) ou dans le corps.",
+    responses={
+        204: inline_serializer(
+            name="UsersDeleteResponse",
+            fields={"message": drf_serializers.CharField()},
+        ),
+        400: inline_serializer(
+            name="UsersDeleteError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        403: inline_serializer(
+            name="UsersDeleteForbidden",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="UsersDeleteNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@api_view(["GET", "POST", "PUT", "DELETE"])
+@permission_classes([IsAuthenticated])
+def users(request):
+    if not _is_users_admin(request.user):
+        return _users_admin_forbidden()
+
+    if request.method == "GET":
+        queryset = User.objects.all().order_by("name")
+        serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    if request.method == "POST":
+        pwd = request.data.get("password") or ""
+        if len(pwd) < 8:
+            return Response(
+                {"error": "Le mot de passe doit contenir au moins 8 caractères."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            user.is_active = True
+            user.save(update_fields=["is_active"])
+            return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "PUT":
+        user_id = request.data.get("id")
+        if not user_id:
+            return Response(
+                {"error": "L'identifiant utilisateur (id) est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            target = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Utilisateur introuvable."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        payload = {k: v for k, v in request.data.items() if k != "id"}
+        serializer = UserSerializer(target, data=payload, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Données mise à jour avec succès."},
+                status=status.HTTP_200_OK,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "DELETE":
+        user_id = request.query_params.get("id") or request.data.get("id")
+        if not user_id:
+            return Response(
+                {"error": "L'identifiant utilisateur (id) est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if str(user_id) == str(request.user.id):
+            return Response(
+                {"error": "Vous ne pouvez pas supprimer votre propre compte depuis cette action."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            target = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Utilisateur introuvable."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        target.delete()
+        return Response(
+            {"message": "Utilisateur supprimé avec succès."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
 
 
