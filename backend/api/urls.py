@@ -14,6 +14,7 @@ from .views import (
     confirm_new_email,
     update_password,
     upload_profil_photo,
+    users,
 )
 
 urlpatterns = [
@@ -53,4 +54,7 @@ urlpatterns = [
     
     # Upload de la photo de profil
     path('user/upload-photo/', upload_profil_photo, name='upload_profil_photo'),
+    
+    # Gestion des utilisateurs (réservé aux administrateurs)
+    path('admin/users/', users, name='admin_users'),
 ]
