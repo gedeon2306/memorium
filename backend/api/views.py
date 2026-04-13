@@ -32,6 +32,13 @@ def landing_view(request):
     return render(request, "landing.html")
 
 
+def _error_server():
+    return Response({
+        "error": "Une erreur est survenue, reesayez plus tard !"},
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+    )
+
+
 @extend_schema(
     tags=["Auth"],
     summary="Créer un compte utilisateur",
@@ -97,8 +104,11 @@ def register(request):
             user.role = 'Administrateur'
             user.save()
             
-        send_confirmation_email(user)
-        
+        try:
+            send_confirmation_email(user)
+        except:
+            _error_server()
+            
         return Response({
             "message": "Compte créé ! Vérifiez votre boîte mail pour votre identité.",
             "user": {"email": user.email, "name": user.name}
@@ -214,7 +224,11 @@ def login(request):
         )
 
     if not user.is_active:
-        send_confirmation_email(user)
+        try:
+            send_confirmation_email(user)
+        except:
+            _error_server()
+            
         return Response(
             {"error": "Ce compte n'est pas activé. Vérifiez votre boîte mail."},
             status=status.HTTP_400_BAD_REQUEST
@@ -243,7 +257,10 @@ def login(request):
     token = email_confirmation_token_generator.make_token(user)
 
     # Envoi de l'email de notification
-    send_login_email(user)
+    try:
+        send_login_email(user)
+    except:
+        _error_server()
 
     return Response({
         "message": "Connexion réussie. Un email de confirmation a été envoyé.",
@@ -373,7 +390,11 @@ def resend_email(request):
                 uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
                 token = email_confirmation_token_generator.make_token(user)
                 
-                send_login_email(user)
+                try:
+                    send_login_email(user)
+                except:
+                    _error_server()
+                    
                 return Response({
                     "message": "Un nouveau code a été envoyé à votre email.",
                     "uid": uidb64,
@@ -384,11 +405,17 @@ def resend_email(request):
         
         elif action == "register":
             if not user.is_active:
-                send_confirmation_email(user)
+                try:
+                    send_confirmation_email(user)
+                except:
+                    _error_server()
                 
         elif action == "forgot-password":
             if user.is_active:
-                send_password_reset_email(user)
+                try:
+                    send_password_reset_email(user)
+                except:
+                    _error_server()
                 
         else:
             return Response(
@@ -445,10 +472,7 @@ def forgot_password(request):
             try:
                 send_password_reset_email(user)
             except:
-                return Response(
-                {"error": "Une erreur est survenue, reesayez plus tard !"},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
+                _error_server()
         else:
             pass
 
@@ -675,7 +699,11 @@ def profil(request):
         user = request.user
         user.validate_code = code
         user.save()
-        send_new_email_code(email, code)
+        
+        try:
+            send_new_email_code(email, code)
+        except:
+            _error_server()
         
         return Response({
             "message": "Un email de confirmation a été envoyé à votre nouvelle adresse email.",
