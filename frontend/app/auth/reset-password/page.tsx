@@ -1,42 +1,85 @@
  "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Eye, EyeOff, Lock, RotateCw } from "lucide-react";
 import toast from "react-hot-toast";
 import { ROUTES } from "@/constants/routes";
+import { useRouter, useSearchParams } from "next/navigation"
+import axios from "axios";
 
 export default function ResetPasswordPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [isValid, setIsValid] = useState(false);
+  const searchParams = useSearchParams();
+  const uid = searchParams.get('uid');
+  const token = searchParams.get('token');
+
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    if (!uid || !token) {
+      toast.error('Lien invalide ou expiré');
+      setTimeout(() => router.push('/auth/forgot-password'), 2000);
+      setIsValid(false);
+    } else {
+      setIsValid(true);
+    }
+  }, [uid, token, router]);
+
+  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (loading) return;
 
     const formData = new FormData(e.currentTarget);
-    const newPassword = String(formData.get("newPassword") || "");
+    const password = String(formData.get("password") || "");
     const confirmPassword = String(formData.get("confirmPassword") || "");
 
-    if (!newPassword || !confirmPassword) {
+    if (!password || !confirmPassword) {
       toast.error("Veuillez remplir tous les champs.");
       return;
     }
 
-    if (newPassword !== confirmPassword) {
+    if (password !== confirmPassword) {
       toast.error("Les mots de passe ne correspondent pas.");
+      return;
+    }
+
+    if (password.length < 8) {
+      toast.error('Le mot de passe doit contenir au moins 8 caractères');
       return;
     }
 
     setLoading(true);
 
-    // Simulate an API call
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid,
+          token,
+          password,
+          confirmPassword,
+        }),
+      });
+
+      // toast.success(res.data.message);
+
+      router.replace(ROUTES.AUTH.LOGIN);
+
+    } catch (error: any) {
+      if (error?.response?.status === 400) {
+        toast.error(error?.response?.data.error);
+      } else {
+        toast.error("Problème de connexion au serveur");
+      }
+    } finally {
       setLoading(false);
-      toast.success("Mot de passe réinitialisé. Vous pouvez vous connecter.");
-    }, 2000);
+    }
   };
 
   return (

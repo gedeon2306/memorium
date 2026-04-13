@@ -6,21 +6,44 @@ import Link from "next/link";
 import { Mail,LinkIcon, ShieldAlert } from "lucide-react";
 import toast from "react-hot-toast";
 import { ROUTES } from "@/constants/routes";
+import { useRouter } from "next/navigation"
+import axios from "axios";
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (loading) return;
 
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+
+    if (!email) {
+      toast.error('Veuillez entrer votre email');
+      return;
+    }
+
     setLoading(true);
 
-    // Simulate an API call
-    setTimeout(() => {
+    const data = Object.fromEntries(formData);
+
+    try {
+      const res = await axios.post('/api/forgot-password', data);
+
+      toast.success(res.data.message);
+      
+      const action = "forgot-password"
+
+      router.push(`${ROUTES.AUTH.EMAIL_SEND}?email=${encodeURIComponent(email)}&action=${action}`);
+      router.refresh();
+
+    } catch (error: any) {
+      toast.error(error?.response?.data.error);
+    } finally {
       setLoading(false);
-      toast.success("Email de réinitialisation envoyé ! Vérifiez votre boîte de réception.");
-    }, 1800);
+    }
   };
 
   return (
@@ -71,8 +94,7 @@ export default function ForgotPasswordPage() {
                   <input
                     className="input input-bordered focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full bg-transparent pl-10"
                     type="email"
-                    name="email"
-                    autoComplete="email"
+                    name='email'
                     placeholder="vous@exemple.com"
                     required
                   />

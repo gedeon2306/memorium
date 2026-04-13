@@ -442,7 +442,13 @@ def forgot_password(request):
         user = User.objects.get(email=email)
 
         if user.is_active:
-            send_password_reset_email(user)
+            try:
+                send_password_reset_email(user)
+            except:
+                return Response(
+                {"error": "Une erreur est survenue, reesayez plus tard !"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
         else:
             pass
 
@@ -530,17 +536,10 @@ def reset_password_confirm(request):
     uid = request.data.get('uid', '')
     token = request.data.get('token', '')
     password = request.data.get('password', '')
-    password_confirm = request.data.get('password_confirm', '')
 
     if not uid or not token or not password or not password_confirm:
         return Response(
             {"error": "Tous les champs sont obligatoires."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    if password != password_confirm:
-        return Response(
-            {"error": "Les mots de passe ne correspondent pas."},
             status=status.HTTP_400_BAD_REQUEST
         )
 
