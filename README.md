@@ -1,2 +1,3 @@
-#Memorium
-gedeon
+# Mémorium — Application de gestion d'un cimetière privé
+
+Application fullstack moderne de gestion d'un cimetière privé...
