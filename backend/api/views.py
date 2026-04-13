@@ -494,10 +494,10 @@ def confirm_password(request, uidb64, token):
         return Response({"error": "Lien de confirmation invalide."}, status=status.HTTP_400_BAD_REQUEST)
 
     if not email_confirmation_token_generator.check_token(user, token):
-        return Response(
-            {"error": "Le lien de réinitialisation est invalide ou a expiré."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({
+            "error": "Le lien de réinitialisation est invalide ou a expiré.",
+            "email": user.email
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     return Response(
         {"uid": uid, "token": token},
@@ -537,7 +537,7 @@ def reset_password_confirm(request):
     token = request.data.get('token', '')
     password = request.data.get('password', '')
 
-    if not uid or not token or not password or not password_confirm:
+    if not uid or not token or not password:
         return Response(
             {"error": "Tous les champs sont obligatoires."},
             status=status.HTTP_400_BAD_REQUEST

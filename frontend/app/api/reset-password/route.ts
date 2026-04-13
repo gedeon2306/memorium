@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const res = await api.post('reset-password/', {
+    const res = await api.post('auth/reset-password-confirm/', {
       uid,
       token,
       password,
