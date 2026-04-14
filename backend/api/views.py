@@ -15,6 +15,7 @@ from django.core.mail import send_mail
 from .email_utils import send_confirmation_email, send_password_reset_email, send_login_email, send_new_email_code
 
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -26,6 +27,8 @@ from rest_framework import serializers as drf_serializers
 
 from .models import User, Famille, Defunt, Paiement
 from .serializers import UserSerializer, FamilleSerializer, DefuntSerializer, PaiementSerializer, MyTokenObtainPairSerializer
+
+from django.db.models import Q
 
 
 def landing_view(request):
@@ -1053,9 +1056,31 @@ def users(request):
         return _users_admin_forbidden()
 
     if request.method == "GET":
-        queryset = User.objects.all().order_by("name")
-        serializer = UserSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        search = request.query_params.get("search", "").strip()
+        ordering = request.query_params.get("ordering", "name")
+
+        ALLOWED_ORDERING = {
+            "name-asc": "name",
+            "name-desc": "-name",
+            "role": "role",
+            "recent": "-created_at",
+        }
+        order_field = ALLOWED_ORDERING.get(ordering, "name")
+
+        users = User.objects.all()
+
+        if search:
+            users = users.filter(
+                Q(name__icontains=search) | Q(email__icontains=search)
+            )
+
+        users = users.order_by(order_field)
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 5
+        result_page = paginator.paginate_queryset(users, request)
+        serializer = UserSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     if request.method == "POST":
         pwd = request.data.get("password") or ""
