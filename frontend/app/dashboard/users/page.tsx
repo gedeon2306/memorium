@@ -177,19 +177,19 @@ export default function UsersPage() {
               </table>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs text-white/40">
+            <div className="mt-4 pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="ext-xs text-white/40 order-2 sm:order-1">
                 Affichage <span className="text-white/55">1–5</span> sur{" "}
                 <span className="text-white/55">48</span> utilisateurs
               </p>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 order-1 sm:order-2">
                 <button
                   type="button"
-                  className="btn btn-ghost btn-sm gap-1 text-white/50 btn-disabled opacity-60 pointer-events-none"
+                  className="btn btn-ghost btn-sm px-2 sm:px-3 text-white/50 btn-disabled opacity-60 pointer-events-none"
                   disabled
                 >
                   <ChevronLeft size={16} />
-                  Précédent
+                  <span className="hidden sm:inline">Précédent</span>
                 </button>
                 <div className="join">
                   <button
@@ -226,7 +226,7 @@ export default function UsersPage() {
                   </button>
                 </div>
                 <button type="button" className="btn btn-ghost btn-sm gap-1 text-white/70">
-                  Suivant
+                  <span className="hidden sm:inline">Suivant</span>
                   <ChevronRight size={16} />
                 </button>
               </div>
