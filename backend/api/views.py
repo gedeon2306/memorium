@@ -15,6 +15,7 @@ from django.core.mail import send_mail
 from .email_utils import send_confirmation_email, send_password_reset_email, send_login_email, send_new_email_code
 
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -1053,9 +1054,12 @@ def users(request):
         return _users_admin_forbidden()
 
     if request.method == "GET":
-        queryset = User.objects.all().order_by("name")
-        serializer = UserSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        users = User.objects.all().order_by("name")
+        paginator = PageNumberPagination()
+        paginator.page_size = 5  
+        result_page = paginator.paginate_queryset(users, request)
+        serializer = UserSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     if request.method == "POST":
         pwd = request.data.get("password") or ""

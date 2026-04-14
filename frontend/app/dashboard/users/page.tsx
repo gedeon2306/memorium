@@ -1,5 +1,6 @@
 "use client";
 
+import { getUsersList } from "@/app/actions/actions";
 import { motion } from "framer-motion";
 import {
   UserRoundCog,
@@ -10,45 +11,10 @@ import {
   ChevronRight,
   MoreHorizontal,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
-const rows = [
-  {
-    name: "Camille Dubois",
-    email: "camille.dubois@exemple.fr",
-    role: "Administrateur",
-    status: "Actif",
-  },
-  {
-    name: "Thomas Renard",
-    email: "thomas.renard@exemple.fr",
-    role: "Éditeur",
-    status: "Actif",
-  },
-  {
-    name: "Sophie Martin",
-    email: "sophie.martin@exemple.fr",
-    role: "Lecteur",
-    status: "Invité",
-  },
-  {
-    name: "Lucas Bernard",
-    email: "lucas.bernard@exemple.fr",
-    role: "Éditeur",
-    status: "Actif",
-  },
-  {
-    name: "Inès Lefèvre",
-    email: "ines.lefevre@exemple.fr",
-    role: "Lecteur",
-    status: "Suspendu",
-  },
-];
-
-const statusBadge: Record<string, string> = {
-  Actif: "badge-success",
-  Invité: "badge-warning",
-  Suspendu: "badge-error",
-};
+const PAGE_SIZE = 5
 
 export default function UsersPage() {
   const containerVariants = {
@@ -60,6 +26,29 @@ export default function UsersPage() {
     hidden: { opacity: 0, y: 16 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
   };
+
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const loadUsers = async (page: number) => {
+    setLoading(true)
+    try {
+      const res = await getUsersList()
+      setUsers(res.results);
+      setTotalPages(Math.ceil(res.count / PAGE_SIZE));
+      console.log(res)
+    } catch (error: any) {
+      toast.error('Un problème est survenu pendant le chargement des données')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadUsers(currentPage);
+  }, [currentPage]);
 
   return (
     <motion.div
@@ -119,7 +108,7 @@ export default function UsersPage() {
                   <option value="name-asc">Trier par nom (A → Z)</option>
                   <option value="name-desc">Trier par nom (Z → A)</option>
                   <option value="role">Trier par rôle</option>
-                  <option value="recent">Trier par dernière connexion</option>
+                  <option value="recent">Trier par date de création</option>
                 </select>
               </div>
             </div>
@@ -128,6 +117,7 @@ export default function UsersPage() {
               <table className="table table-sm w-full">
                 <thead>
                   <tr className="border-white/5 text-xs text-white/30">
+                    <th className="bg-transparent font-normal">#</th>
                     <th className="bg-transparent font-normal">Nom</th>
                     <th className="bg-transparent font-normal hidden sm:table-cell">
                       E-mail
@@ -138,99 +128,124 @@ export default function UsersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((row, i) => (
-                    <motion.tr
-                      key={row.email}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.2 + i * 0.05, duration: 0.35 }}
-                      className="border-white/5 text-sm hover:bg-white/3"
-                    >
-                      <td className="px-2 py-3 whitespace-nowrap text-white/90 font-medium">
-                        {row.name}
+                  {loading ? (
+                    <tr>
+                      <td colSpan={5} className="text-center py-6">
+                        <span className="loading loading-spinner loading-sm" />
                       </td>
-                      <td className="px-2 py-3 whitespace-nowrap text-white/45 text-xs hidden sm:table-cell">
-                        {row.email}
-                      </td>
-                      <td className="px-2 py-3 whitespace-nowrap text-white/60 text-xs">
-                        {row.role}
-                      </td>
-                      <td className="px-2 py-3 whitespace-nowrap">
-                        <span
-                          className={`badge badge-xs border-0 ${statusBadge[row.status] ?? "badge-ghost"}`}
+                    </tr>
+                  ):(
+                    users.length ? (
+                      users.map((user, i) => (
+                        <motion.tr
+                          key={user.id}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.2 + i * 0.05, duration: 0.35 }}
+                          className="border-white/5 text-sm hover:bg-white/3"
                         >
-                          {row.status}
-                        </span>
-                      </td>
-                      <td className="px-2 py-3">
-                        <button
-                          type="button"
-                          className="btn btn-ghost btn-xs btn-square text-white/20 hover:text-white/60"
-                          aria-label="Actions"
-                        >
-                          <MoreHorizontal size={13} />
-                        </button>
-                      </td>
-                    </motion.tr>
-                  ))}
+                          <td className="px-2 py-3 whitespace-nowrap text-white/90 font-medium">
+                            {i+1}
+                          </td>
+                          <td className="px-2 py-3 whitespace-nowrap text-white/90 font-medium">
+                            {user.name}
+                          </td>
+                          <td className="px-2 py-3 whitespace-nowrap text-white/45 text-xs hidden sm:table-cell">
+                            {user.email}
+                          </td>
+                          <td className="px-2 py-3 whitespace-nowrap text-white/60 text-xs">
+                            {user.role}
+                          </td>
+                          <td className="px-2 py-3 whitespace-nowrap">
+                            <span
+                              className={`badge badge-xs border-0 ${user.is_active ? "badge-success" :"badge-warning" }`}
+                            >
+                              {user.status ? "Actif" : "Inactif"}
+                            </span>
+                          </td>
+                          <td className="px-2 py-3">
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-xs btn-square text-white/20 hover:text-white/60"
+                              aria-label="Actions"
+                            >
+                              <MoreHorizontal size={13} />
+                            </button>
+                          </td>
+                        </motion.tr>
+                      ))
+                    ):(
+                      <tr className="text-center text-sm">
+                        <td colSpan={5} className="py-6">
+                          Aucun Utilisateur trouvé.
+                        </td>
+                      </tr>
+                    )
+                  )}
                 </tbody>
               </table>
             </div>
-
-            <div className="mt-4 pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="ext-xs text-white/40 order-2 sm:order-1">
-                Affichage <span className="text-white/55">1–5</span> sur{" "}
-                <span className="text-white/55">48</span> utilisateurs
-              </p>
-              <div className="flex items-center gap-1 order-1 sm:order-2">
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm px-2 sm:px-3 text-white/50 btn-disabled opacity-60 pointer-events-none"
-                  disabled
-                >
-                  <ChevronLeft size={16} />
-                  <span className="hidden sm:inline">Précédent</span>
-                </button>
-                <div className="join">
+            
+            {!users.length ? (
+              <div className="text-center text-sm">
+                <span className="loading loading-spinner loading-sm" />
+              </div>
+            ):(
+              <div className="mt-4 pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p className="ext-xs text-white/40 order-2 sm:order-1">
+                  Affichage <span className="text-white/55">1–5</span> sur{" "}
+                  <span className="text-white/55">48</span> utilisateurs
+                </p>
+                <div className="flex items-center gap-1 order-1 sm:order-2">
                   <button
                     type="button"
-                    className="join-item btn btn-sm btn-primary min-w-9"
-                  >
-                    1
-                  </button>
-                  <button
-                    type="button"
-                    className="join-item btn btn-sm btn-ghost border border-white/10 text-white/70"
-                  >
-                    2
-                  </button>
-                  <button
-                    type="button"
-                    className="join-item btn btn-sm btn-ghost border border-white/10 text-white/70"
-                  >
-                    3
-                  </button>
-                  <button
-                    type="button"
-                    className="join-item btn btn-sm btn-ghost btn-disabled border border-white/10 text-white/25"
+                    className="btn btn-ghost btn-sm px-2 sm:px-3 text-white/50 btn-disabled opacity-60 pointer-events-none"
                     disabled
-                    aria-hidden
                   >
-                    …
+                    <ChevronLeft size={16} />
+                    <span className="hidden sm:inline">Précédent</span>
                   </button>
-                  <button
-                    type="button"
-                    className="join-item btn btn-sm btn-ghost border border-white/10 text-white/70"
-                  >
-                    10
+                  <div className="join">
+                    <button
+                      type="button"
+                      className="join-item btn btn-sm btn-primary min-w-9"
+                    >
+                      1
+                    </button>
+                    <button
+                      type="button"
+                      className="join-item btn btn-sm btn-ghost border border-white/10 text-white/70"
+                    >
+                      2
+                    </button>
+                    <button
+                      type="button"
+                      className="join-item btn btn-sm btn-ghost border border-white/10 text-white/70"
+                    >
+                      3
+                    </button>
+                    <button
+                      type="button"
+                      className="join-item btn btn-sm btn-ghost btn-disabled border border-white/10 text-white/25"
+                      disabled
+                      aria-hidden
+                    >
+                      …
+                    </button>
+                    <button
+                      type="button"
+                      className="join-item btn btn-sm btn-ghost border border-white/10 text-white/70"
+                    >
+                      10
+                    </button>
+                  </div>
+                  <button type="button" className="btn btn-ghost btn-sm gap-1 text-white/70">
+                    <span className="hidden sm:inline">Suivant</span>
+                    <ChevronRight size={16} />
                   </button>
                 </div>
-                <button type="button" className="btn btn-ghost btn-sm gap-1 text-white/70">
-                  <span className="hidden sm:inline">Suivant</span>
-                  <ChevronRight size={16} />
-                </button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </motion.div>

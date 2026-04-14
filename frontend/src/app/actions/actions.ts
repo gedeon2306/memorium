@@ -245,3 +245,39 @@ export async function uploadProfilPhoto(file: File) {
 }
 
 
+export async function getUsersList(page: number = 1) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+  if (!token) throw new Error("Non authentifié");
+
+  const config = (t: string) => ({
+    headers: { Authorization: `Bearer ${t}` }
+  });
+
+  try {
+    const response = await api.get(`admin/users/?page=${page}`, config(token));
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return null;
+      try {
+        const response = await api.get('admin/users/?page=${page}', config(newToken))
+        return response.data;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error};
+      }
+    }
+
+    const errorMessage = error.response?.data?.error || 
+                         error.response?.data?.message || 
+                         "Une erreur est survenue";
+    return { error: errorMessage };
+  }
+}
+
+
+
+
+
+
