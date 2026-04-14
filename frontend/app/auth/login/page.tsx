@@ -41,11 +41,7 @@ export default function LoginPage() {
       router.refresh();
 
     } catch (err: any) {
-      if (err?.response?.status === 400) {
-        toast.error(err?.response?.data?.error);
-      } else {
-        toast.error("Problème de connexion au serveur");
-      }
+      toast.error(err?.response?.data?.error);
     } finally {
       setLoading(false);
     }

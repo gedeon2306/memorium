@@ -22,6 +22,7 @@ export async function POST(request: Request) {
 
     } catch (error: any) {
         const errorData = error.response?.data || { error: "Identifiants incorrects" };
-        return NextResponse.json(errorData, { status: 400 });
+        const status = error.response?.status;
+        return NextResponse.json(errorData, { status: status });
     }
 }

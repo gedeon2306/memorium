@@ -44,15 +44,9 @@ function ConfirmContent() {
         }
         router.refresh();
       } catch (error: any) {
-        if (error?.response?.status === 400) {
-          const email = error?.response?.data?.email || '';
-          toast.error(error?.response?.data.error);
-          router.replace(`${ROUTES.AUTH.EMAIL_SEND}${email ? `?email=${encodeURIComponent(email)}&action=${encodeURIComponent(action)}` : ''}`);
-        } else {
-          toast.error('Erreur lors de la confirmation, veuillez réessayer');
-          router.replace(ROUTES.AUTH.EMAIL_SEND);
-        }
-        router.refresh();
+        const email = error?.response?.data?.email || '';
+        toast.error(error?.response?.data.error);
+        router.replace(`${ROUTES.AUTH.EMAIL_SEND}${email ? `?email=${encodeURIComponent(email)}&action=${encodeURIComponent(action)}` : ''}`);
       }
     };
 

@@ -19,7 +19,8 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     const errorData = error.response?.data || { error: 'Lien invalide ou expiré.' };
-    return NextResponse.json(errorData, { status: 400 });
+    const status = error.response?.status;
+    return NextResponse.json(errorData, { status: status });
   }
 }
 

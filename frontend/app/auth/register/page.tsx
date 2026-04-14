@@ -42,16 +42,12 @@ export default function RegisterPage() {
       router.refresh();
 
     } catch (err: any) {
-      if (err?.response?.status === 400) {
-        if(err?.response?.data?.email && err?.response?.data?.email == "user with this email already exists."){
-          toast.error("Cet email est déjà utilisé");
-        } else if(err?.response?.data?.email) {
-          toast.error(err?.response?.data?.email);
-        }else{
-          toast.error(err?.response?.data?.error);
-        }
-      } else {
-        toast.error("Problème de connexion au serveur");
+      if(err?.response?.data?.email && err?.response?.data?.email == "user with this email already exists."){
+        toast.error("Cet email est déjà utilisé");
+      } else if(err?.response?.data?.email) {
+        toast.error(err?.response?.data?.email);
+      }else{
+        toast.error(err?.response?.data?.error);
       }
     } finally {
       setLoading(false);

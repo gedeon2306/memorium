@@ -99,11 +99,7 @@ function ConfirmCodeContent() {
             router.replace(ROUTES.DASHBOARD.ROOT);
 
         } catch (err: any) {
-            if (err?.response?.status === 400) {
-                toast.error(err?.response?.data?.error);
-            } else {
-                toast.error("Une erreur est survenue lors de la confirmation, veuillez réessayer.");
-            }
+            toast.error(err?.response?.data?.error);
         } finally {
             setLoading(false);
         }
