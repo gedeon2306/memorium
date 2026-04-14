@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     
   } catch (error: any) {
     const errorData = error.response?.data || { error: "Échec de l'envoi." };
-    const status = error.response?.status || 500;
-    return NextResponse.json(errorData, { status });
+    const status = error.response?.status;
+    return NextResponse.json(errorData, { status: status });
   }
 }

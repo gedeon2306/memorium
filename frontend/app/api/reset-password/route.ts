@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(res.data, { status: 200 });
   } catch (error: any) {
     const errorData = error.response?.data || { error: 'Erreur lors de la réinitialisation du mot de passe.' };
-    return NextResponse.json(errorData, { status: 400 });
+    const status = error.response?.status;
+    return NextResponse.json(errorData, { status: status });
   }
 }
