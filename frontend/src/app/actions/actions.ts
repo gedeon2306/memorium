@@ -245,7 +245,11 @@ export async function uploadProfilPhoto(file: File) {
 }
 
 
-export async function getUsersList(page: number = 1) {
+export async function getUsersList(
+  page: number = 1,
+  search: string = "",
+  ordering: string = "name-asc"
+) {
   const cookieStore = await cookies();
   const token = cookieStore.get('access_token')?.value;
   if (!token) throw new Error("Non authentifié");
@@ -254,24 +258,30 @@ export async function getUsersList(page: number = 1) {
     headers: { Authorization: `Bearer ${t}` }
   });
 
+  // Construction de l'URL avec les query params
+  const params = new URLSearchParams({ page: String(page) });
+  if (search)   params.append("search", search);
+  if (ordering) params.append("ordering", ordering);
+  const url = `admin/users/?${params.toString()}`;
+
   try {
-    const response = await api.get(`admin/users/?page=${page}`, config(token));
+    const response = await api.get(url, config(token));
     return response.data;
   } catch (error: any) {
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
       if (!newToken) return null;
       try {
-        const response = await api.get('admin/users/?page=${page}', config(newToken))
+        const response = await api.get(url, config(newToken));
         return response.data;
       } catch (retryError: any) {
-        return { error: retryError.response?.data?.error};
+        return { error: retryError.response?.data?.error };
       }
     }
-
-    const errorMessage = error.response?.data?.error || 
-                         error.response?.data?.message || 
-                         "Une erreur est survenue";
+    const errorMessage =
+      error.response?.data?.error ||
+      error.response?.data?.message ||
+      "Une erreur est survenue";
     return { error: errorMessage };
   }
 }
