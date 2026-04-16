@@ -232,7 +232,7 @@ export default function SettingsPage() {
 
               {/* Confirmation Input - Style adapté au premier modal */}
               <div className="form-control gap-1.5">
-                <label className="text-[10px] font-semibold text-white/45 uppercase tracking-[0.1em]">
+                <label className="text-[10px] font-semibold text-white/45 uppercase tracking-widest">
                   Confirmation requise
                 </label>
                 <div className="relative group">
@@ -251,7 +251,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Footer - Boutons d'action */}
-            <div className="px-6 py-4 border-t border-white/8 flex items-center justify-end gap-3 bg-white/[0.02]">
+            <div className="px-6 py-4 border-t border-white/8 flex items-center justify-end gap-3 bg-white/2">
               <button
                 type="button"
                 onClick={() => {

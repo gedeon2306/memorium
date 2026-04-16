@@ -536,7 +536,7 @@ export default function ProfilPage() {
           <div className="px-6 py-8">
             {/* Code verification inputs */}
             <div className="form-control">
-              <label className="text-[10px] font-semibold text-white/45 uppercase tracking-[0.1em] text-center mb-4">
+              <label className="text-[10px] font-semibold text-white/45 uppercase tracking-widest text-center mb-4">
                 Entrez le code de sécurité
               </label>
               
