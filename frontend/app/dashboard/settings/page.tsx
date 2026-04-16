@@ -4,7 +4,7 @@ import { deleteUserProfil, getUserProfil, updateUserProfil } from "@/app/actions
 import { ROUTES } from "@/constants/routes";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { Settings, Shield, Bell, Trash2, AlertTriangle } from "lucide-react";
+import { Settings, Shield, Bell, Trash2, AlertTriangle, Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import toast from "react-hot-toast";
@@ -188,59 +188,105 @@ export default function SettingsPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50"
+          className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50 p-4"
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="card glass w-full max-w-md bg-error/10 shadow-2xl"
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            className="bg-neutral-900 border border-white/10 shadow-2xl overflow-hidden max-w-md w-full rounded-2xl"
           >
-            <div className="card-body p-8">
-              <h3 className="card-title text-error text-lg mb-2 flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5" />
-                Supprimer le compte ?
-              </h3>
-              <p className="text-neutral-300 mb-3">
-                Cette action ne peut pas être annulée. Toutes vos données seront supprimées définitivement.
+            {/* Header - Style cohérent avec le premier modal */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-error/15 text-error">
+                  <AlertTriangle size={18} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white text-base leading-tight">
+                    Supprimer le compte
+                  </h3>
+                  <p className="text-xs text-white/35 mt-0.5">
+                    Cette action est irréversible
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteConfirmation("");
+                }}
+                className="btn btn-ghost btn-sm btn-square text-white/30 hover:text-white/70"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Corps du modal */}
+            <div className="px-6 py-6">
+              <p className="text-sm text-neutral-400 leading-relaxed mb-6">
+                Toutes vos données seront supprimées définitivement de Memorium. 
+                Veuillez confirmer votre intention ci-dessous.
               </p>
 
-              {/* Confirmation Input */}
-              <div className="form-control mb-6">
-                <label className="label mb-4">
-                  <span className="label-text text-neutral-300">
-                    Tapez <span className="font-semibold text-error">"SUPPRIMER MON COMPTE"</span> pour confirmer :
-                  </span>
+              {/* Confirmation Input - Style adapté au premier modal */}
+              <div className="form-control gap-1.5">
+                <label className="text-[10px] font-semibold text-white/45 uppercase tracking-widest">
+                  Confirmation requise
                 </label>
-                <input
-                  type="text"
-                  placeholder="SUPPRIMER MON COMPTE"
-                  value={deleteConfirmation}
-                  onChange={(e) => setDeleteConfirmation(e.target.value)}
-                  className="input input-bordered focus:outline-none focus:ring-2 focus:ring-error w-full focus:border-transparent border-error placeholder-neutral-500"
-                />
+                <div className="relative group">
+                  <input
+                    type="text"
+                    placeholder='Tapez "SUPPRIMER MON COMPTE"'
+                    value={deleteConfirmation}
+                    onChange={(e) => setDeleteConfirmation(e.target.value)}
+                    className="input input-sm w-full bg-white/5 border border-white/10 text-white placeholder:text-white/20 focus:outline-none focus:border-error/60 transition-colors py-5"
+                  />
+                </div>
+                <p className="text-[11px] text-white/30 mt-1">
+                  Écrivez en majuscules pour déverrouiller le bouton.
+                </p>
               </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div className="card-actions justify-between gap-3">
-                <button 
-                  onClick={() => {
-                    setShowDeleteModal(false);
-                    setDeleteConfirmation("");
-                  }}
-                  className="btn btn-ghost flex-1"
-                >
-                  Annuler
-                </button>
-                <button 
-                  onClick={handleDeleteAccount}
-                  disabled={deleteConfirmation !== "SUPPRIMER MON COMPTE" || loading}
-                  className="btn btn-error flex-1"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Supprimer
-                </button>
-              </div>
+            {/* Footer - Boutons d'action */}
+            <div className="px-6 py-4 border-t border-white/8 flex items-center justify-end gap-3 bg-white/2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteConfirmation("");
+                }}
+                className="btn btn-ghost btn-sm text-white/50 hover:text-white/80"
+              >
+                Annuler
+              </button>
+              
+              <motion.button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmation !== "SUPPRIMER MON COMPTE" || loading}
+                whileHover={{ scale: loading || deleteConfirmation !== "SUPPRIMER MON COMPTE" ? 1 : 1.02 }}
+                whileTap={{ scale: loading ? 1 : 0.97 }}
+                className={`btn btn-sm gap-2 min-w-28 ${
+                  deleteConfirmation === "SUPPRIMER MON COMPTE" 
+                  ? "btn-error shadow-lg shadow-error/20" 
+                  : "btn-disabled bg-white/5 text-white/20 border-white/5"
+                }`}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    Suppression…
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={14} />
+                    Supprimer définitivement
+                  </>
+                )}
+              </motion.button>
             </div>
           </motion.div>
         </motion.div>

@@ -1083,19 +1083,15 @@ def users(request):
         return paginator.get_paginated_response(serializer.data)
 
     if request.method == "POST":
-        pwd = request.data.get("password") or ""
-        if len(pwd) < 8:
-            return Response(
-                {"error": "Le mot de passe doit contenir au moins 8 caractères."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        serializer = UserSerializer(data=request.data)
+        data = request.data.copy()
+        data["password"] = "memoriumUtilisateurDefaut"
+        serializer = UserSerializer(data=data)
         if serializer.is_valid():
             user = serializer.save()
             user.is_active = True
             user.save(update_fields=["is_active"])
-            return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Utilisateur créé avec succès !"}, status=status.HTTP_201_CREATED)
+        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "PUT":
         user_id = request.data.get("id")

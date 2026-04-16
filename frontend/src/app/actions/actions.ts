@@ -33,24 +33,31 @@ async function refreshAccessToken(): Promise<string | null> {
 }
 
 
-export async function getUserProfil() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('access_token')?.value;
-  if (!token) throw new Error("Non authentifié");
+const authConfig = (token: string) => ({
+  headers: { Authorization: `Bearer ${token}` },
+});
+ 
 
-  const config = (t: string) => ({
-    headers: { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' }
-  });
+async function getToken(): Promise<string> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
+  if (!token) throw new Error("Non authentifié");
+  return token;
+}
+
+
+export async function getUserProfil() {
+  const token = await getToken();
 
   try {
-    const response = await api.get('user/profil/', config(token))
+    const response = await api.get('user/profil/', authConfig(token))
     return response.data;
   } catch (error: any) {
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
       if (!newToken) return null;
       try {
-        const response = await api.get('user/profil/', config(newToken))
+        const response = await api.get('user/profil/', authConfig(newToken))
         return response.data;
       } catch (retryError: any) {
         return { error: retryError.response?.data?.error || "Erreur lors de la mise à jour" };
@@ -66,18 +73,12 @@ export async function getUserProfil() {
 
 
 export async function updateUserProfil(data: {}, action: string) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('access_token')?.value;
-  if (!token) throw new Error("Non authentifié");
-
-  const config = (t: string) => ({
-    headers: { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' }
-  });
+  const token = await getToken();
 
   try {
     const response = action === 'updatePut' 
-      ? await api.put('user/profil/', data, config(token))
-      : await api.post('user/profil/', data, config(token));
+      ? await api.put('user/profil/', data, authConfig(token))
+      : await api.post('user/profil/', data, authConfig(token));
     return { success: true, data: response.data };
   } catch (error: any) {
     if (error?.response?.status === 401) {
@@ -85,8 +86,8 @@ export async function updateUserProfil(data: {}, action: string) {
       if (!newToken) throw error;
       try {
         const retryResponse = action === 'updatePut'
-          ? await api.put('user/profil/', data, config(newToken))
-          : await api.post('user/profil/', data, config(newToken));
+          ? await api.put('user/profil/', data, authConfig(newToken))
+          : await api.post('user/profil/', data, authConfig(newToken));
         return { success: true, data: retryResponse.data };
       } catch (retryError: any) {
         return { error: retryError.response?.data?.error || "Erreur lors de la mise à jour" };
@@ -102,23 +103,17 @@ export async function updateUserProfil(data: {}, action: string) {
 
 
 export async function confirmNewEmail(data: {}) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('access_token')?.value;
-  if (!token) throw new Error("Non authentifié");
-
-  const config = (t: string) => ({
-    headers: { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' }
-  });
+  const token = await getToken();
 
   try {
-      const response = await api.put('user/confirm-new-email/', data, config(token))
+      const response = await api.put('user/confirm-new-email/', data, authConfig(token))
       return { success: true, data: response.data };
   } catch (error: any) {
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
       if (!newToken) return null;
       try {
-        const response = await api.put('user/confirm-new-email/', data, config(newToken))
+        const response = await api.put('user/confirm-new-email/', data, authConfig(newToken))
         return { success: true, data: response.data };
       } catch (retryError: any) {
         return { error: retryError.response?.data?.error || "Erreur lors de la mise à jour" };
@@ -134,13 +129,7 @@ export async function confirmNewEmail(data: {}) {
 
 
 export async function updatePassword(formData: FormData) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('access_token')?.value;
-  if (!token) throw new Error("Non authentifié");
-
-  const config = (t: string) => ({
-    headers: { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' }
-  });
+  const token = await getToken();
 
   const data = {
     currentPassword: formData.get('currentPassword'),
@@ -148,7 +137,7 @@ export async function updatePassword(formData: FormData) {
   };
 
   try {
-    const response = await api.put('user/update-password/', data, config(token));
+    const response = await api.put('user/update-password/', data, authConfig(token));
     return { success: true, data: response.data };
   } catch (error: any) {
     if (error?.response?.status === 401) {
@@ -156,7 +145,7 @@ export async function updatePassword(formData: FormData) {
       if (!newToken) return { error: "Session expirée" };
       
       try {
-        const response = await api.put('user/update-password/', data, config(newToken));
+        const response = await api.put('user/update-password/', data, authConfig(newToken));
         return { success: true, data: response.data };
       } catch (retryError: any) {
         return { error: retryError.response?.data?.error || "Erreur lors de la mise à jour" };
@@ -172,9 +161,7 @@ export async function updatePassword(formData: FormData) {
 
 
 export async function deleteUserProfil() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('access_token')?.value;
-  if (!token) throw new Error("Non authentifié");
+  const token = await getToken();
 
   const config = (t: string) => ({
     method: 'DELETE',
@@ -211,26 +198,20 @@ export async function deleteUserProfil() {
 
 
 export async function uploadProfilPhoto(file: File) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('access_token')?.value;
-  if (!token) throw new Error("Non authentifié");
-
-  const config = (t: string) => ({
-    headers: { Authorization: `Bearer ${t}` }
-  });
+  const token = await getToken();
 
   const formData = new FormData();
   formData.append("photo", file);
 
   try {
-    const response = await api.post('user/upload-photo/', formData, config(token));
+    const response = await api.post('user/upload-photo/', formData, authConfig(token));
     return { success: true, data: response.data };
   } catch (error: any) {
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
       if (!newToken) throw error;
       try {
-        const retryResponse = await api.post('user/upload-photo/', formData, config(newToken));
+        const retryResponse = await api.post('user/upload-photo/', formData, authConfig(newToken));
         return { success: true, data: retryResponse.data };
       } catch (retryError: any) {
         return { error: retryError.response?.data?.error || "Erreur lors de l'upload" };
@@ -245,18 +226,8 @@ export async function uploadProfilPhoto(file: File) {
 }
 
 
-export async function getUsersList(
-  page: number = 1,
-  search: string = "",
-  ordering: string = "name-asc"
-) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('access_token')?.value;
-  if (!token) throw new Error("Non authentifié");
-
-  const config = (t: string) => ({
-    headers: { Authorization: `Bearer ${t}` }
-  });
+export async function getUsersList(page: number = 1,search: string = "",ordering: string = "name-asc") {
+  const token = await getToken();
 
   // Construction de l'URL avec les query params
   const params = new URLSearchParams({ page: String(page) });
@@ -265,14 +236,14 @@ export async function getUsersList(
   const url = `admin/users/?${params.toString()}`;
 
   try {
-    const response = await api.get(url, config(token));
+    const response = await api.get(url, authConfig(token));
     return response.data;
   } catch (error: any) {
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
       if (!newToken) return null;
       try {
-        const response = await api.get(url, config(newToken));
+        const response = await api.get(url, authConfig(newToken));
         return response.data;
       } catch (retryError: any) {
         return { error: retryError.response?.data?.error };
@@ -287,7 +258,32 @@ export async function getUsersList(
 }
 
 
-
+export async function createUser(payload: {name: string;email: string;role: string;}) {
+  const token = await getToken();
+  const url = "admin/users/";
+ 
+  try {
+    const response = await api.post(url, payload, authConfig(token));
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return null;
+      try {
+        const response = await api.post(url, payload, authConfig(newToken));
+        return response.data;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error };
+      }
+    }
+    return {
+      error:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Une erreur est survenue",
+    };
+  }
+}
 
 
 
