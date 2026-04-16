@@ -2,7 +2,7 @@
 
 import { confirmNewEmail, getUserProfil, updatePassword, updateUserProfil, uploadProfilPhoto } from "@/app/actions/actions";
 import { motion } from "framer-motion";
-import { User, Camera, ShieldCheck, Key, Save, Pencil, Trash2 } from "lucide-react";
+import { User, Camera, ShieldCheck, Key, Save, Pencil, Trash2, MailCheck, X, Info } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -504,72 +504,102 @@ export default function ProfilPage() {
         </div>
       </motion.div>
 
-      <dialog ref={confirmModalRef} className="modal backdrop-blur">
-        <div className="modal-box">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-              ✕
-            </button>
-          </form>
-          <h3 className="font-bold text-lg">Confirmation du nouveau mail</h3>
-          <div
-            // className="flex flex-col gap-4 mt-4"
-          >
-            <div className="card-body">
-
-              {/* Code verification inputs */}
-              <div className="mt-6">
-                <label className="label">
-                  <span className="label-text text-base-content/70">
-                    Code de vérification
-                  </span>
-                </label>
-                <div className="mt-2 flex justify-center gap-3">
-                  {code.map((digit, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => {
-                        inputRefs.current[index] = el;
-                      }}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleChange(index, e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(index, e)}
-                      onPaste={handlePaste}
-                      disabled={confirmLoading}
-                      className={`input input-bordered h-14 w-12 text-center text-lg font-bold transition-all duration-200 ${loading ? "opacity-50 cursor-not-allowed" : ""
-                        } ${digit ? "input-primary" : ""}`}
-                    />
-                  ))}
-                </div>
+      <dialog
+        ref={confirmModalRef}
+        className="modal modal-bottom sm:modal-middle backdrop-blur-sm"
+      >
+        <div className="modal-box bg-neutral-900 border border-white/10 shadow-2xl p-0 overflow-hidden max-w-md w-full">
+          
+          {/* Header - Style cohérent */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/15 text-primary">
+                <MailCheck size={18} />
               </div>
-
-              {/* Info message about sent email */}
-              <div className="mt-6 rounded-lg border border-info/30 bg-info/5 p-4">
-                <p className="text-sm text-base-content/80">
-                  Un email de confirmation a été envoyé à votre adresse email.
-                  Veuillez vérifier votre boîte de réception et votre dossier
-                  spam.
+              <div>
+                <h3 className="font-semibold text-white text-base leading-tight">
+                  Vérifier votre email
+                </h3>
+                <p className="text-xs text-white/35 mt-0.5">
+                  Confirmation du changement d'adresse
                 </p>
               </div>
-
-              {/* Verification button */}
-              <button
-                onClick={handleConfirm}
-                disabled={!isCodeComplete || confirmLoading}
-                className="btn btn-primary btn-block mt-6"
-              >
-                {confirmLoading ? (
-                    <span className="loading loading-spinner loading-sm text-primary"></span>
-                ) : (
-                    "Vérifier le code"
-                )}
+            </div>
+            <form method="dialog">
+              <button className="btn btn-ghost btn-sm btn-square text-white/30 hover:text-white/70">
+                <X size={16} />
               </button>
+            </form>
+          </div>
+
+          {/* Corps du Modal */}
+          <div className="px-6 py-8">
+            {/* Code verification inputs */}
+            <div className="form-control">
+              <label className="text-[10px] font-semibold text-white/45 uppercase tracking-[0.1em] text-center mb-4">
+                Entrez le code de sécurité
+              </label>
+              
+              <div className="flex justify-center gap-2 sm:gap-3">
+                {code.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={(el) => {
+                      inputRefs.current[index] = el
+                    }}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    onPaste={handlePaste}
+                    disabled={confirmLoading}
+                    className={`w-11 h-14 sm:w-12 sm:h-14 text-center text-xl font-bold rounded-xl border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/40 
+                      ${digit 
+                        ? "bg-primary/10 border-primary text-primary" 
+                        : "bg-white/5 border-white/10 text-white"
+                      } ${confirmLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Info Message - Style Alert épuré */}
+            <div className="mt-8 flex gap-3 p-4 rounded-xl bg-info/5 border border-info/20">
+              <Info size={18} className="text-info shrink-0 mt-0.5" />
+              <p className="text-xs text-info/80 leading-relaxed">
+                Un email contenant un code à 6 chiffres a été envoyé. Pensez à vérifier vos <b>courriers indésirables</b> si vous ne voyez rien.
+              </p>
             </div>
           </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-white/8 bg-white/2 flex flex-col gap-3">
+            <motion.button
+              type="button"
+              onClick={handleConfirm}
+              disabled={!isCodeComplete || confirmLoading}
+              whileHover={{ scale: !isCodeComplete || confirmLoading ? 1 : 1.02 }}
+              whileTap={{ scale: confirmLoading ? 1 : 0.98 }}
+              className="btn btn-primary btn-sm h-11 w-full gap-2 font-semibold"
+            >
+              {confirmLoading ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <>
+                  <ShieldCheck size={16} />
+                  Confirmer l'adresse email
+                </>
+              )}
+            </motion.button>
+          </div>
         </div>
+
+        {/* Backdrop */}
+        <form method="dialog" className="modal-backdrop">
+          <button>Fermer</button>
+        </form>
       </dialog>
     </motion.div>
   );
