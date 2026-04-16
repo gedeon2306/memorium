@@ -14,6 +14,7 @@ export default function ProfilPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
@@ -190,39 +191,97 @@ export default function ProfilPage() {
     
   };
 
+  const validatePasswordForm = (values: {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) => {
+    const errs: Record<string, string> = {};
+
+    if (!values.currentPassword) {
+      errs.currentPassword = "Le mot de passe actuel est requis.";
+    }
+    if (!values.newPassword) {
+      errs.newPassword = "Le nouveau mot de passe est requis.";
+    }
+    if (!values.confirmPassword) {
+      errs.confirmPassword = "Veuillez confirmer le nouveau mot de passe.";
+    }
+
+    if (
+      values.currentPassword &&
+      values.newPassword &&
+      values.currentPassword === values.newPassword
+    ) {
+      errs.newPassword =
+        "Le nouveau mot de passe doit être différent du mot de passe actuel.";
+    }
+
+    if (values.newPassword && values.confirmPassword) {
+      if (values.newPassword !== values.confirmPassword) {
+        errs.confirmPassword = "Les nouveaux mots de passe ne correspondent pas.";
+      }
+    }
+
+    if (values.newPassword && values.newPassword.length < 8) {
+      errs.newPassword = "Le nouveau mot de passe doit faire au moins 8 caractères.";
+    }
+
+    return errs;
+  };
+
   const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      toast.error("Tous les champs sont obligatoires");
-      return;
-    }
-    if (currentPassword == newPassword) {
-      toast.error("Le nouveau mot de passe ne doit etre different du mot de passe actuel");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast.error("Les nouveaux mots de passe ne correspondent pas");
-      return;
-    }
-    if (newPassword.length < 8) {
-      toast.error("Le nouveau mot de passe doit faire au moins 8 caractères");
+
+    const formData = new FormData(e.currentTarget);
+    const values = {
+      currentPassword: (formData.get("currentPassword") as string) || "",
+      newPassword: (formData.get("newPassword") as string) || "",
+      confirmPassword: (formData.get("confirmPassword") as string) || "",
+    };
+
+    const errs = validatePasswordForm(values);
+    if (Object.keys(errs).length) {
+      setPasswordErrors(errs);
       return;
     }
 
     setLoading(true);
+    setPasswordErrors({});
+
     try {
-      const formData = new FormData(e.currentTarget);
       const result = await updatePassword(formData);
 
       if (result.error) {
-        toast.error(result.error);
-        return
-      } else {
-        toast.success(result.data?.message || "Mot de passe mis à jour !");
+        const serverMsg = result.error;
+
+        // Heuristique: tente d'afficher l'erreur sur le champ le plus probable.
+        const nextErrs: Record<string, string> = {};
+        let matchedField = false;
+
+        if (/actuel/i.test(serverMsg)) {
+          nextErrs.currentPassword = serverMsg;
+          matchedField = true;
+        } else if (/confirme|confirmation|correspond/i.test(serverMsg)) {
+          nextErrs.confirmPassword = serverMsg;
+          matchedField = true;
+        } else if (/nouveau|mot de passe|8\s*caract|longueur/i.test(serverMsg)) {
+          nextErrs.newPassword = serverMsg;
+          matchedField = true;
+        }
+
+        if (!matchedField) nextErrs.form = serverMsg;
+
+        setPasswordErrors(nextErrs);
+        toast.error(serverMsg);
+        return;
       }
+
+      toast.success(result.data?.message || "Mot de passe mis à jour !");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      setPasswordErrors({});
     } catch (error: any) {
       toast.error("Erreur de connexion au serveur");
     } finally {
@@ -449,47 +508,73 @@ export default function ProfilPage() {
           </div>
 
           <form onSubmit={handlePasswordChange} className="space-y-5">
+            {passwordErrors.form && (
+              <div
+                className="text-error/90 bg-error/10 border border-error/20 rounded-lg p-3 text-sm"
+                role="alert"
+              >
+                {passwordErrors.form}
+              </div>
+            )}
             <div className="form-control">
               <label className="label">
                 <span className="label-text text-base-content">Mot de passe actuel</span>
               </label>
               <input
-                className="input input-bordered focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full bg-transparent"
+                className={`input input-bordered focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full bg-transparent ${passwordErrors.currentPassword ? "border-error/60" : "border-white/10"}`}
                 type="password"
                 name="currentPassword"
                 value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
+                onChange={(e) => {
+                  setCurrentPassword(e.target.value);
+                  setPasswordErrors((prev) => ({ ...prev, currentPassword: "" }));
+                }}
                 placeholder="••••••••"
                 required
               />
+              {passwordErrors.currentPassword && (
+                <p className="text-xs text-error/80 mt-1">{passwordErrors.currentPassword}</p>
+              )}
             </div>
             <div className="form-control">
               <label className="label">
                 <span className="label-text text-base-content">Nouveau mot de passe</span>
               </label>
               <input
-                className="input input-bordered focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full bg-transparent"
+                className={`input input-bordered focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full bg-transparent ${passwordErrors.newPassword ? "border-error/60" : "border-white/10"}`}
                 type="password"
                 name="newPassword"
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  setPasswordErrors((prev) => ({ ...prev, newPassword: "" }));
+                }}
                 placeholder="••••••••"
                 required
               />
+              {passwordErrors.newPassword && (
+                <p className="text-xs text-error/80 mt-1">{passwordErrors.newPassword}</p>
+              )}
             </div>
             <div className="form-control">
               <label className="label">
                 <span className="label-text text-base-content">Confirmer le nouveau mot de passe</span>
               </label>
               <input
-                className="input input-bordered focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full bg-transparent"
+                className={`input input-bordered focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full bg-transparent ${passwordErrors.confirmPassword ? "border-error/60" : "border-white/10"}`}
                 type="password"
                 name="confirmPassword"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setPasswordErrors((prev) => ({ ...prev, confirmPassword: "" }));
+                }}
                 placeholder="••••••••"
                 required
               />
+              {passwordErrors.confirmPassword && (
+                <p className="text-xs text-error/80 mt-1">{passwordErrors.confirmPassword}</p>
+              )}
             </div>
 
             <button
