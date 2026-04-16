@@ -15,12 +15,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class FamilleSerializer(serializers.ModelSerializer):
-    user_name = serializers.ReadOnlyField(source='user.name')
     class Meta:
         model = Famille
         fields = [
             'id', 'nom_famille', 'nom_garrant', 'profession', 'telephone', 
-            'email', 'user', 'user_name', 'created_at'
+            'email', 'user', 'created_at'
         ]
         read_only_fields = ['user', 'id', 'created_at']
     
