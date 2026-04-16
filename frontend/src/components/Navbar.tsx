@@ -68,19 +68,6 @@ export default function Navbar({
         <span className="text-white/70">Tableau de bord</span>
       </div>
 
-      {/* Search */}
-      <div className="relative mx-2 hidden sm:flex flex-1 max-w-xs">
-        <Search
-          size={14}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/30"
-        />
-        <input
-          type="text"
-          placeholder="Rechercher..."
-          className="input input-sm w-full border-white/8 bg-white/5 pl-8 text-sm text-white placeholder-white/20 focus:border-primary/40 focus:outline-none"
-        />
-      </div>
-
       <div className="ml-auto flex items-center gap-1 shrink-0">
         {/* Theme Dropdown */}
         <div className="dropdown dropdown-end">
