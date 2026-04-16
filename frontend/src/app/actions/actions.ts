@@ -286,4 +286,63 @@ export async function createUser(payload: {name: string;email: string;role: stri
 }
 
 
+export async function updateUser(payload: {id: string; name: string;email: string;role: string;}) {
+  const token = await getToken();
+  const url = "admin/users/";
+ 
+  try {
+    const response = await api.put(url, payload, authConfig(token));
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return null;
+      try {
+        const response = await api.put(url, payload, authConfig(newToken));
+        return response.data;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error };
+      }
+    }
+    return {
+      error:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Une erreur est survenue",
+    };
+  }
+}
+
+
+export async function deleteUser(payload: { id: string }) {
+  const token = await getToken();
+  const baseURL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+  const url = `${baseURL}/api/admin/users/`;
+
+  const getConfig = (t: string): RequestInit => ({
+    method: 'DELETE',
+    headers: { 
+      'Authorization': `Bearer ${t}`,
+      'Content-Type': 'application/json' 
+    },
+    body: JSON.stringify(payload)
+  });
+
+  try {
+    let response = await fetch(url, getConfig(token));
+
+    if (response.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return false;
+
+      response = await fetch(url, getConfig(newToken));
+    }
+    return response.ok; 
+
+  } catch (error) {
+    return false;
+  }
+}
+
+
 
