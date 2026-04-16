@@ -3,6 +3,8 @@
 import { getUsersList } from "@/app/actions/actions";
 import Pagination from "@/components/Pagination";
 import AddUserModal, { AddUserModalHandle } from "@/components/AddUserModal";
+import UpdateUserModal, { UpdateUserModalHandle } from "@/components/UpdateUserModal";
+import DeleteUserModal, { DeleteUserModalHandle } from "@/components/DeleteUserModal";
 import { motion } from "framer-motion";
 import {
   UserRoundCog,
@@ -10,6 +12,7 @@ import {
   Search,
   ChevronsUpDown,
   MoreHorizontal,
+  Trash2,
 } from "lucide-react";
 import { useEffect, useState, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
@@ -45,6 +48,8 @@ export default function UsersPage() {
 
   // Ref vers le modal — permet d'appeler modalRef.current.open() depuis le bouton
   const modalRef = useRef<AddUserModalHandle>(null);
+  const updateModalRef = useRef<UpdateUserModalHandle>(null);
+  const deleteModalRef = useRef<DeleteUserModalHandle>(null);
 
   const debouncedSearch = useDebounce(search, 400);
 
@@ -75,6 +80,14 @@ export default function UsersPage() {
       {/* Modal monté une seule fois, contrôlé par ref */}
       <AddUserModal
         ref={modalRef}
+        onSuccess={() => loadUsers(1, debouncedSearch, ordering)}
+      />
+      <UpdateUserModal
+        ref={updateModalRef}
+        onSuccess={() => loadUsers(1, debouncedSearch, ordering)}
+      />
+      <DeleteUserModal
+        ref={deleteModalRef}
         onSuccess={() => loadUsers(1, debouncedSearch, ordering)}
       />
 
@@ -193,13 +206,41 @@ export default function UsersPage() {
                             </span>
                           </td>
                           <td className="px-2 py-3">
-                            <button
-                              type="button"
-                              className="btn btn-ghost btn-xs btn-square text-white/20 hover:text-white/60"
-                              aria-label="Actions"
-                            >
-                              <MoreHorizontal size={13} />
-                            </button>
+                            <div className="dropdown dropdown-end">
+                              <button
+                                type="button"
+                                tabIndex={0}
+                                className="btn btn-ghost btn-xs btn-square text-white/20 hover:text-white/60"
+                                aria-label="Actions"
+                              >
+                                <MoreHorizontal size={13} />
+                              </button>
+                              <ul
+                                tabIndex={0}
+                                className="dropdown-content menu p-2 shadow bg-neutral-900 border border-white/10 rounded-box w-40"
+                              >
+                                <li>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateModalRef.current?.open(user)}
+                                    className="justify-start gap-2 text-white/80 hover:text-white"
+                                  >
+                                    <UserRoundCog size={14} />
+                                    Modifier
+                                  </button>
+                                </li>
+                                <li>
+                                  <button
+                                    type="button"
+                                    onClick={() => deleteModalRef.current?.open(user)}
+                                    className="justify-start gap-2 text-error/80 hover:text-error"
+                                  >
+                                    <Trash2 size={14} />
+                                    Supprimer
+                                  </button>
+                                </li>
+                              </ul>
+                            </div>
                           </td>
                         </motion.tr>
                       ))

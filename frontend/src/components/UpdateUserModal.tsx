@@ -1,10 +1,11 @@
 "use client";
 
-import { createUser } from "@/app/actions/actions";
 import { motion } from "framer-motion";
-import { UserPlus, X, Loader2 } from "lucide-react";
-import { useRef, useState, forwardRef, useImperativeHandle } from "react";
+import { UserRoundCog, X, Loader2 } from "lucide-react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import toast from "react-hot-toast";
+
+import { updateUser } from "@/app/actions/actions";
 
 const ROLES = [
   { value: "Administrateur", label: "Administrateur" },
@@ -12,55 +13,89 @@ const ROLES = [
   { value: "Testeur", label: "Testeur" },
 ];
 
-interface AddUserModalProps {
+export interface UpdateUserModalHandle {
+  open: (user: {
+    id: string | number;
+    name: string;
+    email: string;
+    role: string;
+  }) => void;
+}
+
+interface UpdateUserModalProps {
   onSuccess?: () => void;
 }
 
-export interface AddUserModalHandle {
-  open: () => void;
-}
+type SelectedUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+};
 
-const AddUserModal = forwardRef<AddUserModalHandle, AddUserModalProps>(
+const UpdateUserModal = forwardRef<UpdateUserModalHandle, UpdateUserModalProps>(
   ({ onSuccess }, ref) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
-    const formRef   = useRef<HTMLFormElement>(null);
+    const formRef = useRef<HTMLFormElement>(null);
 
+    const [selectedUser, setSelectedUser] = useState<SelectedUser | null>(null);
     const [loading, setLoading] = useState(false);
-    const [errors, setErrors]   = useState<Record<string, string>>({});
-
-    useImperativeHandle(ref, () => ({
-      open: () => {
-        setErrors({});
-        formRef.current?.reset();
-        dialogRef.current?.showModal();
-      },
-    }));
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const close = () => {
       dialogRef.current?.close();
       formRef.current?.reset();
       setErrors({});
+      setLoading(false);
+      setSelectedUser(null);
     };
+
+    useImperativeHandle(ref, () => ({
+      open: (user) => {
+        setErrors({});
+        const normalized: SelectedUser = {
+          id: String(user.id),
+          name: user.name ?? "",
+          email: user.email ?? "",
+          role: user.role ?? "",
+        };
+        setSelectedUser(normalized);
+
+        // Remplissage direct des champs (inputs non contrôlés comme AddUserModal)
+        if (formRef.current) {
+          formRef.current.reset();
+
+          const nameInput = formRef.current.elements.namedItem("name") as HTMLInputElement | null;
+          const emailInput = formRef.current.elements.namedItem("email") as HTMLInputElement | null;
+          const roleSelect = formRef.current.elements.namedItem("role") as HTMLSelectElement | null;
+
+          if (nameInput) nameInput.value = normalized.name;
+          if (emailInput) emailInput.value = normalized.email;
+          if (roleSelect) roleSelect.value = normalized.role;
+        }
+
+        dialogRef.current?.showModal();
+      },
+    }));
 
     const validate = (data: FormData): Record<string, string> => {
       const errs: Record<string, string> = {};
-      const name  = (data.get("name") as string)?.trim();
+      const name = (data.get("name") as string)?.trim();
       const email = (data.get("email") as string)?.trim();
-      const role  = data.get("role") as string;
+      const role = data.get("role") as string;
 
-      if (!name) errs.name  = "Le nom est requis.";
+      if (!name) errs.name = "Le nom est requis.";
       if (!email || !/\S+@\S+\.\S+/.test(email)) errs.email = "E-mail invalide.";
-      if (!role) errs.role  = "Veuillez choisir un rôle.";
+      if (!role) errs.role = "Veuillez choisir un rôle.";
 
       return errs;
     };
 
     const handleSubmit = async () => {
-      if (!formRef.current) return;
+      if (!formRef.current || !selectedUser) return;
 
       const data = new FormData(formRef.current);
       const errs = validate(data);
-
       if (Object.keys(errs).length) {
         setErrors(errs);
         return;
@@ -71,20 +106,20 @@ const AddUserModal = forwardRef<AddUserModalHandle, AddUserModalProps>(
 
       try {
         const payload = {
-          name:  (data.get("name") as string).trim(),
+          id: selectedUser.id,
+          name: (data.get("name") as string).trim(),
           email: (data.get("email") as string).trim(),
-          role:  data.get("role") as string,
+          role: data.get("role") as string,
         };
 
-        const res = await createUser(payload);
+        const res: any = await updateUser(payload);
 
         if (res?.error) {
-          console.log(res)
           toast.error(res.error);
           return;
         }
 
-        toast.success(res.message);
+        toast.success(res?.message || "Utilisateur mis à jour.");
         close();
         onSuccess?.();
       } catch {
@@ -101,19 +136,18 @@ const AddUserModal = forwardRef<AddUserModalHandle, AddUserModalProps>(
         onClose={close}
       >
         <div className="modal-box bg-neutral-900 border border-white/10 shadow-2xl p-0 overflow-hidden max-w-lg w-full">
-
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/15 text-primary">
-                <UserPlus size={18} />
+                <UserRoundCog size={18} />
               </div>
               <div>
                 <h3 className="font-semibold text-white text-base leading-tight">
-                  Ajouter un utilisateur
+                  Modifier un utilisateur
                 </h3>
                 <p className="text-xs text-white/35 mt-0.5">
-                  Créer un nouveau compte dans Memorium
+                  Mettre à jour les informations du compte
                 </p>
               </div>
             </div>
@@ -129,7 +163,6 @@ const AddUserModal = forwardRef<AddUserModalHandle, AddUserModalProps>(
           {/* Formulaire */}
           <form ref={formRef} onSubmit={(e) => e.preventDefault()} noValidate>
             <div className="px-6 py-5 space-y-4">
-
               {/* Nom */}
               <div className="form-control gap-1.5">
                 <label className="text-xs font-medium text-white/55 uppercase tracking-wider">
@@ -144,9 +177,7 @@ const AddUserModal = forwardRef<AddUserModalHandle, AddUserModalProps>(
                   }`}
                   onChange={() => setErrors((e) => ({ ...e, name: "" }))}
                 />
-                {errors.name && (
-                  <p className="text-xs text-error/80">{errors.name}</p>
-                )}
+                {errors.name && <p className="text-xs text-error/80">{errors.name}</p>}
               </div>
 
               {/* Email */}
@@ -163,9 +194,7 @@ const AddUserModal = forwardRef<AddUserModalHandle, AddUserModalProps>(
                   }`}
                   onChange={() => setErrors((e) => ({ ...e, email: "" }))}
                 />
-                {errors.email && (
-                  <p className="text-xs text-error/80">{errors.email}</p>
-                )}
+                {errors.email && <p className="text-xs text-error/80">{errors.email}</p>}
               </div>
 
               {/* Rôle */}
@@ -190,9 +219,7 @@ const AddUserModal = forwardRef<AddUserModalHandle, AddUserModalProps>(
                     </option>
                   ))}
                 </select>
-                {errors.role && (
-                  <p className="text-xs text-error/80">{errors.role}</p>
-                )}
+                {errors.role && <p className="text-xs text-error/80">{errors.role}</p>}
               </div>
             </div>
 
@@ -217,12 +244,12 @@ const AddUserModal = forwardRef<AddUserModalHandle, AddUserModalProps>(
                 {loading ? (
                   <>
                     <Loader2 size={14} className="animate-spin" />
-                    Création…
+                    Mise à jour…
                   </>
                 ) : (
                   <>
-                    <UserPlus size={14} />
-                    Créer
+                    <UserRoundCog size={14} />
+                    Enregistrer
                   </>
                 )}
               </motion.button>
@@ -239,5 +266,6 @@ const AddUserModal = forwardRef<AddUserModalHandle, AddUserModalProps>(
   }
 );
 
-AddUserModal.displayName = "AddUserModal";
-export default AddUserModal;
+UpdateUserModal.displayName = "UpdateUserModal";
+export default UpdateUserModal;
+
