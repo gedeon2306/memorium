@@ -59,7 +59,6 @@ class Famille(models.Model):
     profession = models.CharField(max_length=50)
     telephone = models.CharField(max_length=50, unique=True)
     email = models.EmailField(max_length=100, unique=True)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='familles')
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
