@@ -42,6 +42,24 @@ def _error_server():
     )
 
 
+def _users_admin_forbidden():
+    return Response(
+        {"error": "Vous n'avez pas les droits pour gérer les utilisateurs."},
+        status=status.HTTP_403_FORBIDDEN,
+    )
+
+
+def _is_users_admin(user):
+    return user.role == "Administrateur" or user.is_staff
+
+
+def _familles_delete_forbidden():
+    return Response(
+        {"error": "Vous n'avez pas les droits pour supprimer une famille."},
+        status=status.HTTP_403_FORBIDDEN,
+    )
+
+
 @extend_schema(
     tags=["Auth"],
     summary="Créer un compte utilisateur",
@@ -958,17 +976,6 @@ def upload_profil_photo(request):
         )
 
 
-def _users_admin_forbidden():
-    return Response(
-        {"error": "Vous n'avez pas les droits pour gérer les utilisateurs."},
-        status=status.HTTP_403_FORBIDDEN,
-    )
-
-
-def _is_users_admin(user):
-    return user.role == "Administrateur" or user.is_staff
-
-
 @extend_schema(
     tags=["Utilisateurs"],
     methods=["GET"],
@@ -1143,7 +1150,163 @@ def users(request):
         )
 
 
+@extend_schema(
+    tags=["Familles"],
+    methods=["GET"],
+    summary="Lister les familles",
+    description="Retourne la liste des familles (utilisateurs authentifiés).",
+    responses={
+        200: FamilleSerializer(many=True),
+    },
+)
+@extend_schema(
+    tags=["Familles"],
+    methods=["POST"],
+    summary="Créer une famille",
+    description="Crée une famille ; le créateur est associé automatiquement (champ user).",
+    request=FamilleSerializer,
+    responses={
+        201: FamilleSerializer,
+        400: inline_serializer(
+            name="FamillesCreateError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@extend_schema(
+    tags=["Familles"],
+    methods=["PUT"],
+    summary="Mettre à jour une famille",
+    description="Met à jour une famille par son identifiant. Champs modifiables selon FamilleSerializer.",
+    request=FamilleSerializer,
+    responses={
+        200: inline_serializer(
+            name="FamillesUpdateResponse",
+            fields={"message": drf_serializers.CharField()},
+        ),
+        400: inline_serializer(
+            name="FamillesUpdateError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="FamillesUpdateNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@extend_schema(
+    tags=["Familles"],
+    methods=["DELETE"],
+    summary="Supprimer une famille",
+    description="Supprime une famille par son identifiant (réservé aux administrateurs). Passer l'id en query (?id=) ou dans le corps.",
+    responses={
+        204: inline_serializer(
+            name="FamillesDeleteResponse",
+            fields={"message": drf_serializers.CharField()},
+        ),
+        400: inline_serializer(
+            name="FamillesDeleteError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        403: inline_serializer(
+            name="FamillesDeleteForbidden",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="FamillesDeleteNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@api_view(["GET", "POST", "PUT", "DELETE"])
+@permission_classes([IsAuthenticated])
+def familles(request):
 
+    if request.method == "GET":
+        search = request.query_params.get("search", "").strip()
+        ordering = request.query_params.get("ordering", "name")
+
+        ALLOWED_ORDERING = {
+            "name-asc": "nom_famille",
+            "name-desc": "-nom_famille",
+            "recent": "-created_at",
+        }
+        order_field = ALLOWED_ORDERING.get(ordering, "nom_famille")
+
+        familles_qs = Famille.objects.all()
+
+        if search:
+            familles_qs = familles_qs.filter(
+                Q(nom_famille__icontains=search)
+                | Q(nom_garrant__icontains=search)
+                | Q(email__icontains=search)
+                | Q(telephone__icontains=search)
+            )
+
+        familles_qs = familles_qs.order_by(order_field)
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 5
+        result_page = paginator.paginate_queryset(familles_qs, request)
+        serializer = FamilleSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    if request.method == "POST":
+        serializer = FamilleSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Famille créée avec succès !"},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "PUT":
+        famille_id = request.data.get("id")
+        if not famille_id:
+            return Response(
+                {"error": "L'identifiant famille (id) est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            target = Famille.objects.get(pk=famille_id)
+        except Famille.DoesNotExist:
+            return Response(
+                {"error": "Famille introuvable."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        payload = {k: v for k, v in request.data.items() if k != "id"}
+        serializer = FamilleSerializer(target, data=payload, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Données mise à jour avec succès."},
+                status=status.HTTP_200_OK,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "DELETE":
+        if not _is_users_admin(request.user):
+            return _familles_delete_forbidden()
+
+        famille_id = request.query_params.get("id") or request.data.get("id")
+        if not famille_id:
+            return Response(
+                {"error": "L'identifiant famille (id) est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            target = Famille.objects.get(pk=famille_id)
+        except Famille.DoesNotExist:
+            return Response(
+                {"error": "Famille introuvable."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        target.delete()
+        return Response(
+            {"message": "Famille supprimée avec succès."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
 
 
 
