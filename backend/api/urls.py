@@ -15,6 +15,7 @@ from .views import (
     update_password,
     upload_profil_photo,
     users,
+    familles,
 )
 
 urlpatterns = [
@@ -57,4 +58,7 @@ urlpatterns = [
     
     # Gestion des utilisateurs (réservé aux administrateurs)
     path('admin/users/', users, name='admin_users'),
+
+    # Gestion des familles (suppression réservée aux administrateurs)
+    path('admin/familles/', familles, name='admin_familles'),
 ]
