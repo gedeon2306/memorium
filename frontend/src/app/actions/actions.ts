@@ -345,4 +345,35 @@ export async function deleteUser(payload: { id: string }) {
 }
 
 
+export async function getFamiliesList(page: number = 1, search: string = "", ordering: string = "name-asc") {
+  const token = await getToken();
+
+  const params = new URLSearchParams({ page: String(page) });
+  if (search) params.append("search", search);
+  if (ordering) params.append("ordering", ordering);
+  const url = `admin/familles/?${params.toString()}`;
+
+  try {
+    const response = await api.get(url, authConfig(token));
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return null;
+      try {
+        const response = await api.get(url, authConfig(newToken));
+        return response.data;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error };
+      }
+    }
+    const errorMessage =
+      error.response?.data?.error ||
+      error.response?.data?.message ||
+      "Une erreur est survenue";
+    return { error: errorMessage };
+  }
+}
+
+
 
