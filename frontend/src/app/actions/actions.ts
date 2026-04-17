@@ -351,7 +351,7 @@ export async function getFamiliesList(page: number = 1, search: string = "", ord
   const params = new URLSearchParams({ page: String(page) });
   if (search) params.append("search", search);
   if (ordering) params.append("ordering", ordering);
-  const url = `admin/familles/?${params.toString()}`;
+  const url = `dashboard/familles/?${params.toString()}`;
 
   try {
     const response = await api.get(url, authConfig(token));
@@ -376,4 +376,88 @@ export async function getFamiliesList(page: number = 1, search: string = "", ord
 }
 
 
+export async function createFamily(payload: {name: string;email: string;telephone: string;}) {
+  const token = await getToken();
+  const url = "dashboard/familles/";
+ 
+  try {
+    const response = await api.post(url, payload, authConfig(token));
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return null;
+      try {
+        const response = await api.post(url, payload, authConfig(newToken));
+        return response.data;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error };
+      }
+    }
+    return {
+      error:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Une erreur est survenue",
+    };
+  }
+}
 
+
+export async function updateFamily(payload: {id: string;name: string;email: string;telephone: string;}) {
+  const token = await getToken();
+  const url = "dashboard/familles/";
+ 
+  try {
+    const response = await api.put(url, payload, authConfig(token));
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();    
+      if (!newToken) return null;
+      try {
+        const response = await api.put(url, payload, authConfig(newToken));
+        return response.data;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error };
+      }
+    }
+    return {
+      error:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Une erreur est survenue",
+    };
+  }
+}
+
+
+export async function deleteFamily(payload: { id: string }) {
+  const token = await getToken();
+  const baseURL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+  const url = `${baseURL}/api/dashboard/familles/`;
+
+  const getConfig = (t: string): RequestInit => ({
+    method: 'DELETE',
+    headers: { 
+      'Authorization': `Bearer ${t}`,
+      'Content-Type': 'application/json' 
+    },
+    body: JSON.stringify(payload)
+  });
+
+  try {
+    let response = await fetch(url, getConfig(token));
+
+    if (response.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return false;
+
+      response = await fetch(url, getConfig(newToken));
+    }
+    return response.ok; 
+
+  } catch (error) {
+    return false;
+  }
+}
