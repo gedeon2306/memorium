@@ -19,10 +19,9 @@ class FamilleSerializer(serializers.ModelSerializer):
         model = Famille
         fields = [
             'id', 'nom_famille', 'nom_garrant', 'profession', 'telephone', 
-            'email', 'user', 'created_at'
+            'email', 'created_at'
         ]
-        read_only_fields = ['user', 'id', 'created_at']
-    
+        read_only_fields = ['id', 'created_at']
 
 class DefuntSerializer(serializers.ModelSerializer):
     famille_details = FamilleSerializer(source='famille', read_only=True)
