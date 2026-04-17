@@ -60,5 +60,5 @@ urlpatterns = [
     path('admin/users/', users, name='admin_users'),
 
     # Gestion des familles (suppression réservée aux administrateurs)
-    path('admin/familles/', familles, name='admin_familles'),
+    path('dashboard/familles/', familles, name='dashboard_familles'),
 ]
