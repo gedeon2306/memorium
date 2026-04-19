@@ -1,8 +1,8 @@
 "use client";
 
 import { getFamiliesList } from "@/app/actions/actions";
-import AddFamilyModal, { AddFamilyModalHandle } from "@/components/AddFamilyModal";
-import Pagination from "@/components/Pagination";
+import AddFamilyModal, { AddFamilyModalHandle } from "@/components/familiesComponents/AddFamilyModal";
+import Pagination from "@/components/uxComponents/Pagination";
 import { motion } from "framer-motion";
 import { ContactRound, Search, ChevronsUpDown, Users } from "lucide-react";
 import { useCallback, useEffect, useState, useRef } from "react";
