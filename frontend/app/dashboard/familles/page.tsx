@@ -3,9 +3,18 @@
 import { getFamiliesList } from "@/app/actions/actions";
 import AddFamilyModal, { AddFamilyModalHandle } from "@/components/familiesComponents/AddFamilyModal";
 import UpdateFamilyModal, { UpdateFamilyModalHandle } from "@/components/familiesComponents/UpdateFamilyModal";
+import DeleteFamilyModal, { DeleteFamilyModalHandle } from "@/components/familiesComponents/DeleteFamilyModal";
 import Pagination from "@/components/uxComponents/Pagination";
 import { motion } from "framer-motion";
-import { ContactRound, Search, ChevronsUpDown, Users, MoreHorizontal, SquarePen } from "lucide-react";
+import {
+  ContactRound,
+  Search,
+  ChevronsUpDown,
+  Users,
+  MoreHorizontal,
+  SquarePen,
+  Trash2,
+} from "lucide-react";
 import { useCallback, useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
 
@@ -50,6 +59,7 @@ export default function FamillesPage() {
 
   const addModalRef = useRef<AddFamilyModalHandle>(null);
   const updateModalRef = useRef<UpdateFamilyModalHandle>(null);
+  const deleteModalRef = useRef<DeleteFamilyModalHandle>(null);
 
   const debouncedSearch = useDebounce(search, 400);
 
@@ -107,6 +117,10 @@ export default function FamillesPage() {
       />
       <UpdateFamilyModal
         ref={updateModalRef}
+        onSuccess={() => loadFamilles(currentPage, debouncedSearch, ordering)}
+      />
+      <DeleteFamilyModal
+        ref={deleteModalRef}
         onSuccess={() => loadFamilles(currentPage, debouncedSearch, ordering)}
       />
 
@@ -244,6 +258,16 @@ export default function FamillesPage() {
                                 >
                                   <SquarePen size={14} />
                                   Modifier
+                                </button>
+                              </li>
+                              <li>
+                                <button
+                                  type="button"
+                                  onClick={() => deleteModalRef.current?.open(famille)}
+                                  className="justify-start gap-2 text-error/80 hover:text-error"
+                                >
+                                  <Trash2 size={14} />
+                                  Supprimer
                                 </button>
                               </li>
                             </ul>

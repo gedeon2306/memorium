@@ -6,6 +6,19 @@ import { UserPlus, X, Loader2 } from "lucide-react";
 import { useRef, useState, forwardRef, useImperativeHandle } from "react";
 import toast from "react-hot-toast";
 
+function formatApiError(err: unknown): string {
+  if (typeof err === "string") return err;
+  if (err && typeof err === "object") {
+    const parts: string[] = [];
+    for (const v of Object.values(err as Record<string, unknown>)) {
+      if (Array.isArray(v)) parts.push(...v.map(String));
+      else if (typeof v === "string") parts.push(v);
+    }
+    if (parts.length) return parts.join(" ");
+  }
+  return "Données invalides ou erreur serveur.";
+}
+
 const ROLES = [
   { value: "Administrateur", label: "Administrateur" },
   { value: "Assistant", label: "Assistant" },
@@ -78,13 +91,20 @@ const AddUserModal = forwardRef<AddUserModalHandle, AddUserModalProps>(
 
         const res = await createUser(payload);
 
-        if (res?.error) {
-          console.log(res)
-          toast.error(res.error);
+        if (res == null) {
+          toast.error("Session expirée ou accès refusé.");
+          return;
+        }
+        if (res && typeof res === "object" && "error" in res && res.error) {
+          toast.error(formatApiError(res.error));
           return;
         }
 
-        toast.success(res.message);
+        const message =
+          res && typeof res === "object" && "message" in res && typeof res.message === "string"
+            ? res.message
+            : "Utilisateur créé.";
+        toast.success(message);
         close();
         onSuccess?.();
       } catch {
