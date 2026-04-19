@@ -2,9 +2,10 @@
 
 import { getFamiliesList } from "@/app/actions/actions";
 import AddFamilyModal, { AddFamilyModalHandle } from "@/components/familiesComponents/AddFamilyModal";
+import UpdateFamilyModal, { UpdateFamilyModalHandle } from "@/components/familiesComponents/UpdateFamilyModal";
 import Pagination from "@/components/uxComponents/Pagination";
 import { motion } from "framer-motion";
-import { ContactRound, Search, ChevronsUpDown, Users } from "lucide-react";
+import { ContactRound, Search, ChevronsUpDown, Users, MoreHorizontal, SquarePen } from "lucide-react";
 import { useCallback, useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
 
@@ -48,6 +49,7 @@ export default function FamillesPage() {
   const [ordering, setOrdering] = useState("name-asc");
 
   const addModalRef = useRef<AddFamilyModalHandle>(null);
+  const updateModalRef = useRef<UpdateFamilyModalHandle>(null);
 
   const debouncedSearch = useDebounce(search, 400);
 
@@ -102,6 +104,10 @@ export default function FamillesPage() {
       <AddFamilyModal
         ref={addModalRef}
         onSuccess={() => loadFamilles(1, debouncedSearch, ordering)}
+      />
+      <UpdateFamilyModal
+        ref={updateModalRef}
+        onSuccess={() => loadFamilles(currentPage, debouncedSearch, ordering)}
       />
 
       <motion.div
@@ -179,12 +185,13 @@ export default function FamillesPage() {
                     <th className="bg-transparent font-normal hidden lg:table-cell">Profession</th>
                     <th className="bg-transparent font-normal">Téléphone</th>
                     <th className="bg-transparent font-normal hidden sm:table-cell">E-mail</th>
+                    <th className="bg-transparent font-normal w-12" />
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={6} className="text-center py-6">
+                      <td colSpan={7} className="text-center py-6">
                         <span className="loading loading-spinner loading-sm" />
                       </td>
                     </tr>
@@ -215,11 +222,38 @@ export default function FamillesPage() {
                         <td className="px-2 py-3 whitespace-nowrap text-white/45 text-xs hidden sm:table-cell">
                           {famille.email}
                         </td>
+                        <td className="px-2 py-3">
+                          <div className="dropdown dropdown-end">
+                            <button
+                              type="button"
+                              tabIndex={0}
+                              className="btn btn-ghost btn-xs btn-square text-white/20 hover:text-white/60"
+                              aria-label="Actions"
+                            >
+                              <MoreHorizontal size={13} />
+                            </button>
+                            <ul
+                              tabIndex={0}
+                              className="dropdown-content menu p-2 shadow bg-neutral-900 border border-white/10 rounded-box w-44"
+                            >
+                              <li>
+                                <button
+                                  type="button"
+                                  onClick={() => updateModalRef.current?.open(famille)}
+                                  className="justify-start gap-2 text-white/80 hover:text-white"
+                                >
+                                  <SquarePen size={14} />
+                                  Modifier
+                                </button>
+                              </li>
+                            </ul>
+                          </div>
+                        </td>
                       </motion.tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="text-center text-sm py-6 text-white/40">
+                      <td colSpan={7} className="text-center text-sm py-6 text-white/40">
                         {search
                           ? `Aucun résultat pour « ${search} ».`
                           : "Aucune famille enregistrée."}
