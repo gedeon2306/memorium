@@ -1229,6 +1229,7 @@ def familles(request):
         ALLOWED_ORDERING = {
             "name-asc": "nom_famille",
             "name-desc": "-nom_famille",
+            "profession": "profession",
             "recent": "-created_at",
         }
         order_field = ALLOWED_ORDERING.get(ordering, "nom_famille")
@@ -1252,7 +1253,9 @@ def familles(request):
         return paginator.get_paginated_response(serializer.data)
 
     if request.method == "POST":
-        serializer = FamilleSerializer(data=request.data)
+        data = request.data.copy()
+        data["email"] = BaseUserManager.normalize_email(data["email"]).lower()
+        serializer = FamilleSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(

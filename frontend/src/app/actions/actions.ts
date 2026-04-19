@@ -3,10 +3,7 @@
 import api from '@/constants/api';
 import { cookies } from 'next/headers';
 
-// ─────────────────────────────────────────────
-// Fonction utilitaire : renouvelle l'access token
-// si Django répond 401 (token expiré)
-// ─────────────────────────────────────────────
+
 async function refreshAccessToken(): Promise<string | null> {
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get('refresh_token')?.value;
@@ -44,6 +41,51 @@ async function getToken(): Promise<string> {
   if (!token) throw new Error("Non authentifié");
   return token;
 }
+
+async function readFetchResponseJson(response: Response): Promise<unknown | null> {
+  const text = await response.text();
+  if (!text.trim()) return null;
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return null;
+  }
+}
+
+function messageFromErrorBody(data: unknown): string {
+  if (data == null) return "L’opération a échoué.";
+  if (typeof data === "string") return data;
+  if (typeof data !== "object") return "L’opération a échoué.";
+  const o = data as Record<string, unknown>;
+  if (typeof o.error === "string") return o.error;
+  if (typeof o.message === "string") return o.message;
+  if (typeof o.detail === "string") return o.detail;
+  if (Array.isArray(o.detail) && o.detail.length > 0) {
+    const first = o.detail[0];
+    return typeof first === "string" ? first : String(first);
+  }
+  const parts: string[] = [];
+  for (const v of Object.values(o)) {
+    if (Array.isArray(v)) parts.push(...v.map(String));
+    else if (typeof v === "string") parts.push(v);
+  }
+  if (parts.length) return parts.join(" ");
+  return "L’opération a échoué.";
+}
+
+function messageFromSuccessBody(data: unknown): string | undefined {
+  if (data && typeof data === "object" && "message" in data) {
+    const m = (data as { message: unknown }).message;
+    if (typeof m === "string" && m.trim()) return m;
+  }
+  return undefined;
+}
+
+/** Résultat des suppressions via fetch (DELETE). */
+export type DeleteEntityResult =
+  | { success: true; message?: string }
+  | { success: false; error: string }
+  | null;
 
 
 export async function getUserProfil() {
@@ -314,18 +356,19 @@ export async function updateUser(payload: {id: string; name: string;email: strin
 }
 
 
-export async function deleteUser(payload: { id: string }) {
+export async function deleteUser(payload: { id: string }): Promise<DeleteEntityResult> {
   const token = await getToken();
-  const baseURL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
-  const url = `${baseURL}/api/admin/users/`;
+  const raw = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "";
+  const base = raw.replace(/\/+$/, "");
+  const url = `${base}/api/admin/users/`;
 
   const getConfig = (t: string): RequestInit => ({
-    method: 'DELETE',
-    headers: { 
-      'Authorization': `Bearer ${t}`,
-      'Content-Type': 'application/json' 
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${t}`,
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
 
   try {
@@ -333,14 +376,22 @@ export async function deleteUser(payload: { id: string }) {
 
     if (response.status === 401) {
       const newToken = await refreshAccessToken();
-      if (!newToken) return false;
-
+      if (!newToken) return null;
       response = await fetch(url, getConfig(newToken));
     }
-    return response.ok; 
 
-  } catch (error) {
-    return false;
+    const data = await readFetchResponseJson(response);
+
+    if (response.ok) {
+      return {
+        success: true,
+        message: messageFromSuccessBody(data),
+      };
+    }
+
+    return { success: false, error: messageFromErrorBody(data) };
+  } catch {
+    return { success: false, error: "Une erreur réseau est survenue." };
   }
 }
 
@@ -376,7 +427,13 @@ export async function getFamiliesList(page: number = 1, search: string = "", ord
 }
 
 
-export async function createFamily(payload: {name: string;email: string;telephone: string;}) {
+export async function createFamily(payload: {
+  nom_famille: string;
+  nom_garrant: string;
+  profession: string;
+  telephone: string;
+  email: string;
+}) {
   const token = await getToken();
   const url = "dashboard/familles/";
  
@@ -404,7 +461,14 @@ export async function createFamily(payload: {name: string;email: string;telephon
 }
 
 
-export async function updateFamily(payload: {id: string;name: string;email: string;telephone: string;}) {
+export async function updateFamily(payload: {
+  id: string;
+  nom_famille: string;
+  nom_garrant: string;
+  profession: string;
+  telephone: string;
+  email: string;
+}) {
   const token = await getToken();
   const url = "dashboard/familles/";
  
@@ -432,18 +496,19 @@ export async function updateFamily(payload: {id: string;name: string;email: stri
 }
 
 
-export async function deleteFamily(payload: { id: string }) {
+export async function deleteFamily(payload: { id: string }): Promise<DeleteEntityResult> {
   const token = await getToken();
-  const baseURL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
-  const url = `${baseURL}/api/dashboard/familles/`;
+  const raw = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "";
+  const base = raw.replace(/\/+$/, "");
+  const url = `${base}/api/dashboard/familles/`;
 
   const getConfig = (t: string): RequestInit => ({
-    method: 'DELETE',
-    headers: { 
-      'Authorization': `Bearer ${t}`,
-      'Content-Type': 'application/json' 
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${t}`,
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
 
   try {
@@ -451,13 +516,24 @@ export async function deleteFamily(payload: { id: string }) {
 
     if (response.status === 401) {
       const newToken = await refreshAccessToken();
-      if (!newToken) return false;
-
+      if (!newToken) return null;
       response = await fetch(url, getConfig(newToken));
     }
-    return response.ok; 
 
-  } catch (error) {
-    return false;
+    const data = await readFetchResponseJson(response);
+
+    if (response.ok) {
+      return {
+        success: true,
+        message: messageFromSuccessBody(data),
+      };
+    }
+
+    return { success: false, error: messageFromErrorBody(data) };
+  } catch {
+    return { success: false, error: "Une erreur réseau est survenue." };
   }
 }
+
+
+

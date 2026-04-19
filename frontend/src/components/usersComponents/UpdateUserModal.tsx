@@ -7,6 +7,19 @@ import toast from "react-hot-toast";
 
 import { updateUser } from "@/app/actions/actions";
 
+function formatApiError(err: unknown): string {
+  if (typeof err === "string") return err;
+  if (err && typeof err === "object") {
+    const parts: string[] = [];
+    for (const v of Object.values(err as Record<string, unknown>)) {
+      if (Array.isArray(v)) parts.push(...v.map(String));
+      else if (typeof v === "string") parts.push(v);
+    }
+    if (parts.length) return parts.join(" ");
+  }
+  return "Données invalides ou erreur serveur.";
+}
+
 const ROLES = [
   { value: "Administrateur", label: "Administrateur" },
   { value: "Assistant", label: "Assistant" },
@@ -112,14 +125,22 @@ const UpdateUserModal = forwardRef<UpdateUserModalHandle, UpdateUserModalProps>(
           role: data.get("role") as string,
         };
 
-        const res: any = await updateUser(payload);
+        const res = await updateUser(payload);
 
-        if (res?.error) {
-          toast.error(res.error);
+        if (res == null) {
+          toast.error("Session expirée ou accès refusé.");
+          return;
+        }
+        if (res && typeof res === "object" && "error" in res && res.error) {
+          toast.error(formatApiError(res.error));
           return;
         }
 
-        toast.success(res?.message || "Utilisateur mis à jour.");
+        const message =
+          res && typeof res === "object" && "message" in res && typeof res.message === "string"
+            ? res.message
+            : "Utilisateur mis à jour.";
+        toast.success(message);
         close();
         onSuccess?.();
       } catch {

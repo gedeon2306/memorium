@@ -1,62 +1,66 @@
 "use client";
 
+import { deleteFamily } from "@/app/actions/actions";
 import { motion } from "framer-motion";
 import { AlertTriangle, Loader2, Trash2, X } from "lucide-react";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
-import { deleteUser } from "@/app/actions/actions";
-
-export interface DeleteUserModalHandle {
-  open: (user: { id: string | number; name?: string }) => void;
+export interface DeleteFamilyModalHandle {
+  open: (famille: { id: string; nom_famille?: string }) => void;
 }
 
-interface DeleteUserModalProps {
+interface DeleteFamilyModalProps {
   onSuccess?: () => void;
 }
 
-type SelectedUser = {
+type SelectedFamille = {
   id: string;
-  name?: string;
+  nom_famille?: string;
 };
 
-const DeleteUserModal = forwardRef<DeleteUserModalHandle, DeleteUserModalProps>(
+const DeleteFamilyModal = forwardRef<DeleteFamilyModalHandle, DeleteFamilyModalProps>(
   ({ onSuccess }, ref) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
 
-    const [selectedUser, setSelectedUser] = useState<SelectedUser | null>(null);
+    const [selected, setSelected] = useState<SelectedFamille | null>(null);
     const [loading, setLoading] = useState(false);
 
     const close = () => {
       dialogRef.current?.close();
       setLoading(false);
-      setSelectedUser(null);
+      setSelected(null);
     };
 
     useImperativeHandle(ref, () => ({
-      open: (user) => {
-        setSelectedUser({
-          id: String(user.id),
-          name: user.name,
+      open: (famille) => {
+        setSelected({
+          id: String(famille.id),
+          nom_famille: famille.nom_famille,
         });
         dialogRef.current?.showModal();
       },
     }));
 
     const handleConfirm = async () => {
-      if (!selectedUser) return;
+      if (!selected) return;
 
       setLoading(true);
 
       try {
-        const ok: any = await deleteUser({ id: selectedUser.id });
+        const result = await deleteFamily({ id: selected.id });
 
-        if (!ok) {
-          toast.error("Impossible de supprimer cet utilisateur.");
+        if (result == null) {
+          toast.error("Session expirée ou accès refusé.");
           return;
         }
 
-        toast.success("Utilisateur supprimé.");
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+
+        toast.success(result.message ?? "Famille supprimée.");
         close();
         onSuccess?.();
       } catch {
@@ -73,7 +77,6 @@ const DeleteUserModal = forwardRef<DeleteUserModalHandle, DeleteUserModalProps>(
         onClose={close}
       >
         <div className="modal-box bg-neutral-900 border border-white/10 shadow-2xl p-0 overflow-hidden max-w-lg w-full">
-          {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-error/15 text-error">
@@ -81,7 +84,7 @@ const DeleteUserModal = forwardRef<DeleteUserModalHandle, DeleteUserModalProps>(
               </div>
               <div>
                 <h3 className="font-semibold text-white text-base leading-tight">
-                  Supprimer un utilisateur
+                  Supprimer une famille
                 </h3>
                 <p className="text-xs text-white/35 mt-0.5">
                   Cette action est irréversible.
@@ -97,7 +100,6 @@ const DeleteUserModal = forwardRef<DeleteUserModalHandle, DeleteUserModalProps>(
             </button>
           </div>
 
-          {/* Body */}
           <div className="px-6 py-5">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 text-error">
@@ -105,15 +107,14 @@ const DeleteUserModal = forwardRef<DeleteUserModalHandle, DeleteUserModalProps>(
               </div>
               <div>
                 <p className="text-sm text-white/70">
-                  {selectedUser?.name
-                    ? `Confirmer la suppression de « ${selectedUser.name} ».`
-                    : "Confirmer la suppression de cet utilisateur."}
+                  {selected?.nom_famille
+                    ? `Confirmer la suppression de la famille « ${selected.nom_famille} ».`
+                    : "Confirmer la suppression de cette famille."}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Footer */}
           <div className="px-6 py-4 border-t border-white/8 flex items-center justify-end gap-3">
             <button
               type="button"
@@ -147,7 +148,6 @@ const DeleteUserModal = forwardRef<DeleteUserModalHandle, DeleteUserModalProps>(
           </div>
         </div>
 
-        {/* Backdrop cliquable */}
         <form method="dialog" className="modal-backdrop">
           <button type="submit">Fermer</button>
         </form>
@@ -156,6 +156,5 @@ const DeleteUserModal = forwardRef<DeleteUserModalHandle, DeleteUserModalProps>(
   }
 );
 
-DeleteUserModal.displayName = "DeleteUserModal";
-export default DeleteUserModal;
-
+DeleteFamilyModal.displayName = "DeleteFamilyModal";
+export default DeleteFamilyModal;

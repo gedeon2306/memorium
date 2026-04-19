@@ -1,10 +1,10 @@
 "use client";
 
 import { getUsersList } from "@/app/actions/actions";
-import Pagination from "@/components/Pagination";
-import AddUserModal, { AddUserModalHandle } from "@/components/AddUserModal";
-import UpdateUserModal, { UpdateUserModalHandle } from "@/components/UpdateUserModal";
-import DeleteUserModal, { DeleteUserModalHandle } from "@/components/DeleteUserModal";
+import Pagination from "@/components/uxComponents/Pagination";
+import AddUserModal, { AddUserModalHandle } from "@/components/usersComponents/AddUserModal";
+import UpdateUserModal, { UpdateUserModalHandle } from "@/components/usersComponents/UpdateUserModal";
+import DeleteUserModal, { DeleteUserModalHandle } from "@/components/usersComponents/DeleteUserModal";
 import { motion } from "framer-motion";
 import {
   UserRoundCog,
