@@ -1229,6 +1229,7 @@ def familles(request):
         ALLOWED_ORDERING = {
             "name-asc": "nom_famille",
             "name-desc": "-nom_famille",
+            "profession": "profession",
             "recent": "-created_at",
         }
         order_field = ALLOWED_ORDERING.get(ordering, "nom_famille")
