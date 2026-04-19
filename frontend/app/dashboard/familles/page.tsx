@@ -92,7 +92,7 @@ export default function FamillesPage() {
       setTotalCount(0);
       setTotalPages(1);
     } catch {
-      toast.error("Un problème  est survenu pendant le chargement des données");
+      toast.error("Un problème est survenu pendant le chargement des données");
       setFamilles([]);
       setTotalCount(0);
       setTotalPages(1);
