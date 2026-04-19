@@ -376,7 +376,13 @@ export async function getFamiliesList(page: number = 1, search: string = "", ord
 }
 
 
-export async function createFamily(payload: {name: string;email: string;telephone: string;}) {
+export async function createFamily(payload: {
+  nom_famille: string;
+  nom_garrant: string;
+  profession: string;
+  telephone: string;
+  email: string;
+}) {
   const token = await getToken();
   const url = "dashboard/familles/";
  
@@ -404,7 +410,14 @@ export async function createFamily(payload: {name: string;email: string;telephon
 }
 
 
-export async function updateFamily(payload: {id: string;name: string;email: string;telephone: string;}) {
+export async function updateFamily(payload: {
+  id: string;
+  nom_famille: string;
+  nom_garrant: string;
+  profession: string;
+  telephone: string;
+  email: string;
+}) {
   const token = await getToken();
   const url = "dashboard/familles/";
  

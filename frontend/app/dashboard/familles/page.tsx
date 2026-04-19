@@ -1,10 +1,11 @@
 "use client";
 
 import { getFamiliesList } from "@/app/actions/actions";
+import AddFamilyModal, { AddFamilyModalHandle } from "@/components/AddFamilyModal";
 import Pagination from "@/components/Pagination";
 import { motion } from "framer-motion";
-import { ContactRound, Search, ChevronsUpDown } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { ContactRound, Search, ChevronsUpDown, Users } from "lucide-react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
 
 const PAGE_SIZE = 5;
@@ -45,6 +46,8 @@ export default function FamillesPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState("");
   const [ordering, setOrdering] = useState("name-asc");
+
+  const addModalRef = useRef<AddFamilyModalHandle>(null);
 
   const debouncedSearch = useDebounce(search, 400);
 
@@ -95,26 +98,43 @@ export default function FamillesPage() {
   }, [currentPage, debouncedSearch, ordering, loadFamilles]);
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-6 w-full"
-    >
+    <>
+      <AddFamilyModal
+        ref={addModalRef}
+        onSuccess={() => loadFamilles(1, debouncedSearch, ordering)}
+      />
+
       <motion.div
-        variants={itemVariants}
-        className="flex flex-wrap items-center justify-between gap-4"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6 w-full"
       >
-        <div className="min-w-0">
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <ContactRound className="w-8 h-8 shrink-0" />
-            Familles
-          </h1>
-          <p className="mt-2 text-base text-neutral-400">
-            Consultez les familles enregistrées dans Memorium.
-          </p>
-        </div>
-      </motion.div>
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-wrap items-center justify-between gap-4"
+        >
+          <div className="min-w-0">
+            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+              <ContactRound className="w-8 h-8 shrink-0" />
+              Familles
+            </h1>
+            <p className="mt-2 text-base text-neutral-400">
+              Consultez et enregistrez les familles dans Memorium.
+            </p>
+          </div>
+
+          <motion.button
+            type="button"
+            onClick={() => addModalRef.current?.open()}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="btn btn-primary btn-sm gap-2 shrink-0"
+          >
+            <Users size={16} />
+            Ajouter une famille
+          </motion.button>
+        </motion.div>
 
       <motion.div variants={itemVariants}>
         <div className="card glass border border-white/6 bg-white/3 shadow-lg">
@@ -221,5 +241,6 @@ export default function FamillesPage() {
         </div>
       </motion.div>
     </motion.div>
+    </>
   );
 }
