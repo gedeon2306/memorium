@@ -18,14 +18,14 @@ import {
 } from "lucide-react";
 
 const cards = [
-  { label: "Défunts", value: "1 284", delta: "+12%", up: true, icon: Bird, color: "text-rose-400", bg: "bg-rose-400/10" },
-  { label: "Trous totals", value: "8 047", delta: "+4%", up: true, icon: Cuboid, color: "text-amber-400", bg: "bg-amber-400/10" },
-  { label: "Trous disponibles", value: "342", delta: "+8%", up: true, icon: PackageOpen, color: "text-sky-400", bg: "bg-sky-400/10" },
-  { label: "Utilisateurs", value: "96", delta: "-2%", up: false, icon: User, color: "text-violet-400", bg: "bg-violet-400/10" },
-  { label: "Défunts Masculins", value: "511", delta: "+5%", up: true, icon: Mars, color: "text-yellow-400", bg: "bg-yellow-400/10" },
-  { label: "Défunts Féminins", value: "29", delta: "+1%", up: true, icon: Venus, color: "text-emerald-400", bg: "bg-emerald-400/10" },
-  { label: "Défunts Majeurs", value: "7", delta: "+3%", up: true, icon: TrendingUp, color: "text-cyan-400", bg: "bg-cyan-400/10" },
-  { label: "Défunts Mineurs", value: "184", delta: "+22%", up: true, icon: TrendingDown, color: "text-orange-400", bg: "bg-orange-400/10" },
+  { label: "Défunts", value: "205", delta: "+12%", up: true, icon: Bird, color: "text-rose-400", bg: "bg-rose-400/10" },
+  { label: "Trous totals", value: "250", delta: "+4%", up: true, icon: Cuboid, color: "text-amber-400", bg: "bg-amber-400/10" },
+  { label: "Trous disponibles", value: "45", delta: "+8%", up: true, icon: PackageOpen, color: "text-sky-400", bg: "bg-sky-400/10" },
+  { label: "Utilisateurs", value: "12", delta: "-2%", up: false, icon: User, color: "text-violet-400", bg: "bg-violet-400/10" },
+  { label: "Défunts Masculins", value: "150", delta: "+5%", up: true, icon: Mars, color: "text-yellow-400", bg: "bg-yellow-400/10" },
+  { label: "Défunts Féminins", value: "55", delta: "+1%", up: true, icon: Venus, color: "text-emerald-400", bg: "bg-emerald-400/10" },
+  { label: "Défunts Majeurs", value: "150", delta: "+3%", up: true, icon: TrendingUp, color: "text-cyan-400", bg: "bg-cyan-400/10" },
+  { label: "Défunts Mineurs", value: "55", delta: "+22%", up: true, icon: TrendingDown, color: "text-orange-400", bg: "bg-orange-400/10" },
 ];
 
 const transactions = [
@@ -37,11 +37,11 @@ const transactions = [
 ];
 
 const progresses = [
-  { label: "Trous", value: 52, color: "progress-primary" },
-  { label: "Défunts Masculins", value: 58, color: "progress-success" },
-  { label: "Défunts Féminins", value: 84, color: "progress-warning" },
-  { label: "Défunts Majeurs", value: 34, color: "progress-error" },
-  { label: "Défunts Mineurs", value: 78, color: "progress-info" },
+  { label: "Trous", value: 250, color: "progress-primary" },
+  { label: "Défunts Masculins", value: 150, color: "progress-success" },
+  { label: "Défunts Féminins", value: 55, color: "progress-warning" },
+  { label: "Défunts Majeurs", value: 150, color: "progress-error" },
+  { label: "Défunts Mineurs", value: 55, color: "progress-info" },
 ];
 
 const statusBadge: Record<string, string> = {
