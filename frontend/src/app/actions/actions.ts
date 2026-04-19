@@ -1,5 +1,4 @@
 'use server'
-// src/app/actions/actions.ts
 import api from '@/constants/api';
 import { cookies } from 'next/headers';
 
@@ -452,7 +451,7 @@ export async function createFamily(payload: {
       }
     }
     return {
-      error:
+      errorMessage:
         error.response?.data?.error ||
         error.response?.data?.message ||
         "Une erreur est survenue",
@@ -487,7 +486,7 @@ export async function updateFamily(payload: {
       }
     }
     return {
-      error:
+      errorMessage:
         error.response?.data?.error ||
         error.response?.data?.message ||
         "Une erreur est survenue",
