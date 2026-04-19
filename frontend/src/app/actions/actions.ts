@@ -3,10 +3,7 @@
 import api from '@/constants/api';
 import { cookies } from 'next/headers';
 
-// ─────────────────────────────────────────────
-// Fonction utilitaire : renouvelle l'access token
-// si Django répond 401 (token expiré)
-// ─────────────────────────────────────────────
+
 async function refreshAccessToken(): Promise<string | null> {
   const cookieStore = await cookies();
   const refreshToken = cookieStore.get('refresh_token')?.value;
@@ -537,3 +534,6 @@ export async function deleteFamily(payload: { id: string }): Promise<DeleteEntit
     return { success: false, error: "Une erreur réseau est survenue." };
   }
 }
+
+
+
