@@ -1253,7 +1253,9 @@ def familles(request):
         return paginator.get_paginated_response(serializer.data)
 
     if request.method == "POST":
-        serializer = FamilleSerializer(data=request.data)
+        data = request.data.copy()
+        data["email"] = BaseUserManager.normalize_email(data["email"]).lower()
+        serializer = FamilleSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(
