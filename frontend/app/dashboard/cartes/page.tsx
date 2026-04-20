@@ -111,9 +111,9 @@ export default function CartesPage() {
                 key={id}
                 onClick={() => handleClic(id)}
                 title={`Emplacement ${id}`}
-                className={`aspect-square rounded-sm transition-all duration-100 ${getCouleur(id)} ${
-                  selection === id ? "ring-2 ring-white scale-125 z-10 relative" : ""
-                }`}
+                className={`aspect-square rounded-sm transition-all duration-100 hover:scale-125 hover:ring-2 hover:ring-white hover:z-10 hover:relative cursor-pointer ${getCouleur(id)} ${
+                            selection === id ? "ring-2 ring-white scale-125 z-10 relative" : ""
+                          }`}
               />
             ))}
           </div>
