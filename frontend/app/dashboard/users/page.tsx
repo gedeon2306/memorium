@@ -125,7 +125,7 @@ export default function UsersPage() {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <div className="card glass border border-white/6 bg-white/3 shadow-lg">
+          <div className="rounded-2xl border border-white/6 bg-white/3 shadow-lg">
             <div className="card-body p-4 sm:p-5">
 
               {/* Barre de recherche + tri */}
@@ -248,7 +248,7 @@ export default function UsersPage() {
                       <tr>
                         <td colSpan={6} className="text-center text-sm py-6 text-white/40">
                           {search
-                            ? `Aucun résultat pour « ${search} ».`
+                            ? `Aucun résultat pour " ${search} ".`
                             : "Aucun utilisateur trouvé."}
                         </td>
                       </tr>

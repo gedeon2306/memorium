@@ -157,7 +157,7 @@ export default function FamillesPage() {
         </motion.div>
 
       <motion.div variants={itemVariants}>
-        <div className="card glass border border-white/6 bg-white/3 shadow-lg">
+        <div className="rounded-2xl border border-white/6 bg-white/3 shadow-lg">
           <div className="card-body p-4 sm:p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
               <label className="relative flex-1 min-w-0 max-w-md">
@@ -279,7 +279,7 @@ export default function FamillesPage() {
                     <tr>
                       <td colSpan={7} className="text-center text-sm py-6 text-white/40">
                         {search
-                          ? `Aucun résultat pour « ${search} ».`
+                          ? `Aucun résultat pour " ${search} ".`
                           : "Aucune famille enregistrée."}
                       </td>
                     </tr>
