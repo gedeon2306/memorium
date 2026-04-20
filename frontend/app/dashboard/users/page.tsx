@@ -248,7 +248,7 @@ export default function UsersPage() {
                       <tr>
                         <td colSpan={6} className="text-center text-sm py-6 text-white/40">
                           {search
-                            ? `Aucun résultat pour « ${search} ».`
+                            ? `Aucun résultat pour " ${search} ".`
                             : "Aucun utilisateur trouvé."}
                         </td>
                       </tr>
