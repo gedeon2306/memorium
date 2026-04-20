@@ -33,7 +33,7 @@ export async function middleware(request: NextRequest) {
     
     // 2. Protection spécifique : Page Utilisateurs (Réservée aux Administrateurs)
     if (isUsersAdminPage && userData?.role !== 'Administrateur') {
-        return NextResponse.redirect(new URL('/403', request.url));
+        return NextResponse.redirect(new URL('/dashboard/403', request.url));
     }
 
     // 3. Pages d'authentification (Redirection si déjà connecté)
