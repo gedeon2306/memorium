@@ -31,12 +31,12 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL(ROUTES.AUTH.LOGIN, request.url));
     }
     
-    // 2. Protection globale du Dashboard (Redirection si non connecté)
+    // 2. Protection spécifique : Page Utilisateurs (Réservée aux Administrateurs)
     if (isUsersAdminPage && userData?.role !== 'Administrateur') {
-        return NextResponse.redirect(new URL(ROUTES.DASHBOARD.ROOT, request.url));
+        return NextResponse.redirect(new URL('/403', request.url));
     }
 
-    // 3. Protection spécifique : Page Utilisateurs (Réservée aux Administrateurs)
+    // 3. Pages d'authentification (Redirection si déjà connecté)
     if (userData && isAuthRoute) {
         if (pathname === ROUTES.AUTH.FORGOT_PASSWORD || pathname === ROUTES.AUTH.RESET_PASSWORD) {
             return NextResponse.redirect(new URL(ROUTES.DASHBOARD.PROFIL, request.url));
@@ -48,5 +48,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/dashboard/:path*', '/auth/:path*'],
+    matcher: ['/dashboard/:path*', '/auth/:path*', '/forbidden'],
 };
