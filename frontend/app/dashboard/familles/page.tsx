@@ -279,7 +279,7 @@ export default function FamillesPage() {
                     <tr>
                       <td colSpan={7} className="text-center text-sm py-6 text-white/40">
                         {search
-                          ? `Aucun résultat pour « ${search} ».`
+                          ? `Aucun résultat pour " ${search} ".`
                           : "Aucune famille enregistrée."}
                       </td>
                     </tr>
