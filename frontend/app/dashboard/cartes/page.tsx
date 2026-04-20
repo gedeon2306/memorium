@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Map } from "lucide-react";
 
@@ -21,19 +21,23 @@ const defunts = [
 const TOTAL = 250;
 
 export default function CartesPage() {
-  const [selection, setSelection] = useState(null);
+  const [selection, setSelection] = useState<number | null>(null);
+  const ficheRef = useRef<HTMLDivElement>(null);
 
   const defuntSelectionne = defunts.find((d) => d.id === selection);
 
-  function getCouleur(id : any) {
+  function getCouleur(id: number) {
     const defunt = defunts.find((d) => d.id === id);
-    if (!defunt) return "bg-emerald-500 hover:bg-emerald-400";
-    if (defunt.bientot) return "bg-amber-400 hover:bg-amber-300";
-    return "bg-red-500 hover:bg-red-400";
+    if (!defunt) return "bg-success hover:bg-emerald-500";
+    if (defunt.bientot) return "bg-warning hover:bg-amber-300";
+    return "bg-error hover:bg-red-500";
   }
 
-  function handleClic(id : any) {
+  function handleClic(id: number) {
     setSelection(selection === id ? null : id);
+    setTimeout(() => {
+      ficheRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   }
 
   const nbOccupes = defunts.length;
@@ -66,40 +70,40 @@ export default function CartesPage() {
         </div>
         <div className="rounded-2xl border border-white/6 bg-white/3 p-4">
           <p className="text-xs text-neutral-500 mb-1">Occupés</p>
-          <p className="text-2xl font-semibold text-red-400">{nbOccupes}</p>
+          <p className="text-2xl font-semibold text-error">{nbOccupes}</p>
         </div>
         <div className="rounded-2xl border border-white/6 bg-white/3 p-4">
           <p className="text-xs text-neutral-500 mb-1">Disponibles</p>
-          <p className="text-2xl font-semibold text-emerald-400">{nbLibres}</p>
+          <p className="text-2xl font-semibold text-success">{nbLibres}</p>
         </div>
         <div className="rounded-2xl border border-white/6 bg-white/3 p-4">
           <p className="text-xs text-neutral-500 mb-1">Taux de remplissage</p>
-          <p className={`text-2xl font-semibold ${taux >= 90 ? "text-red-400" : "text-white"}`}>
+          <p className={`text-2xl font-semibold ${taux >= 90 ? "text-error" : "text-white"}`}>
             {taux}%
           </p>
         </div>
       </div>
 
       {/* Carte */}
-      <div className="card glass border border-white/6 bg-white/3 shadow-lg">
+      <div className="rounded-2xl border border-white/6 bg-white/3 shadow-lg">
         <div className="card-body p-6 space-y-5">
 
           {/* Légende */}
           <div className="flex flex-wrap gap-4">
             <div className="flex items-center gap-2 text-xs text-neutral-400">
-              <span className="h-3 w-3 rounded-sm bg-emerald-500" /> Disponible
+              <span className="h-3 w-3 rounded-sm bg-success" /> Disponible
             </div>
             <div className="flex items-center gap-2 text-xs text-neutral-400">
-              <span className="h-3 w-3 rounded-sm bg-red-500" /> Occupé
+              <span className="h-3 w-3 rounded-sm bg-error" /> Occupé
             </div>
             <div className="flex items-center gap-2 text-xs text-neutral-400">
-              <span className="h-3 w-3 rounded-sm bg-amber-400" /> Incinération prochaine
+              <span className="h-3 w-3 rounded-sm bg-warning" /> Incinération prochaine
             </div>
           </div>
 
           {/* Grille des 250 emplacements */}
           <div
-            className="grid gap-[3px]"
+            className="grid gap-0.75"
             style={{ gridTemplateColumns: "repeat(25, minmax(0, 1fr))" }}
           >
             {Array.from({ length: TOTAL }, (_, i) => i + 1).map((id) => (
@@ -117,6 +121,7 @@ export default function CartesPage() {
           {/* Fiche d'information */}
           {selection !== null && (
             <motion.div
+              ref={ficheRef}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               className="rounded-2xl border border-white/8 bg-white/4 p-5"
@@ -126,12 +131,12 @@ export default function CartesPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <p className="text-sm font-semibold text-white">{defuntSelectionne.nom}</p>
-                      <p className="text-xs text-neutral-500">
+                      <p className="text-xs text-neutral-200">
                         {defuntSelectionne.profession} — Emplacement #{selection}
                       </p>
                     </div>
                     {defuntSelectionne.bientot && (
-                      <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-400">
+                      <span className="rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-warning">
                         Incinération prochaine
                       </span>
                     )}
@@ -153,7 +158,7 @@ export default function CartesPage() {
                 </>
               ) : (
                 <div className="flex items-center gap-3">
-                  <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-400">
+                  <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-success">
                     Disponible
                   </span>
                   <p className="text-sm text-neutral-400">
@@ -165,7 +170,7 @@ export default function CartesPage() {
           )}
 
           {selection === null && (
-            <p className="text-center text-xs text-neutral-600">
+            <p className="text-center text-sm">
               Cliquez sur un emplacement pour afficher ses informations
             </p>
           )}
