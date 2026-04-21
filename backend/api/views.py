@@ -1,4 +1,5 @@
 import random
+import string
 import base64
 import io
 from io import BytesIO
@@ -58,6 +59,13 @@ def _familles_delete_forbidden():
         {"error": "Vous n'avez pas les droits pour supprimer une famille."},
         status=status.HTTP_403_FORBIDDEN,
     )
+
+
+def _defunts_delete_forbidden():
+    return Response(
+        {"error": "Vous n'avez pas les droits pour supprimer un défunt."},
+        status=status.HTTP_403_FORBIDDEN,
+)
 
 
 @extend_schema(
@@ -1308,6 +1316,260 @@ def familles(request):
         target.delete()
         return Response(
             {"message": "Famille supprimée avec succès."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+
+@extend_schema(
+    tags=["Défunts"],
+    methods=["GET"],
+    summary="Lister les défunts",
+    description="Retourne la liste des défunts (utilisateurs authentifiés).",
+    responses={
+        200: DefuntSerializer(many=True),
+    },
+)
+@extend_schema(
+    tags=["Défunts"],
+    methods=["POST"],
+    summary="Créer un défunt",
+    description="Crée un défunt avec une place unique (1-250), génère automatiquement un paiement et une ligne de paiement. Le champ famille est requis.",
+    request=inline_serializer(
+        name="DefuntCreateRequest",
+        fields={
+            "nom": drf_serializers.CharField(),
+            "prenom": drf_serializers.CharField(required=False),
+            "genre": drf_serializers.ChoiceField(choices=[('M', 'Masculin'), ('F', 'Féminin')]),
+            "age": drf_serializers.IntegerField(),
+            "profession": drf_serializers.CharField(required=False),
+            "date_naiss": drf_serializers.DateField(),
+            "date_deces": drf_serializers.DateField(),
+            "date_inhumation": drf_serializers.DateField(),
+            "date_incineration": drf_serializers.DateField(),
+            "famille": drf_serializers.UUIDField(),
+            "montant": drf_serializers.DecimalField(required=False, max_digits=10, decimal_places=2),
+            "motif": drf_serializers.CharField(required=False),
+            "moyen_paiement": drf_serializers.CharField(required=False),
+        },
+    ),
+    responses={
+        201: inline_serializer(
+            name="DefuntCreateResponse",
+            fields={
+                "message": drf_serializers.CharField(),
+                "defunt": DefuntSerializer(),
+                "paiement": inline_serializer(
+                    name="PaiementInfo",
+                    fields={
+                        "num_facture": drf_serializers.CharField(),
+                        "montant": drf_serializers.DecimalField(max_digits=10, decimal_places=2),
+                    },
+                ),
+            },
+        ),
+        400: inline_serializer(
+            name="DefuntsCreateError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="DefuntsCreateNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@extend_schema(
+    tags=["Défunts"],
+    methods=["PUT"],
+    summary="Mettre à jour un défunt",
+    description="Met à jour un défunt par son identifiant. Champs modifiables selon DefuntSerializer.",
+    request=DefuntSerializer,
+    responses={
+        200: inline_serializer(
+            name="DefuntsUpdateResponse",
+            fields={"message": drf_serializers.CharField()},
+        ),
+        400: inline_serializer(
+            name="DefuntsUpdateError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="DefuntsUpdateNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@extend_schema(
+    tags=["Défunts"],
+    methods=["DELETE"],
+    summary="Supprimer un défunt",
+    description="Supprime un défunt par son identifiant (réservé aux administrateurs). Passer l'id en query (?id=) ou dans le corps.",
+    responses={
+        204: inline_serializer(
+            name="DefuntsDeleteResponse",
+            fields={"message": drf_serializers.CharField()},
+        ),
+        400: inline_serializer(
+            name="DefuntsDeleteError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        403: inline_serializer(
+            name="DefuntsDeleteForbidden",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="DefuntsDeleteNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@api_view(["GET", "POST", "PUT", "DELETE"])
+@permission_classes([IsAuthenticated])
+def defunts(request):
+
+    if request.method == "GET":
+        search = request.query_params.get("search", "").strip()
+        ordering = request.query_params.get("ordering", "name")
+
+        ALLOWED_ORDERING = {
+            "name-asc": "nom",
+            "name-desc": "-nom",
+            "age": "age",
+            "recent": "-created_at",
+        }
+        order_field = ALLOWED_ORDERING.get(ordering, "nom")
+
+        defunts_qs = Defunt.objects.all()
+
+        if search:
+            defunts_qs = defunts_qs.filter(
+                Q(nom__icontains=search)
+                | Q(prenom__icontains=search)
+                | Q(profession__icontains=search)
+                | Q(famille__nom_famille__icontains=search)
+            )
+
+        defunts_qs = defunts_qs.order_by(order_field)
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 5
+        result_page = paginator.paginate_queryset(defunts_qs, request)
+        serializer = DefuntSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    if request.method == "POST":
+        data = request.data.copy()
+        
+        # Generate random unique place between 1 and 250
+        import random
+        existing_places = Defunt.objects.values_list('place', flat=True).exclude(place__isnull=True)
+        available_places = [i for i in range(1, 251) if i not in existing_places]
+        
+        if not available_places:
+            return Response(
+                {"error": "Plus aucune place disponible."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        place = random.choice(available_places)
+        data['place'] = place
+        
+        # Generate unique invoice number
+        while True:
+            invoice_num = f"INV-{''.join(random.choices(string.ascii_uppercase + string.digits, k=8))}"
+            if not Paiement.objects.filter(num_facture=invoice_num).exists():
+                break
+        
+        # Get montant from request or use default
+        montant = data.get('montant', '0.00')
+        
+        # Validate required fields for payment
+        if 'famille' not in data or not data['famille']:
+            return Response(
+                {"error": "Le champ famille est requis pour créer un paiement."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        try:
+            famille = Famille.objects.get(pk=data['famille'])
+        except Famille.DoesNotExist:
+            return Response(
+                {"error": "Famille introuvable."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        
+        # Create Defunt
+        serializer = DefuntSerializer(data=data)
+        if not serializer.is_valid():
+            return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        
+        defunt = serializer.save()
+        
+        # Create Paiement
+        paiement = Paiement.objects.create(
+            num_facture=invoice_num,
+            famille=famille,
+            user=request.user,
+            total_amount=montant
+        )
+        
+        # Create LignePaiement
+        LignePaiement.objects.create(
+            paiement=paiement,
+            motif=data.get('motif', 'Inhumation'),
+            montant=montant,
+            moyen_paiement=data.get('moyen_paiement', 'Espèces'),
+            defunt=defunt
+        )
+        
+        return Response(
+            {"message": "Défunt créé avec succès !"},
+            status=status.HTTP_201_CREATED
+        )
+
+    if request.method == "PUT":
+        defunt_id = request.data.get("id")
+        if not defunt_id:
+            return Response(
+                {"error": "L'identifiant défunt (id) est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            target = Defunt.objects.get(pk=defunt_id)
+        except Defunt.DoesNotExist:
+            return Response(
+                {"error": "Défunt introuvable."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        payload = {k: v for k, v in request.data.items() if k != "id"}
+        serializer = DefuntSerializer(target, data=payload, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Données mise à jour avec succès."},
+                status=status.HTTP_200_OK,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "DELETE":
+        if not _is_users_admin(request.user):
+            return _defunts_delete_forbidden()
+
+        defunt_id = request.query_params.get("id") or request.data.get("id")
+        if not defunt_id:
+            return Response(
+                {"error": "L'identifiant défunt (id) est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            target = Defunt.objects.get(pk=defunt_id)
+        except Defunt.DoesNotExist:
+            return Response(
+                {"error": "Défunt introuvable."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        target.delete()
+        return Response(
+            {"message": "Défunt supprimé avec succès."},
             status=status.HTTP_204_NO_CONTENT,
         )
 
