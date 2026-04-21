@@ -27,7 +27,14 @@ from drf_spectacular.types import OpenApiTypes
 from rest_framework import serializers as drf_serializers
 
 from .models import User, Famille, Defunt, Paiement
-from .serializers import UserSerializer, FamilleSerializer, DefuntSerializer, PaiementSerializer, MyTokenObtainPairSerializer
+from .serializers import (
+    UserSerializer, 
+    FamilleSerializer, 
+    DefuntSerializer, 
+    PaiementSerializer, 
+    LignePaiementSerializer,
+    MyTokenObtainPairSerializer
+)
 
 from django.db.models import Q
 
