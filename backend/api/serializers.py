@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import User, Famille, Defunt, Paiement
+from .models import User, Famille, Defunt, Paiement, LignePaiement
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,6 +23,7 @@ class FamilleSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at']
 
+
 class DefuntSerializer(serializers.ModelSerializer):
     famille_details = FamilleSerializer(source='famille', read_only=True)
     user_name = serializers.ReadOnlyField(source='user.name')
@@ -39,16 +40,32 @@ class DefuntSerializer(serializers.ModelSerializer):
 
 class PaiementSerializer(serializers.ModelSerializer):
     famille_nom = serializers.ReadOnlyField(source='famille.nom_famille')
-    defunt_nom = serializers.ReadOnlyField(source='defunt.nom')
     user_name = serializers.ReadOnlyField(source='user.name')
+    lignes_paiement = serializers.SerializerMethodField()
+    
     class Meta:
         model = Paiement
         fields = [
-            'id', 'num_facture', 'motif', 'montant', 'date_incineration_prevue', 
-            'date_paiement', 'moyen_paiement', 'famille', 'famille_nom',
-            'defunt', 'defunt_nom', 'user', 'user_name'
+            'id', 'num_facture', 'date_paiement', 'total_amount', 
+            'famille', 'famille_nom', 'user', 'user_name', 'lignes_paiement'
         ]
         read_only_fields = ['user', 'id', 'date_paiement']
+    
+    def get_lignes_paiement(self, obj):
+        return LignePaiementSerializer(obj.lignes.all(), many=True).data
+
+
+class LignePaiementSerializer(serializers.ModelSerializer):
+    defunt_nom = serializers.ReadOnlyField(source='defunt.nom')
+    paiement_num_facture = serializers.ReadOnlyField(source='paiement.num_facture')
+    
+    class Meta:
+        model = LignePaiement
+        fields = [
+            'id', 'paiement', 'paiement_num_facture', 'motif', 'montant', 
+            'date_inhumation', 'date_incineration', 'moyen_paiement', 'defunt', 'defunt_nom'
+        ]
+        read_only_fields = ['id', 'paiement_num_facture']
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
