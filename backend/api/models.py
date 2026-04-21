@@ -121,8 +121,6 @@ class LignePaiement(models.Model):
     paiement = models.ForeignKey(Paiement, on_delete=models.CASCADE, related_name='lignes')
     motif = models.CharField(max_length=50, default='Inhumation')
     montant = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    date_inhumation = models.DateTimeField()
-    date_incineration = models.DateField()
     moyen_paiement = models.CharField(max_length=50)
     defunt = models.ForeignKey(Defunt, on_delete=models.SET_NULL, null=True, related_name='lignes_paiement')
 

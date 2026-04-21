@@ -62,8 +62,8 @@ class LignePaiementSerializer(serializers.ModelSerializer):
     class Meta:
         model = LignePaiement
         fields = [
-            'id', 'paiement', 'paiement_num_facture', 'motif', 'montant', 
-            'date_inhumation', 'date_incineration', 'moyen_paiement', 'defunt', 'defunt_nom'
+            'id', 'paiement', 'paiement_num_facture', 'motif', 
+            'montant', 'moyen_paiement', 'defunt', 'defunt_nom'
         ]
         read_only_fields = ['id', 'paiement_num_facture']
 
