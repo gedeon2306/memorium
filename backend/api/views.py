@@ -91,7 +91,7 @@ def _familles_delete_forbidden():
     },
 )
 @api_view(['POST'])
-@permission_classes([AllowAny]) # Tout le monde peut s'inscrire
+@permission_classes([AllowAny])
 def register(request):
 
     if len(request.data.get('password', '')) < 8:

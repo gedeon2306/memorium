@@ -103,14 +103,10 @@ class Defunt(models.Model):
 class Paiement(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     num_facture = models.CharField(max_length=50, unique=True)
-    motif = models.CharField(max_length=50, default='Inhumation')
-    montant = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    date_incineration_prevue = models.DateField()
     date_paiement = models.DateTimeField(auto_now_add=True)
-    moyen_paiement = models.CharField(max_length=50)
     famille = models.ForeignKey(Famille, on_delete=models.SET_NULL, null=True, related_name='paiements')
-    defunt = models.ForeignKey(Defunt, on_delete=models.SET_NULL, null=True, related_name='paiements')
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='paiements_effectues')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     class Meta:
         verbose_name = "Paiement"
@@ -118,3 +114,21 @@ class Paiement(models.Model):
 
     def __str__(self):
         return self.num_facture
+
+
+class LignePaiement(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    paiement = models.ForeignKey(Paiement, on_delete=models.CASCADE, related_name='lignes')
+    motif = models.CharField(max_length=50, default='Inhumation')
+    montant = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    date_inhumation = models.DateTimeField()
+    date_incineration = models.DateField()
+    moyen_paiement = models.CharField(max_length=50)
+    defunt = models.ForeignKey(Defunt, on_delete=models.SET_NULL, null=True, related_name='lignes_paiement')
+
+    class Meta:
+        verbose_name = "Ligne de paiement"
+        verbose_name_plural = "Lignes de paiement"
+
+    def __str__(self):
+        return f"{self.paiement.num_facture} - {self.motif}"
