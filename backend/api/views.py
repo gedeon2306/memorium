@@ -54,19 +54,12 @@ def _is_users_admin(user):
     return user.role == "Administrateur" or user.is_staff
 
 
-def _familles_delete_forbidden():
+def _delete_forbidden(texte):
     return Response(
-        {"error": "Vous n'avez pas les droits pour supprimer une famille."},
+        {"error": f"Vous n'avez pas les droits pour supprimer {texte}."},
         status=status.HTTP_403_FORBIDDEN,
     )
-
-
-def _defunts_delete_forbidden():
-    return Response(
-        {"error": "Vous n'avez pas les droits pour supprimer un défunt."},
-        status=status.HTTP_403_FORBIDDEN,
-)
-
+    
 
 @extend_schema(
     tags=["Auth"],
@@ -1298,7 +1291,7 @@ def familles(request):
 
     if request.method == "DELETE":
         if not _is_users_admin(request.user):
-            return _familles_delete_forbidden()
+            return _delete_forbidden('une famille')
 
         famille_id = request.query_params.get("id") or request.data.get("id")
         if not famille_id:
@@ -1552,7 +1545,7 @@ def defunts(request):
 
     if request.method == "DELETE":
         if not _is_users_admin(request.user):
-            return _defunts_delete_forbidden()
+            return _delete_forbidden('un defunt')
 
         defunt_id = request.query_params.get("id") or request.data.get("id")
         if not defunt_id:
@@ -1572,6 +1565,479 @@ def defunts(request):
             {"message": "Défunt supprimé avec succès."},
             status=status.HTTP_204_NO_CONTENT,
         )
+
+
+@extend_schema(
+    tags=["Paiements"],
+    methods=["GET"],
+    summary="Lister les paiements",
+    description="Retourne la liste des paiements (utilisateurs authentifiés).",
+    responses={
+        200: PaiementSerializer(many=True),
+    },
+)
+@extend_schema(
+    tags=["Paiements"],
+    methods=["POST"],
+    summary="Créer un paiement",
+    description="Crée un paiement avec ses lignes de paiement associées.",
+    request=inline_serializer(
+        name="PaiementCreateRequest",
+        fields={
+            "famille": drf_serializers.UUIDField(),
+            "total_amount": drf_serializers.DecimalField(max_digits=10, decimal_places=2),
+            "lignes": drf_serializers.ListField(
+                child=inline_serializer(
+                    name="LignePaiementRequest",
+                    fields={
+                        "motif": drf_serializers.CharField(),
+                        "montant": drf_serializers.DecimalField(max_digits=10, decimal_places=2),
+                        "moyen_paiement": drf_serializers.CharField(),
+                        "defunt": drf_serializers.UUIDField(),
+                    },
+                )
+            ),
+        },
+    ),
+    responses={
+        201: PaiementSerializer,
+        400: inline_serializer(
+            name="PaiementsCreateError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="PaiementsCreateNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@extend_schema(
+    tags=["Paiements"],
+    methods=["PUT"],
+    summary="Mettre à jour un paiement",
+    description="Met à jour un paiement par son identifiant. Champs modifiables selon PaiementSerializer.",
+    request=PaiementSerializer,
+    responses={
+        200: inline_serializer(
+            name="PaiementsUpdateResponse",
+            fields={"message": drf_serializers.CharField()},
+        ),
+        400: inline_serializer(
+            name="PaiementsUpdateError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="PaiementsUpdateNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@extend_schema(
+    tags=["Paiements"],
+    methods=["DELETE"],
+    summary="Supprimer un paiement",
+    description="Supprime un paiement par son identifiant (réservé aux administrateurs). Passer l'id en query (?id=) ou dans le corps.",
+    responses={
+        204: inline_serializer(
+            name="PaiementsDeleteResponse",
+            fields={"message": drf_serializers.CharField()},
+        ),
+        400: inline_serializer(
+            name="PaiementsDeleteError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        403: inline_serializer(
+            name="PaiementsDeleteForbidden",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="PaiementsDeleteNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@api_view(["GET", "POST", "PUT", "DELETE"])
+@permission_classes([IsAuthenticated])
+def paiements(request):
+
+    if request.method == "GET":
+        search = request.query_params.get("search", "").strip()
+        ordering = request.query_params.get("ordering", "num_facture")
+
+        ALLOWED_ORDERING = {
+            "num_facture": "num_facture",
+            "num_facture-desc": "-num_facture",
+            "amount": "total_amount",
+            "amount-desc": "-total_amount",
+            "recent": "-date_paiement",
+        }
+        order_field = ALLOWED_ORDERING.get(ordering, "num_facture")
+
+        paiements_qs = Paiement.objects.all()
+
+        if search:
+            paiements_qs = paiements_qs.filter(
+                Q(num_facture__icontains=search)
+                | Q(famille__nom_famille__icontains=search)
+                | Q(user__name__icontains=search)
+            )
+
+        paiements_qs = paiements_qs.order_by(order_field)
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 5
+        result_page = paginator.paginate_queryset(paiements_qs, request)
+        serializer = PaiementSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    if request.method == "POST":
+        data = request.data.copy()
+        
+        # Generate unique invoice number
+        while True:
+            invoice_num = f"INV-{''.join(random.choices(string.ascii_uppercase + string.digits, k=8))}"
+            if not Paiement.objects.filter(num_facture=invoice_num).exists():
+                break
+        
+        # Validate required fields
+        if 'famille' not in data or not data['famille']:
+            return Response(
+                {"error": "Le champ famille est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        try:
+            famille = Famille.objects.get(pk=data['famille'])
+        except Famille.DoesNotExist:
+            return Response(
+                {"error": "Famille introuvable."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        
+        # Create Paiement
+        paiement = Paiement.objects.create(
+            num_facture=invoice_num,
+            famille=famille,
+            user=request.user,
+            total_amount=data.get('total_amount', '0.00')
+        )
+        
+        # Create LignePaiement if provided
+        lignes_data = data.get('lignes', [])
+        for ligne_data in lignes_data:
+            # Validate defunt exists
+            if 'defunt' in ligne_data and ligne_data['defunt']:
+                try:
+                    defunt = Defunt.objects.get(pk=ligne_data['defunt'])
+                except Defunt.DoesNotExist:
+                    return Response(
+                        {"error": f"Défunt {ligne_data['defunt']} introuvable."},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+            else:
+                defunt = None
+                
+            LignePaiement.objects.create(
+                paiement=paiement,
+                motif=ligne_data.get('motif', 'Inhumation'),
+                montant=ligne_data.get('montant', '0.00'),
+                moyen_paiement=ligne_data.get('moyen_paiement', 'Espèces'),
+                defunt=defunt
+            )
+        
+        return Response(
+            {
+                "message": "Paiement créé avec succès !",
+                "paiement": PaiementSerializer(paiement).data
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    if request.method == "PUT":
+        paiement_id = request.data.get("id")
+        if not paiement_id:
+            return Response(
+                {"error": "L'identifiant paiement (id) est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            target = Paiement.objects.get(pk=paiement_id)
+        except Paiement.DoesNotExist:
+            return Response(
+                {"error": "Paiement introuvable."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        payload = {k: v for k, v in request.data.items() if k != "id"}
+        serializer = PaiementSerializer(target, data=payload, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Données mise à jour avec succès."},
+                status=status.HTTP_200_OK,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "DELETE":
+        if not _is_users_admin(request.user):
+            return _delete_forbidden('un paiement')
+
+        paiement_id = request.query_params.get("id") or request.data.get("id")
+        if not paiement_id:
+            return Response(
+                {"error": "L'identifiant paiement (id) est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            target = Paiement.objects.get(pk=paiement_id)
+        except Paiement.DoesNotExist:
+            return Response(
+                {"error": "Paiement introuvable."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        target.delete()
+        return Response(
+            {"message": "Paiement supprimé avec succès."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+
+@extend_schema(
+    tags=["Lignes Paiements"],
+    methods=["GET"],
+    summary="Lister les lignes de paiement",
+    description="Retourne la liste des lignes de paiement pour un paiement spécifique ou toutes les lignes.",
+    responses={
+        200: LignePaiementSerializer(many=True),
+    },
+)
+@extend_schema(
+    tags=["Lignes Paiements"],
+    methods=["POST"],
+    summary="Créer une ligne de paiement",
+    description="Crée une ligne de paiement et recalcule automatiquement le total du paiement.",
+    request=LignePaiementSerializer,
+    responses={
+        201: LignePaiementSerializer,
+        400: inline_serializer(
+            name="LignesPaiementsCreateError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="LignesPaiementsCreateNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@extend_schema(
+    tags=["Lignes Paiements"],
+    methods=["PUT"],
+    summary="Mettre à jour une ligne de paiement",
+    description="Met à jour une ligne de paiement et recalcule automatiquement le total du paiement.",
+    request=LignePaiementSerializer,
+    responses={
+        200: inline_serializer(
+            name="LignesPaiementsUpdateResponse",
+            fields={"message": drf_serializers.CharField()},
+        ),
+        400: inline_serializer(
+            name="LignesPaiementsUpdateError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="LignesPaiementsUpdateNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@extend_schema(
+    tags=["Lignes Paiements"],
+    methods=["DELETE"],
+    summary="Supprimer une ligne de paiement",
+    description="Supprime une ligne de paiement et recalcule automatiquement le total du paiement (réservé aux administrateurs).",
+    responses={
+        204: inline_serializer(
+            name="LignesPaiementsDeleteResponse",
+            fields={"message": drf_serializers.CharField()},
+        ),
+        400: inline_serializer(
+            name="LignesPaiementsDeleteError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        403: inline_serializer(
+            name="LignesPaiementsDeleteForbidden",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="LignesPaiementsDeleteNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@api_view(["GET", "POST", "PUT", "DELETE"])
+@permission_classes([IsAuthenticated])
+def lignes_paiements(request):
+    
+    def recalculate_paiement_total(paiement_id):
+        """Recalculate total amount for a payment based on its lines"""
+        try:
+            paiement = Paiement.objects.get(pk=paiement_id)
+            total = paiement.lignes.aggregate(total=models.Sum('montant'))['total'] or 0
+            paiement.total_amount = total
+            paiement.save()
+            return paiement
+        except Paiement.DoesNotExist:
+            return None
+
+    if request.method == "GET":
+        paiement_id = request.query_params.get("paiement_id")
+        search = request.query_params.get("search", "").strip()
+        ordering = request.query_params.get("ordering", "motif")
+
+        ALLOWED_ORDERING = {
+            "motif": "motif",
+            "motif-desc": "-motif",
+            "montant": "montant",
+            "montant-desc": "-montant",
+            "recent": "-created_at",
+        }
+        order_field = ALLOWED_ORDERING.get(ordering, "motif")
+
+        lignes_qs = LignePaiement.objects.all()
+        
+        if paiement_id:
+            lignes_qs = lignes_qs.filter(paiement_id=paiement_id)
+
+        if search:
+            lignes_qs = lignes_qs.filter(
+                Q(motif__icontains=search)
+                | Q(moyen_paiement__icontains=search)
+                | Q(paiement__num_facture__icontains=search)
+                | Q(defunt__nom__icontains=search)
+            )
+
+        lignes_qs = lignes_qs.order_by(order_field)
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        result_page = paginator.paginate_queryset(lignes_qs, request)
+        serializer = LignePaiementSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    if request.method == "POST":
+        data = request.data.copy()
+        
+        # Validate required fields
+        if 'paiement' not in data or not data['paiement']:
+            return Response(
+                {"error": "Le champ paiement est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        try:
+            paiement = Paiement.objects.get(pk=data['paiement'])
+        except Paiement.DoesNotExist:
+            return Response(
+                {"error": "Paiement introuvable."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        
+        # Validate defunt if provided
+        if 'defunt' in data and data['defunt']:
+            try:
+                Defunt.objects.get(pk=data['defunt'])
+            except Defunt.DoesNotExist:
+                return Response(
+                    {"error": "Défunt introuvable."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        
+        serializer = LignePaiementSerializer(data=data)
+        if serializer.is_valid():
+            ligne = serializer.save()
+            
+            # Recalculate payment total
+            recalculate_paiement_total(paiement.id)
+            
+            return Response(
+                LignePaiementSerializer(ligne).data,
+                status=status.HTTP_201_CREATED,
+            )
+        
+        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "PUT":
+        ligne_id = request.data.get("id")
+        if not ligne_id:
+            return Response(
+                {"error": "L'identifiant ligne (id) est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        try:
+            ligne = LignePaiement.objects.get(pk=ligne_id)
+        except LignePaiement.DoesNotExist:
+            return Response(
+                {"error": "Ligne de paiement introuvable."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        
+        # Validate defunt if provided
+        if 'defunt' in request.data and request.data['defunt']:
+            try:
+                Defunt.objects.get(pk=request.data['defunt'])
+            except Defunt.DoesNotExist:
+                return Response(
+                    {"error": "Défunt introuvable."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        
+        payload = {k: v for k, v in request.data.items() if k != "id"}
+        serializer = LignePaiementSerializer(ligne, data=payload, partial=True)
+        
+        if serializer.is_valid():
+            ligne = serializer.save()
+            
+            # Recalculate payment total
+            recalculate_paiement_total(ligne.paiement.id)
+            
+            return Response(
+                {
+                    "message": "Ligne de paiement mise à jour avec succès.",
+                    "ligne": LignePaiementSerializer(ligne).data
+                },
+                status=status.HTTP_200_OK,
+            )
+        
+        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "DELETE":
+        if not _is_users_admin(request.user):
+            return _delete_forbidden('une ligne de paiement')
+
+        ligne_id = request.query_params.get("id") or request.data.get("id")
+        if not ligne_id:
+            return Response(
+                {"error": "L'identifiant ligne (id) est requis."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        try:
+            ligne = LignePaiement.objects.get(pk=ligne_id)
+            paiement_id = ligne.paiement.id
+            ligne.delete()
+            
+            # Recalculate payment total
+            recalculate_paiement_total(paiement_id)
+            
+            return Response(
+                {"message": "Ligne de paiement supprimée avec succès."},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+        except LignePaiement.DoesNotExist:
+            return Response(
+                {"error": "Ligne de paiement introuvable."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
 
 
