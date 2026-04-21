@@ -1,7 +1,6 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
-    landing_view,
     register,
     confirm_register,
     login,
@@ -16,6 +15,7 @@ from .views import (
     upload_profil_photo,
     users,
     familles,
+    defunts,
 )
 
 urlpatterns = [
@@ -61,4 +61,7 @@ urlpatterns = [
 
     # Gestion des familles (suppression réservée aux administrateurs)
     path('dashboard/familles/', familles, name='dashboard_familles'),
+    
+    # Gestion des defunts (suppression réservée aux administrateurs)
+    path('dashboard/defunts/', defunts, name='dashboard_defunts'),
 ]
