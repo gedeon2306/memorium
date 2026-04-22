@@ -1092,7 +1092,7 @@ def users(request):
         users = users.order_by(order_field)
 
         paginator = PageNumberPagination()
-        paginator.page_size = 5
+        paginator.page_size = 10
         result_page = paginator.paginate_queryset(users, request)
         serializer = UserSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
@@ -1255,7 +1255,7 @@ def familles(request):
         familles_qs = familles_qs.order_by(order_field)
 
         paginator = PageNumberPagination()
-        paginator.page_size = 5
+        paginator.page_size = 10
         result_page = paginator.paginate_queryset(familles_qs, request)
         serializer = FamilleSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
@@ -1451,7 +1451,7 @@ def defunts(request):
         defunts_qs = defunts_qs.order_by(order_field)
 
         paginator = PageNumberPagination()
-        paginator.page_size = 5
+        paginator.page_size = 25
         result_page = paginator.paginate_queryset(defunts_qs, request)
         serializer = DefuntSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
@@ -1692,7 +1692,7 @@ def paiements(request):
         paiements_qs = paiements_qs.order_by(order_field)
 
         paginator = PageNumberPagination()
-        paginator.page_size = 5
+        paginator.page_size = 10
         result_page = paginator.paginate_queryset(paiements_qs, request)
         serializer = PaiementSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
