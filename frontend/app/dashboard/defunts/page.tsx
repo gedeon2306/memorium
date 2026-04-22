@@ -4,6 +4,7 @@ import { getDefuntsList } from "@/app/actions/actions";
 import Pagination from "@/components/uxComponents/Pagination";
 import AddDefuntModal, { AddDefuntModalHandle } from "@/components/defuntsComponents/AddDefuntModal";
 import DeleteDefuntModal, { DeleteDefuntModalHandle } from "@/components/defuntsComponents/DeleteDefuntModal";
+import UpdateDefuntModal, { UpdateDefuntModalHandle } from "@/components/defuntsComponents/UpdateDefuntModal";
 import { motion } from "framer-motion";
 import {
   Bird,
@@ -72,6 +73,7 @@ export default function DefuntsPage() {
   const [families, setFamilies] = useState<any[]>([]);
 
   const addModalRef = useRef<AddDefuntModalHandle>(null);
+  const updateModalRef = useRef<UpdateDefuntModalHandle>(null);
   const deleteModalRef = useRef<DeleteDefuntModalHandle>(null);
 
   const debouncedSearch = useDebounce(search, 400);
@@ -142,6 +144,11 @@ export default function DefuntsPage() {
       <AddDefuntModal
         ref={addModalRef}
         onSuccess={() => loadDefunts(1, debouncedSearch, ordering)}
+        families={families}
+      />
+      <UpdateDefuntModal
+        ref={updateModalRef}
+        onSuccess={() => loadDefunts(currentPage, debouncedSearch, ordering)}
         families={families}
       />
       <DeleteDefuntModal
@@ -269,7 +276,7 @@ export default function DefuntsPage() {
                             <li>
                               <button
                                 type="button"
-                                onClick={() => toast.error("Fonctionnalité bientôt disponible")}
+                                onClick={() => updateModalRef.current?.open(defunt)}
                                 className="justify-start gap-2 text-white/80 hover:text-white"
                               >
                                 <SquarePen size={14} />
