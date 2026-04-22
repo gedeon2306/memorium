@@ -17,7 +17,7 @@ import {
 import { useEffect, useState, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 function useDebounce<T>(value: T, delay = 400): T {
   const [debounced, setDebounced] = useState(value);
