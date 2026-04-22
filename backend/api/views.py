@@ -12,7 +12,6 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.models import BaseUserManager
 
 from .tokens import email_confirmation_token_generator
-from django.core.mail import send_mail
 from .email_utils import send_confirmation_email, send_password_reset_email, send_login_email, send_new_email_code
 
 from rest_framework import status
@@ -26,7 +25,7 @@ from drf_spectacular.types import OpenApiTypes
 
 from rest_framework import serializers as drf_serializers
 
-from .models import User, Famille, Defunt, Paiement
+from .models import User, Famille, Defunt, Paiement, LignePaiement
 from .serializers import (
     UserSerializer, 
     FamilleSerializer, 
@@ -1454,7 +1453,18 @@ def defunts(request):
         paginator.page_size = 25
         result_page = paginator.paginate_queryset(defunts_qs, request)
         serializer = DefuntSerializer(result_page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+        
+        # Récupérer toutes les familles pour le selecteur
+        families_qs = Famille.objects.all().order_by('nom_famille')
+        families_serializer = FamilleSerializer(families_qs, many=True)
+        
+        # Construire la réponse avec les défunts et les familles
+        response_data = {
+            'results': serializer.data,
+            'families': families_serializer.data
+        }
+        
+        return paginator.get_paginated_response(response_data)
 
     if request.method == "POST":
         data = request.data.copy()
@@ -1515,7 +1525,7 @@ def defunts(request):
         # Create LignePaiement
         LignePaiement.objects.create(
             paiement=paiement,
-            motif=data.get('motif', 'Inhumation'),
+            motif='Inhumation',
             montant=montant,
             moyen_paiement=data.get('moyen_paiement', 'Espèces'),
             defunt=defunt
