@@ -3,6 +3,7 @@
 import { getDefuntsList } from "@/app/actions/actions";
 import Pagination from "@/components/uxComponents/Pagination";
 import AddDefuntModal, { AddDefuntModalHandle } from "@/components/defuntsComponents/AddDefuntModal";
+import DeleteDefuntModal, { DeleteDefuntModalHandle } from "@/components/defuntsComponents/DeleteDefuntModal";
 import { motion } from "framer-motion";
 import {
   Bird,
@@ -71,6 +72,7 @@ export default function DefuntsPage() {
   const [families, setFamilies] = useState<any[]>([]);
 
   const addModalRef = useRef<AddDefuntModalHandle>(null);
+  const deleteModalRef = useRef<DeleteDefuntModalHandle>(null);
 
   const debouncedSearch = useDebounce(search, 400);
 
@@ -134,12 +136,17 @@ export default function DefuntsPage() {
     });
   };
 
+  
   return (
     <>
       <AddDefuntModal
         ref={addModalRef}
         onSuccess={() => loadDefunts(1, debouncedSearch, ordering)}
         families={families}
+      />
+      <DeleteDefuntModal
+        ref={deleteModalRef}
+        onSuccess={() => loadDefunts(currentPage, debouncedSearch, ordering)}
       />
       
       <motion.div
@@ -272,7 +279,7 @@ export default function DefuntsPage() {
                             <li>
                               <button
                                 type="button"
-                                onClick={() => toast.error("Fonctionnalité bientôt disponible")}
+                                onClick={() => deleteModalRef.current?.open(defunt)}
                                 className="justify-start gap-2 text-error/80 hover:text-error"
                               >
                                 <Trash2 size={14} />
