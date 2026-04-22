@@ -690,6 +690,33 @@ export async function deleteDefunt(payload: { id: string }): Promise<DeleteEntit
   }
 }
 
+export async function changeDefuntStatut(payload: { id: string }) {
+  const token = await getToken();
+  const url = "dashboard/defunts/change-statut/";
+ 
+  try {
+    const response = await api.put(url, payload, authConfig(token));
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();    
+      if (!newToken) return null;
+      try {
+        const response = await api.put(url, payload, authConfig(newToken));
+        return response.data;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error };
+      }
+    }
+    return {
+      error:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Une erreur est survenue",
+    };
+  }
+}
+
 
 
 

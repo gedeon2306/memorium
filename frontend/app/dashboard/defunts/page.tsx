@@ -5,6 +5,7 @@ import Pagination from "@/components/uxComponents/Pagination";
 import AddDefuntModal, { AddDefuntModalHandle } from "@/components/defuntsComponents/AddDefuntModal";
 import DeleteDefuntModal, { DeleteDefuntModalHandle } from "@/components/defuntsComponents/DeleteDefuntModal";
 import UpdateDefuntModal, { UpdateDefuntModalHandle } from "@/components/defuntsComponents/UpdateDefuntModal";
+import ChangeStatutModal, { ChangeStatutModalHandle } from "@/components/defuntsComponents/ChangeStatutModal";
 import { motion } from "framer-motion";
 import {
   Bird,
@@ -14,6 +15,7 @@ import {
   MoreHorizontal,
   Eye,
   SquarePen,
+  RotateCcw,
   Trash2,
   Calendar,
   MapPin,
@@ -74,6 +76,7 @@ export default function DefuntsPage() {
 
   const addModalRef = useRef<AddDefuntModalHandle>(null);
   const updateModalRef = useRef<UpdateDefuntModalHandle>(null);
+  const changeStatutModalRef = useRef<ChangeStatutModalHandle>(null);
   const deleteModalRef = useRef<DeleteDefuntModalHandle>(null);
 
   const debouncedSearch = useDebounce(search, 400);
@@ -151,6 +154,10 @@ export default function DefuntsPage() {
         onSuccess={() => loadDefunts(currentPage, debouncedSearch, ordering)}
         families={families}
       />
+      <ChangeStatutModal
+        ref={changeStatutModalRef}
+        onSuccess={() => loadDefunts(currentPage, debouncedSearch, ordering)}
+      />
       <DeleteDefuntModal
         ref={deleteModalRef}
         onSuccess={() => loadDefunts(currentPage, debouncedSearch, ordering)}
@@ -215,9 +222,12 @@ export default function DefuntsPage() {
                   className="select select-bordered select-sm w-full sm:w-52 bg-white/5 border-white/10 text-white focus:border-primary/50"
                   aria-label="Trier la liste"
                 >
-                  <option value="nom-asc">Trier par nom (A → Z)</option>
-                  <option value="nom-desc">Trier par nom (Z → A)</option>
-                  <option value="date_deces">Trier par date de décès</option>
+                  <option value="nom-asc">Trier par nom (A à Z)</option>
+                  <option value="nom-desc">Trier par nom (Z à A)</option>
+                  <option value="age-asc">Trier par âge (croissant)</option>
+                  <option value="age-desc">Trier par âge (décroissant)</option>
+                  <option value="statut-incinere">Trier par statut (Incinérés)</option>
+                  <option value="statut-inhume">Trier par statut (Inhumés)</option>
                   <option value="recent">Trier par date de création</option>
                 </select>
               </div>
@@ -281,6 +291,17 @@ export default function DefuntsPage() {
                               >
                                 <SquarePen size={14} />
                                 Modifier
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                type="button"
+                                onClick={() => changeStatutModalRef.current?.open(defunt)}
+                                className="justify-start gap-2 text-warning/80 hover:text-warning"
+                                title="Changer le statut de Inhumé à Incinéré"
+                              >
+                                <RotateCcw size={14} />
+                                Changer statut
                               </button>
                             </li>
                             <li>

@@ -35,7 +35,7 @@ from .serializers import (
     MyTokenObtainPairSerializer
 )
 
-from django.db.models import Q
+from django.db.models import Q, Case, When, Value, IntegerField
 
 
 def landing_view(request):
@@ -1432,7 +1432,10 @@ def defunts(request):
         ALLOWED_ORDERING = {
             "name-asc": "nom",
             "name-desc": "-nom",
-            "age": "age",
+            "age-asc": "age",
+            "age-desc": "-age",
+            "statut-incinere": "statut",
+            "statut-inhume": "-statut",
             "recent": "-created_at",
         }
         order_field = ALLOWED_ORDERING.get(ordering, "nom")
@@ -1447,6 +1450,7 @@ def defunts(request):
                 | Q(famille__nom_famille__icontains=search)
             )
 
+        
         defunts_qs = defunts_qs.order_by(order_field)
 
         paginator = PageNumberPagination()
@@ -1582,6 +1586,72 @@ def defunts(request):
             {"message": "Défunt supprimé avec succès."},
             status=status.HTTP_204_NO_CONTENT,
         )
+
+
+@extend_schema(
+    tags=["Défunts"],
+    methods=["PUT"],
+    summary="Changer le statut d'un défunt",
+    description="Change le statut d'un défunt de 'Inhumé' à 'Incinéré' et libère la place (met à 0).",
+    request=inline_serializer(
+        name="DefuntStatusRequest",
+        fields={
+            "id": drf_serializers.CharField(),
+        },
+    ),
+    responses={
+        200: DefuntSerializer,
+        400: inline_serializer(
+            name="DefuntStatusError",
+            fields={"error": drf_serializers.CharField()},
+        ),
+        404: inline_serializer(
+            name="DefuntStatusNotFound",
+            fields={"error": drf_serializers.CharField()},
+        ),
+    },
+)
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def defunt_change_statut(request):
+    if not _is_users_admin(request.user):
+        return Response(
+            {"error": "Vous n'avez pas les permissions pour modifier le statut d'un défunt."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    defunt_id = request.data.get("id")
+    if not defunt_id:
+        return Response(
+            {"error": "L'identifiant du défunt (id) est requis."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        target = Defunt.objects.get(pk=defunt_id)
+    except Defunt.DoesNotExist:
+        return Response(
+            {"error": "Défunt introuvable."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # Vérifier que le statut actuel est "Inhumé"
+    if target.statut != "Inhumé":
+        return Response(
+            {"error": "Le défunt est déjà inhumé."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Changer le statut en "Incinéré" et libérer la place
+    target.statut = "Incinéré"
+    target.place = None
+    target.save()
+
+    serializer = DefuntSerializer(target)
+    return Response({
+        "message": "Statut du défunt changé avec succès. Place libérée."},
+        status=status.HTTP_200_OK,
+    )
 
 
 @extend_schema(
