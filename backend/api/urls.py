@@ -16,6 +16,7 @@ from .views import (
     users,
     familles,
     defunts,
+    defunt_change_statut,
     paiements,
     lignes_paiements,
 )
@@ -66,6 +67,9 @@ urlpatterns = [
     
     # Gestion des defunts (suppression réservée aux administrateurs)
     path('dashboard/defunts/', defunts, name='dashboard_defunts'),
+    
+    # Changement de statut des défunts (réservé aux administrateurs)
+    path('dashboard/defunts/change-statut/', defunt_change_statut, name='dashboard_defunt_change_statut'),
     
     # Gestion des paiements (suppression réservée aux administrateurs)
     path('dashboard/paiements/', paiements, name='dashboard_paiements'),
