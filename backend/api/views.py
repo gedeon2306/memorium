@@ -4,6 +4,7 @@ import base64
 import io
 from io import BytesIO
 from PIL import Image
+from decimal import Decimal, InvalidOperation
 
 from django.shortcuts import render, redirect
 from django.conf import settings
@@ -1808,6 +1809,28 @@ def paiements(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
+        # Validate total_amount format
+        total_amount = data.get('total_amount', '0.00')
+        try:
+            # Validate decimal format with max_digits=10, decimal_places=2
+            decimal_amount = Decimal(str(total_amount))
+            if decimal_amount < 0:
+                return Response(
+                    {"error": "Le montant total ne peut pas être négatif."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            # Check if it fits in DecimalField(max_digits=10, decimal_places=2)
+            if decimal_amount * 100 >= 10**8:  # max_digits=10, decimal_places=2 means max value is 99999999.99
+                return Response(
+                    {"error": "Le montant total est trop grand (maximum: 99,999,999.99 XAF)."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except (ValueError, TypeError, InvalidOperation):
+            return Response(
+                {"error": "Le montant total doit être un nombre valide avec au maximum 2 décimales."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
         try:
             famille = Famille.objects.get(pk=data['famille'])
         except Famille.DoesNotExist:
@@ -1838,11 +1861,33 @@ def paiements(request):
                     )
             else:
                 defunt = None
+            
+            # Validate montant format for each ligne
+            ligne_montant = ligne_data.get('montant', '0.00')
+            try:
+                # Validate decimal format with max_digits=10, decimal_places=2
+                decimal_ligne_montant = Decimal(str(ligne_montant))
+                if decimal_ligne_montant < 0:
+                    return Response(
+                        {"error": "Le montant d'une ligne ne peut pas être négatif."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                # Check if it fits in DecimalField(max_digits=10, decimal_places=2)
+                if decimal_ligne_montant * 100 >= 10**8:  # max_digits=10, decimal_places=2 means max value is 99999999.99
+                    return Response(
+                        {"error": "Le montant d'une ligne est trop grand (maximum: 99,999,999.99 XAF)."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            except (ValueError, TypeError, InvalidOperation):
+                return Response(
+                    {"error": "Le montant d'une ligne doit être un nombre valide avec au maximum 2 décimales."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
                 
             LignePaiement.objects.create(
                 paiement=paiement,
                 motif=ligne_data.get('motif', 'Inhumation'),
-                montant=ligne_data.get('montant', '0.00'),
+                montant=ligne_montant,  # Use validated montant
                 moyen_paiement=ligne_data.get('moyen_paiement', 'Espèces'),
                 defunt=defunt
             )
@@ -2062,6 +2107,28 @@ def lignes_paiements(request):
                     {"error": "Défunt introuvable."},
                     status=status.HTTP_404_NOT_FOUND,
                 )
+        
+        # Validate montant format
+        montant = data.get('montant', '0.00')
+        try:
+            # Validate decimal format with max_digits=10, decimal_places=2
+            decimal_montant = Decimal(str(montant))
+            if decimal_montant < 0:
+                return Response(
+                    {"error": "Le montant ne peut pas être négatif."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            # Check if it fits in DecimalField(max_digits=10, decimal_places=2)
+            if decimal_montant * 100 >= 10**8:  # max_digits=10, decimal_places=2 means max value is 99999999.99
+                return Response(
+                    {"error": "Le montant est trop grand (maximum: 99,999,999.99 XAF)."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except (ValueError, TypeError, InvalidOperation):
+            return Response(
+                {"error": "Le montant doit être un nombre valide avec au maximum 2 décimales."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         
         serializer = LignePaiementSerializer(data=data)
         if serializer.is_valid():
