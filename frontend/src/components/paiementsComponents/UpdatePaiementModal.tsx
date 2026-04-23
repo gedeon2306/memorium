@@ -3,7 +3,7 @@
 import { updatePaiement } from "@/app/actions/actions";
 import { motion } from "framer-motion";
 import { CreditCard, X, Loader2, Save } from "lucide-react";
-import { useRef, useState, forwardRef, useImperativeHandle, useEffect } from "react";
+import { useRef, useState, forwardRef, useImperativeHandle } from "react";
 import toast from "react-hot-toast";
 
 function formatApiError(err: unknown): string {
@@ -43,15 +43,14 @@ const UpdatePaiementModal = forwardRef<UpdatePaiementModalHandle, UpdatePaiement
         setCurrentPaiement(paiement);
         setErrors({});
         formRef.current?.reset();
-        
-        // Pré-remplir le formulaire avec les données du paiement
+
         setTimeout(() => {
           const familleSelect = formRef.current?.elements.namedItem("famille") as HTMLSelectElement | null;
           if (familleSelect) {
             familleSelect.value = paiement.famille || paiement.famille_details?.id || "";
           }
         }, 0);
-        
+
         dialogRef.current?.showModal();
       },
     }));
@@ -63,10 +62,9 @@ const UpdatePaiementModal = forwardRef<UpdatePaiementModalHandle, UpdatePaiement
 
       try {
         const formData = new FormData(e.currentTarget);
-        
-        // Validation des champs
+
         const famille = formData.get("famille") as string;
-        
+
         if (!famille) {
           setErrors({ famille: "La famille est requise" });
           setLoading(false);
@@ -172,10 +170,8 @@ const UpdatePaiementModal = forwardRef<UpdatePaiementModalHandle, UpdatePaiement
                 </div>
 
                 {/* Famille */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text text-white/80 text-sm">Famille *</span>
-                  </label>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-white/80 text-sm">Famille *</span>
                   <select
                     name="famille"
                     defaultValue=""
@@ -190,13 +186,10 @@ const UpdatePaiementModal = forwardRef<UpdatePaiementModalHandle, UpdatePaiement
                     ))}
                   </select>
                   {errors.famille && (
-                    <label className="label">
-                      <span className="label-text-alt text-error text-xs">{errors.famille}</span>
-                    </label>
+                    <span className="text-error text-xs">{errors.famille}</span>
                   )}
                 </div>
 
-                
                 {/* Footer */}
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/8">
                   <button
