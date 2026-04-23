@@ -4,6 +4,7 @@ import { getPaiementsList } from "@/app/actions/actions";
 import Pagination from "@/components/uxComponents/Pagination";
 import AddPaiementModal, { AddPaiementModalHandle } from "@/components/paiementsComponents/AddPaiementModal";
 import UpdatePaiementModal, { UpdatePaiementModalHandle } from "@/components/paiementsComponents/UpdatePaiementModal";
+import DeletePaiementModal, { DeletePaiementModalHandle } from "@/components/paiementsComponents/DeletePaiementModal";
 import { motion } from "framer-motion";
 import {
   CreditCard,
@@ -73,6 +74,7 @@ export default function PaiementsPage() {
 
   const addModalRef = useRef<AddPaiementModalHandle>(null);
   const updateModalRef = useRef<UpdatePaiementModalHandle>(null);
+  const deleteModalRef = useRef<DeletePaiementModalHandle>(null);
   const debouncedSearch = useDebounce(search, 400);
 
   const loadPaiements = useCallback(async (page: number, q: string, ord: string) => {
@@ -163,6 +165,10 @@ export default function PaiementsPage() {
         ref={updateModalRef}
         onSuccess={() => loadPaiements(currentPage, debouncedSearch, ordering)}
         families={families}
+      />
+      <DeletePaiementModal
+        ref={deleteModalRef}
+        onSuccess={() => loadPaiements(currentPage, debouncedSearch, ordering)}
       />
       <motion.div
         variants={containerVariants}
@@ -294,7 +300,7 @@ export default function PaiementsPage() {
                             <li>
                               <button
                                 type="button"
-                                onClick={() => toast.error("Fonctionnalité bientôt disponible")}
+                                onClick={() => deleteModalRef.current?.open(paiement)}
                                 className="justify-start gap-2 text-error/80 hover:text-error"
                               >
                                 <Trash2 size={14} />
