@@ -3,6 +3,7 @@
 import { getPaiementsList } from "@/app/actions/actions";
 import Pagination from "@/components/uxComponents/Pagination";
 import AddPaiementModal, { AddPaiementModalHandle } from "@/components/paiementsComponents/AddPaiementModal";
+import UpdatePaiementModal, { UpdatePaiementModalHandle } from "@/components/paiementsComponents/UpdatePaiementModal";
 import { motion } from "framer-motion";
 import {
   CreditCard,
@@ -71,6 +72,7 @@ export default function PaiementsPage() {
   const [defunts, setDefunts] = useState<any[]>([]);
 
   const addModalRef = useRef<AddPaiementModalHandle>(null);
+  const updateModalRef = useRef<UpdatePaiementModalHandle>(null);
   const debouncedSearch = useDebounce(search, 400);
 
   const loadPaiements = useCallback(async (page: number, q: string, ord: string) => {
@@ -78,7 +80,7 @@ export default function PaiementsPage() {
     try {
       const res = await getPaiementsList(page, q, ord);
       
-      console.log("Réponse API paiements:", res);
+      console.log("Réponse API paiements complète:", JSON.stringify(res, null, 2));
       
       if (res == null) {
         toast.error("Session expirée ou accès refusé");
@@ -97,18 +99,16 @@ export default function PaiementsPage() {
       
       // Vérifier si la réponse a la structure du paginator
       if (typeof res === "object" && "results" in res && res.results && "results" in res.results) {
-        console.log("Results trouvés:", res.results.results);
         setPaiements(res.results.results as PaiementRow[]);
         const count = typeof res.count === "number" ? res.count : res.results.results.length;
         setTotalCount(count);
         setTotalPages(Math.max(1, Math.ceil(count / PAGE_SIZE)));
-        
-        // Extraire familles et défunts de la réponse
-        if (res.families && Array.isArray(res.families)) {
-          setFamilies(res.families);
+
+        if (res.results.families && Array.isArray(res.results.families)) {
+          setFamilies(res.results.families);
         }
-        if (res.defunts && Array.isArray(res.defunts)) {
-          setDefunts(res.defunts);
+        if (res.results.defunts && Array.isArray(res.results.defunts)) {
+          setDefunts(res.results.defunts);
         }
         return;
       }
@@ -158,6 +158,11 @@ export default function PaiementsPage() {
         onSuccess={() => loadPaiements(currentPage, debouncedSearch, ordering)}
         families={families}
         defunts={defunts}
+      />
+      <UpdatePaiementModal
+        ref={updateModalRef}
+        onSuccess={() => loadPaiements(currentPage, debouncedSearch, ordering)}
+        families={families}
       />
       <motion.div
         variants={containerVariants}
@@ -279,7 +284,7 @@ export default function PaiementsPage() {
                             <li>
                               <button
                                 type="button"
-                                onClick={() => toast.error("Fonctionnalité bientôt disponible")}
+                                onClick={() => updateModalRef.current?.open(paiement)}
                                 className="justify-start gap-2 text-white/80 hover:text-white"
                               >
                                 <SquarePen size={14} />
