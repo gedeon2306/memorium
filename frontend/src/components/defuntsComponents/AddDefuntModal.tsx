@@ -400,7 +400,7 @@ const AddDefuntModal = forwardRef<AddDefuntModalHandle, AddDefuntModalProps>(
 
                   {/* Montant */}
                   <div className="form-control gap-1.5">
-                    <label className="text-xs font-medium text-white/55 uppercase tracking-wider">
+                    <label className="text-xs font-medium text-white/55 uppercase tracking-wider flex items-center gap-1">
                       Montant (FCFA) <span className="text-error">*</span>
                     </label>
                     <input

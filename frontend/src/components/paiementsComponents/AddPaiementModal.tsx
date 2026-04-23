@@ -2,8 +2,8 @@
 
 import { createPaiement } from "@/app/actions/actions";
 import { motion } from "framer-motion";
-import { CreditCard, X, Loader2, Plus, Trash2, User } from "lucide-react";
-import { useRef, useState, forwardRef, useImperativeHandle, useEffect } from "react";
+import { CreditCard, X, Loader2, Plus, Trash2 } from "lucide-react";
+import { useRef, useState, forwardRef, useImperativeHandle } from "react";
 import toast from "react-hot-toast";
 
 function formatApiError(err: unknown): string {
@@ -98,7 +98,7 @@ const AddPaiementModal = forwardRef<AddPaiementModalHandle, AddPaiementModalProp
     };
 
     const updateLigne = (id: string, field: string, value: string) => {
-      setLignes(lignes.map(ligne => 
+      setLignes(lignes.map(ligne =>
         ligne.id === id ? { ...ligne, [field]: value } : ligne
       ));
     };
@@ -127,8 +127,7 @@ const AddPaiementModal = forwardRef<AddPaiementModalHandle, AddPaiementModalProp
 
       try {
         const formData = new FormData(e.currentTarget);
-        
-        // Validation des champs
+
         const famille = formData.get("famille") as string;
         if (!famille) {
           setErrors({ famille: "La famille est requise" });
@@ -136,7 +135,6 @@ const AddPaiementModal = forwardRef<AddPaiementModalHandle, AddPaiementModalProp
           return;
         }
 
-        // Validation des lignes
         const lignesValid = lignes.every(ligne => {
           return ligne.montant && parseFloat(ligne.montant) > 0 && ligne.motif && ligne.moyen_paiement;
         });
@@ -224,10 +222,8 @@ const AddPaiementModal = forwardRef<AddPaiementModalHandle, AddPaiementModalProp
           <div className="px-6 py-5">
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
               {/* Famille */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text text-white/80 text-sm">Famille *</span>
-                </label>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-white/80 text-sm">Famille *</span>
                 <select
                   name="famille"
                   className="select select-bordered bg-white/5 border-white/10 text-white focus:border-primary/50"
@@ -241,18 +237,14 @@ const AddPaiementModal = forwardRef<AddPaiementModalHandle, AddPaiementModalProp
                   ))}
                 </select>
                 {errors.famille && (
-                  <label className="label">
-                    <span className="label-text-alt text-error text-xs">{errors.famille}</span>
-                  </label>
+                  <span className="text-error text-xs">{errors.famille}</span>
                 )}
               </div>
 
               {/* Lignes de paiement */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <label className="label">
-                    <span className="label-text text-white/80 text-sm">Lignes de paiement *</span>
-                  </label>
+                  <span className="text-white/80 text-sm">Lignes de paiement *</span>
                   <button
                     type="button"
                     onClick={addLigne}
@@ -287,10 +279,8 @@ const AddPaiementModal = forwardRef<AddPaiementModalHandle, AddPaiementModalProp
 
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                         {/* Motif */}
-                        <div className="form-control">
-                          <label className="label">
-                            <span className="label-text text-white/60 text-xs">Motif *</span>
-                          </label>
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-white/60 text-xs">Motif *</span>
                           <select
                             value={ligne.motif}
                             onChange={(e) => updateLigne(ligne.id, "motif", e.target.value)}
@@ -306,10 +296,8 @@ const AddPaiementModal = forwardRef<AddPaiementModalHandle, AddPaiementModalProp
                         </div>
 
                         {/* Montant */}
-                        <div className="form-control">
-                          <label className="label">
-                            <span className="label-text text-white/60 text-xs">Montant (XAF) *</span>
-                          </label>
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-white/60 text-xs">Montant (XAF) *</span>
                           <input
                             type="number"
                             step="0.01"
@@ -323,10 +311,8 @@ const AddPaiementModal = forwardRef<AddPaiementModalHandle, AddPaiementModalProp
                         </div>
 
                         {/* Moyen de paiement */}
-                        <div className="form-control">
-                          <label className="label">
-                            <span className="label-text text-white/60 text-xs">Moyen paiement *</span>
-                          </label>
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-white/60 text-xs">Moyen paiement *</span>
                           <select
                             value={ligne.moyen_paiement}
                             onChange={(e) => updateLigne(ligne.id, "moyen_paiement", e.target.value)}
@@ -342,10 +328,8 @@ const AddPaiementModal = forwardRef<AddPaiementModalHandle, AddPaiementModalProp
                         </div>
 
                         {/* Défunt (optionnel) */}
-                        <div className="form-control">
-                          <label className="label">
-                            <span className="label-text text-white/60 text-xs">Défunt (optionnel)</span>
-                          </label>
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-white/60 text-xs">Défunt (optionnel)</span>
                           <select
                             value={ligne.defunt || ""}
                             onChange={(e) => updateLigne(ligne.id, "defunt", e.target.value)}
