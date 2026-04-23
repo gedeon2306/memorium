@@ -1758,7 +1758,7 @@ def paiements(request):
             "amount-desc": "-total_amount",
             "recent": "-date_paiement",
         }
-        order_field = ALLOWED_ORDERING.get(ordering, "num_facture")
+        order_field = ALLOWED_ORDERING.get(ordering, "recent")
 
         paiements_qs = Paiement.objects.all()
 
@@ -1772,10 +1772,25 @@ def paiements(request):
         paiements_qs = paiements_qs.order_by(order_field)
 
         paginator = PageNumberPagination()
-        paginator.page_size = 10
+        paginator.page_size = 12
         result_page = paginator.paginate_queryset(paiements_qs, request)
         serializer = PaiementSerializer(result_page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+        
+        # Récupérer toutes les familles pour le selecteur
+        families_qs = Famille.objects.all().order_by('nom_famille')
+        families_serializer = FamilleSerializer(families_qs, many=True)
+        
+        # Récupérer tous les défunts pour le selecteur
+        defunts_qs = Defunt.objects.all().order_by('nom')
+        defunts_serializer = DefuntSerializer(defunts_qs, many=True)
+        
+        response_data = {
+            'results': serializer.data,
+            'families': families_serializer.data,
+            'defunts': defunts_serializer.data
+        }
+        
+        return paginator.get_paginated_response(response_data)
 
     if request.method == "POST":
         data = request.data.copy()
@@ -2008,7 +2023,17 @@ def lignes_paiements(request):
         paginator.page_size = 10
         result_page = paginator.paginate_queryset(lignes_qs, request)
         serializer = LignePaiementSerializer(result_page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+        
+        # Récupérer tous les défunts pour le selecteur
+        defunts_qs = Defunt.objects.all().order_by('nom')
+        defunts_serializer = DefuntSerializer(defunts_qs, many=True)
+        
+        response_data = {
+            'results': serializer.data,
+            'defunts': defunts_serializer.data
+        }
+        
+        return paginator.get_paginated_response(response_data)
 
     if request.method == "POST":
         data = request.data.copy()

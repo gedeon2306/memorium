@@ -719,7 +719,7 @@ export async function changeDefuntStatut(payload: { id: string }) {
 }
 
 
-export async function getPaiementsList(page: number = 1, search: string = "", ordering: string = "num_facture") {
+export async function getPaiementsList(page: number = 1, search: string = "", ordering: string = "recent") {
   const token = await getToken();
 
   const params = new URLSearchParams({ page: String(page) });
