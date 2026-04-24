@@ -12,11 +12,15 @@ import {
   CreditCard as CreditCardIcon,
   List,
 } from "lucide-react";
-import { useCallback, useEffect, useState, Suspense } from "react";
+import { useCallback, useEffect, useState, Suspense, useRef } from "react";
 import toast from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
+import AddLignePaiementModal, { AddLignePaiementModalHandle } from "@/components/lignesPaiementComponents/AddLignePaiementModal";
+import UpdateLignePaiementModal, { UpdateLignePaiementModalHandle } from "@/components/lignesPaiementComponents/UpdateLignePaiementModal";
+import DeleteLignePaiementModal, { DeleteLignePaiementModalHandle } from "@/components/lignesPaiementComponents/DeleteLignePaiementModal";
+import { MoreHorizontal, SquarePen, Trash2, Plus } from "lucide-react";
 
 const PAGE_SIZE = 12;
 
@@ -61,7 +65,12 @@ function LignesPaiementContent() {
   const [totalCount, setTotalCount] = useState(0);
   const [search, setSearch] = useState("");
   const [ordering, setOrdering] = useState("motif");
+  const [defunts, setDefunts] = useState<any[]>([]);
   const debouncedSearch = useDebounce(search, 400);
+
+  const addModalRef = useRef<AddLignePaiementModalHandle>(null);
+  const updateModalRef = useRef<UpdateLignePaiementModalHandle>(null);
+  const deleteModalRef = useRef<DeleteLignePaiementModalHandle>(null);
 
   const loadLignesPaiement = useCallback(async (page: number, q: string, ord: string) => {
     setLoading(true);
@@ -112,6 +121,25 @@ function LignesPaiementContent() {
     loadLignesPaiement(currentPage, debouncedSearch, ordering);
   }, [currentPage, debouncedSearch, ordering, loadLignesPaiement]);
 
+  // Charger les defunts pour les modals
+  useEffect(() => {
+    const loadDefunts = async () => {
+      try {
+        // Importer la fonction getDefuntsList
+        const { getDefuntsList } = await import("@/app/actions/actions");
+        const res = await getDefuntsList(1, "", "recent");
+        
+        if (res && typeof res === "object" && "results" in res && res.results) {
+          setDefunts(res.results.results || []);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des defunts:", error);
+      }
+    };
+    
+    loadDefunts();
+  }, []);
+
   const formatCurrency = (amount: string) => {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
@@ -132,6 +160,21 @@ function LignesPaiementContent() {
 
   return (
     <>
+      <AddLignePaiementModal
+        ref={addModalRef}
+        onSuccess={() => loadLignesPaiement(currentPage, debouncedSearch, ordering)}
+        paiementId={paiementId}
+        defunts={defunts}
+      />
+      <UpdateLignePaiementModal
+        ref={updateModalRef}
+        onSuccess={() => loadLignesPaiement(currentPage, debouncedSearch, ordering)}
+        defunts={defunts}
+      />
+      <DeleteLignePaiementModal
+        ref={deleteModalRef}
+        onSuccess={() => loadLignesPaiement(currentPage, debouncedSearch, ordering)}
+      />
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -182,6 +225,19 @@ function LignesPaiementContent() {
               Consultez toutes les lignes de paiement détaillées.
             </p>
           </div>
+          
+          {/* Bouton Ajouter */}
+          <motion.button
+            type="button"
+            onClick={() => addModalRef.current?.open()}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="btn btn-primary btn-sm gap-2 shrink-0"
+            disabled={!paiementId}
+          >
+            <Plus size={14} />
+            Ajouter une ligne
+          </motion.button>
         </motion.div>
 
         <motion.div variants={itemVariants}>
@@ -243,17 +299,56 @@ function LignesPaiementContent() {
                     >
                       <div className="rounded-xl border border-white/6 bg-white/3 p-4 flex flex-col justify-between min-h-48 hover:border-white/12 transition-all duration-300 hover:bg-white/5">
                         {/* En-tête de la ligne */}
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="p-2 rounded-lg bg-primary/15 text-primary">
-                            <Receipt className="w-5 h-5" />
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-start gap-3 flex-1 min-w-0">
+                            <div className="p-2 rounded-lg bg-primary/15 text-primary">
+                              <Receipt className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-white text-sm mb-1 truncate" title={ligne.motif}>
+                                {ligne.motif}
+                              </h3>
+                              <p className="text-white/60 text-xs truncate">
+                                {ligne.paiement_num_facture || `Paiement ${ligne.paiement}`}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-white text-sm mb-1 truncate" title={ligne.motif}>
-                              {ligne.motif}
-                            </h3>
-                            <p className="text-white/60 text-xs truncate">
-                              {ligne.paiement_num_facture || `Paiement ${ligne.paiement}`}
-                            </p>
+                          
+                          {/* Menu d'actions */}
+                          <div className="dropdown dropdown-end">
+                            <button
+                              type="button"
+                              tabIndex={0}
+                              className="btn btn-ghost btn-xs btn-square bg-black/20 hover:bg-black/40 text-white/60 hover:text-white border-0"
+                              aria-label="Actions"
+                            >
+                              <MoreHorizontal size={13} />
+                            </button>
+                            <ul
+                              tabIndex={0}
+                              className="dropdown-content menu p-2 shadow bg-neutral-900 border border-white/10 rounded-box w-40 z-50"
+                            >
+                              <li>
+                                <button
+                                  type="button"
+                                  onClick={() => updateModalRef.current?.open(ligne)}
+                                  className="justify-start gap-2 text-white/80 hover:text-white"
+                                >
+                                  <SquarePen size={14} />
+                                  Modifier
+                                </button>
+                              </li>
+                              <li>
+                                <button
+                                  type="button"
+                                  onClick={() => deleteModalRef.current?.open(ligne)}
+                                  className="justify-start gap-2 text-error/80 hover:text-error"
+                                >
+                                  <Trash2 size={14} />
+                                  Supprimer
+                                </button>
+                              </li>
+                            </ul>
                           </div>
                         </div>
 
