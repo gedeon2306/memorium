@@ -859,13 +859,14 @@ export async function deletePaiement(payload: { id: string }): Promise<DeleteEnt
 }
 
 
-export async function getLignesPaiementList(page: number = 1, search: string = "", ordering: string = "recent") {
+export async function getLignesPaiementList(page: number = 1, search: string = "", ordering: string = "motif", paiementId?: string | null) {
   const token = await getToken();
 
   const params = new URLSearchParams({ page: String(page) });
   if (search) params.append("search", search);
   if (ordering) params.append("ordering", ordering);
-  const url = `dashboard/lignes-paiement/?${params.toString()}`;
+  if (paiementId) params.append("paiement_id", paiementId);
+  const url = `dashboard/lignes_paiements/?${params.toString()}`;
 
   try {
     const response = await api.get(url, authConfig(token));
@@ -898,7 +899,7 @@ export async function createLignePaiement(payload: {
   defunt?: string;
 }) {
   const token = await getToken();
-  const url = "dashboard/lignes-paiement/";
+  const url = "dashboard/lignes_paiements/";
  
   try {
     const response = await api.post(url, payload, authConfig(token));
@@ -933,7 +934,7 @@ export async function updateLignePaiement(payload: {
   defunt?: string;
 }) {
   const token = await getToken();
-  const url = "dashboard/lignes-paiement/";
+  const url = "dashboard/lignes_paiements/";
  
   try {
     const response = await api.put(url, payload, authConfig(token));
@@ -963,7 +964,7 @@ export async function deleteLignePaiement(payload: { id: string }): Promise<Dele
   const token = await getToken();
   const raw = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "";
   const base = raw.replace(/\/+$/, "");
-  const url = `${base}/api/dashboard/lignes-paiement/`;
+  const url = `${base}/api/dashboard/lignes_paiements/`;
 
   const getConfig = (t: string): RequestInit => ({
     method: "DELETE",
