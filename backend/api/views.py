@@ -2142,7 +2142,7 @@ def lignes_paiements(request):
 
     if request.method == "PUT":
         if not _is_users_admin(request.user):
-            return _forbidden('supprimer une ligne')
+            return _forbidden('modifier une ligne')
         
         ligne_id = request.data.get("id")
         if not ligne_id:
