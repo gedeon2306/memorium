@@ -30,7 +30,6 @@ export interface UpdatePaiementModalHandle {
 
 const UpdatePaiementModal = forwardRef<UpdatePaiementModalHandle, UpdatePaiementModalProps>(
   ({ onSuccess, families = [] }, ref) => {
-    console.log("UpdatePaiementModal - families reçues:", families);
     const dialogRef = useRef<HTMLDialogElement>(null);
     const formRef = useRef<HTMLFormElement>(null);
 

@@ -17,6 +17,7 @@ export const ROUTES = {
     FAMILLES: '/dashboard/familles',
     HELP: '/dashboard/help',
     PAIEMENTS: '/dashboard/paiements',
+    LIGNES: '/dashboard/paiements/lignes',
     SETTINGS: '/dashboard/settings',
     STATS: '/dashboard/stats',
     USERS: '/dashboard/users',

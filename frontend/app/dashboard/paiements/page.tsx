@@ -82,8 +82,6 @@ export default function PaiementsPage() {
     try {
       const res = await getPaiementsList(page, q, ord);
       
-      console.log("Réponse API paiements complète:", JSON.stringify(res, null, 2));
-      
       if (res == null) {
         toast.error("Session expirée ou accès refusé");
         setPaiements([]);
@@ -115,7 +113,6 @@ export default function PaiementsPage() {
         return;
       }
       
-      console.log("Structure de réponse non reconnue:", typeof res, res);
       setPaiements([]);
       setTotalCount(0);
       setTotalPages(1);

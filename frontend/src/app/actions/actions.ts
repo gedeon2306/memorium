@@ -859,6 +859,146 @@ export async function deletePaiement(payload: { id: string }): Promise<DeleteEnt
 }
 
 
+export async function getLignesPaiementList(page: number = 1, search: string = "", ordering: string = "recent") {
+  const token = await getToken();
+
+  const params = new URLSearchParams({ page: String(page) });
+  if (search) params.append("search", search);
+  if (ordering) params.append("ordering", ordering);
+  const url = `dashboard/lignes-paiement/?${params.toString()}`;
+
+  try {
+    const response = await api.get(url, authConfig(token));
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return null;
+      try {
+        const response = await api.get(url, authConfig(newToken));
+        return response.data;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error };
+      }
+    }
+    const errorMessage =
+      error.response?.data?.error ||
+      error.response?.data?.message ||
+      "Une erreur est survenue";
+    return { error: errorMessage };
+  }
+}
+
+
+export async function createLignePaiement(payload: {
+  paiement: string;
+  motif: string;
+  montant: string;
+  moyen_paiement: string;
+  defunt?: string;
+}) {
+  const token = await getToken();
+  const url = "dashboard/lignes-paiement/";
+ 
+  try {
+    const response = await api.post(url, payload, authConfig(token));
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();    
+      if (!newToken) return null;
+      try {
+        const response = await api.post(url, payload, authConfig(newToken));
+        return response.data;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error };
+      }
+    }
+    return {
+      error:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Une erreur est survenue",
+    };
+  }
+}
+
+
+export async function updateLignePaiement(payload: {
+  id: string;
+  paiement?: string;
+  motif?: string;
+  montant?: string;
+  moyen_paiement?: string;
+  defunt?: string;
+}) {
+  const token = await getToken();
+  const url = "dashboard/lignes-paiement/";
+ 
+  try {
+    const response = await api.put(url, payload, authConfig(token));
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();    
+      if (!newToken) return null;
+      try {
+        const response = await api.put(url, payload, authConfig(newToken));
+        return response.data;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error };
+      }
+    }
+    return {
+      error:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Une erreur est survenue",
+    };
+  }
+}
+
+
+export async function deleteLignePaiement(payload: { id: string }): Promise<DeleteEntityResult> {
+  const token = await getToken();
+  const raw = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "";
+  const base = raw.replace(/\/+$/, "");
+  const url = `${base}/api/dashboard/lignes-paiement/`;
+
+  const getConfig = (t: string): RequestInit => ({
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${t}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  try {
+    let response = await fetch(url, getConfig(token));
+
+    if (response.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return null;
+      response = await fetch(url, getConfig(newToken));
+    }
+
+    const data = await readFetchResponseJson(response);
+
+    if (response.ok) {
+      return {
+        success: true,
+        message: messageFromSuccessBody(data),
+      };
+    }
+
+    return { success: false, error: messageFromErrorBody(data) };
+  } catch {
+    return { success: false, error: "Une erreur réseau est survenue." };
+  }
+}
+
+
 
 
 
