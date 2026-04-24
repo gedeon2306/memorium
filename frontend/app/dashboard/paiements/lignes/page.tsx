@@ -46,8 +46,8 @@ type LignePaiementRow = {
 
 function LignesPaiementContent() {
   const searchParams = useSearchParams();
-  const paiementId = searchParams.get("paiement");
-  const paiementNum = searchParams.get("num");
+  const paiementId = searchParams.get("paiement") ?? "";
+  const paiementNum = searchParams.get("num") ?? "";
 
   const containerVariants = {
     hidden: {},
@@ -213,7 +213,7 @@ function LignesPaiementContent() {
             <h1 className="text-3xl font-bold text-white flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
               <div className="flex items-center gap-3">
                 <Receipt className="w-8 h-8 shrink-0" />
-                <span>Lignes de paiement</span>
+                <span>Lignes paiement</span>
               </div>
               {paiementNum && (
                 <span className="text-lg font-normal text-white/60 sm:ml-0">
