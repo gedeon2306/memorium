@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
+import Link from "next/link";
+import { ROUTES } from "@/constants/routes";
 
 const PAGE_SIZE = 12;
 
@@ -275,14 +277,13 @@ export default function PaiementsPage() {
                             className="dropdown-content menu p-2 shadow bg-neutral-900 border border-white/10 rounded-box w-40 z-50"
                           >
                             <li>
-                              <button
-                                type="button"
-                                onClick={() => toast.error("Fonctionnalité bientôt disponible")}
-                                className="justify-start gap-2 text-white/80 hover:text-white"
+                              <Link
+                                href={`${ROUTES.DASHBOARD.LIGNES}?paiement=${paiement.id}&num=${encodeURIComponent(paiement.num_facture)}`}
+                                className="justify-start gap-2 text-white/80 hover:text-white flex items-center"
                               >
                                 <Eye size={14} />
                                 Voir
-                              </button>
+                              </Link>
                             </li>
                             <li>
                               <button

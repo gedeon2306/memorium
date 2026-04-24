@@ -50,20 +50,13 @@ def _error_server():
     )
 
 
-def _users_admin_forbidden():
-    return Response(
-        {"error": "Vous n'avez pas les droits pour gérer les utilisateurs."},
-        status=status.HTTP_403_FORBIDDEN,
-    )
-
-
 def _is_users_admin(user):
     return user.role == "Administrateur" or user.is_staff
 
 
-def _delete_forbidden(texte):
+def _forbidden(texte):
     return Response(
-        {"error": f"Vous n'avez pas les droits pour supprimer {texte}."},
+        {"error": f"Vous n'avez pas les droits pour {texte}."},
         status=status.HTTP_403_FORBIDDEN,
     )
     
@@ -1068,7 +1061,7 @@ def upload_profil_photo(request):
 @permission_classes([IsAuthenticated])
 def users(request):
     if not _is_users_admin(request.user):
-        return _users_admin_forbidden()
+        return _forbidden('gérer les utilisateurs')
 
     if request.method == "GET":
         search = request.query_params.get("search", "").strip()
@@ -1298,7 +1291,7 @@ def familles(request):
 
     if request.method == "DELETE":
         if not _is_users_admin(request.user):
-            return _delete_forbidden('une famille')
+            return _forbidden('supprimer une famille')
 
         famille_id = request.query_params.get("id") or request.data.get("id")
         if not famille_id:
@@ -1567,7 +1560,7 @@ def defunts(request):
 
     if request.method == "DELETE":
         if not _is_users_admin(request.user):
-            return _delete_forbidden('un defunt')
+            return _forbidden('supprimer un défunt')
 
         defunt_id = request.query_params.get("id") or request.data.get("id")
         if not defunt_id:
@@ -1926,7 +1919,7 @@ def paiements(request):
 
     if request.method == "DELETE":
         if not _is_users_admin(request.user):
-            return _delete_forbidden('un paiement')
+            return _forbidden('supprimer un paiement')
 
         paiement_id = request.query_params.get("id") or request.data.get("id")
         if not paiement_id:
@@ -2045,7 +2038,6 @@ def lignes_paiements(request):
             "motif-desc": "-motif",
             "montant": "montant",
             "montant-desc": "-montant",
-            "recent": "-created_at",
         }
         order_field = ALLOWED_ORDERING.get(ordering, "motif")
 
@@ -2081,6 +2073,9 @@ def lignes_paiements(request):
         return paginator.get_paginated_response(response_data)
 
     if request.method == "POST":
+        if not _is_users_admin(request.user):
+            return _forbidden('ajouter une ligne')
+        
         data = request.data.copy()
         
         # Validate required fields
@@ -2145,6 +2140,9 @@ def lignes_paiements(request):
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "PUT":
+        if not _is_users_admin(request.user):
+            return _forbidden('supprimer une ligne')
+        
         ligne_id = request.data.get("id")
         if not ligne_id:
             return Response(
@@ -2191,7 +2189,7 @@ def lignes_paiements(request):
 
     if request.method == "DELETE":
         if not _is_users_admin(request.user):
-            return _delete_forbidden('une ligne de paiement')
+            return _forbidden('supprimer une ligne')
 
         ligne_id = request.query_params.get("id") or request.data.get("id")
         if not ligne_id:
