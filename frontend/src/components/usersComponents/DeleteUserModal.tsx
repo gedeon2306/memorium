@@ -77,9 +77,9 @@ const DeleteUserModal = forwardRef<DeleteUserModalHandle, DeleteUserModalProps>(
         className="modal modal-bottom sm:modal-middle"
         onClose={close}
       >
-        <div className="modal-box bg-neutral-900 border border-white/10 shadow-2xl p-0 overflow-hidden max-w-lg w-full">
+        <div className="modal-box bg-neutral-900 border border-white/10 shadow-2xl p-0 overflow-hidden max-w-md w-full">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/8 shrink-0">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-error/15 text-error">
                 <AlertTriangle size={18} />
@@ -89,7 +89,7 @@ const DeleteUserModal = forwardRef<DeleteUserModalHandle, DeleteUserModalProps>(
                   Supprimer un utilisateur
                 </h3>
                 <p className="text-xs text-white/35 mt-0.5">
-                  Cette action est irréversible.
+                  Cette action est irréversible
                 </p>
               </div>
             </div>
@@ -104,51 +104,67 @@ const DeleteUserModal = forwardRef<DeleteUserModalHandle, DeleteUserModalProps>(
 
           {/* Body */}
           <div className="px-6 py-5">
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 text-error">
-                <Trash2 size={18} />
-              </div>
-              <div>
-                <p className="text-sm text-white/70">
-                  {selectedUser?.name
-                    ? `Confirmer la suppression de « ${selectedUser.name} ».`
-                    : "Confirmer la suppression de cet utilisateur."}
-                </p>
-              </div>
-            </div>
-          </div>
+            {selectedUser && (
+              <div className="space-y-4">
+                {/* Avertissement */}
+                <div className="alert alert-warning">
+                  <AlertTriangle size={16} />
+                  <div>
+                    <h4 className="font-semibold">Attention</h4>
+                    <p className="text-sm">
+                      Vous êtes sur le point de supprimer l'utilisateur suivant :
+                    </p>
+                  </div>
+                </div>
 
-          {/* Footer */}
-          <div className="px-6 py-4 border-t border-white/8 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={close}
-              disabled={loading}
-              className="btn btn-ghost btn-sm text-white/50 hover:text-white/80"
-            >
-              Annuler
-            </button>
+                {/* Détails de l'utilisateur */}
+                <div className="bg-white/2 border border-white/10 rounded-lg p-4">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-white/60">Nom :</span>
+                      <span className="text-white font-medium">{selectedUser.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/60">ID :</span>
+                      <span className="text-white font-medium">{selectedUser.id}</span>
+                    </div>
+                  </div>
+                </div>
 
-            <motion.button
-              type="button"
-              onClick={handleConfirm}
-              disabled={loading}
-              whileHover={{ scale: loading ? 1 : 1.02 }}
-              whileTap={{ scale: loading ? 1 : 0.97 }}
-              className="btn btn-error btn-sm gap-2 min-w-28"
-            >
-              {loading ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" />
-                  Suppression…
-                </>
-              ) : (
-                <>
-                  <Trash2 size={14} />
-                  Supprimer
-                </>
-              )}
-            </motion.button>
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/8">
+                  <button
+                    type="button"
+                    onClick={close}
+                    disabled={loading}
+                    className="btn btn-ghost btn-sm text-white/50 hover:text-white/80"
+                  >
+                    Annuler
+                  </button>
+
+                  <motion.button
+                    type="button"
+                    onClick={handleConfirm}
+                    disabled={loading}
+                    whileHover={{ scale: loading ? 1 : 1.02 }}
+                    whileTap={{ scale: loading ? 1 : 0.97 }}
+                    className="btn btn-error btn-sm gap-2 min-w-28"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" />
+                        Suppression...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 size={14} />
+                        Supprimer
+                      </>
+                    )}
+                  </motion.button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
