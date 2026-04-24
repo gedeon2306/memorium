@@ -8,6 +8,7 @@ from decimal import Decimal, InvalidOperation
 
 from django.shortcuts import render, redirect
 from django.conf import settings
+from django.db import models
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.models import BaseUserManager
