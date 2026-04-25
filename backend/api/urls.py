@@ -19,6 +19,7 @@ from .views import (
     defunt_change_statut,
     paiements,
     lignes_paiements,
+    map,
 )
 
 urlpatterns = [
@@ -76,4 +77,7 @@ urlpatterns = [
     
     # Gestion des lignes paiements (suppression réservée aux administrateurs)
     path('dashboard/lignes_paiements/', lignes_paiements, name='dashboard_lignes_paiements'),
+    
+    # Carte des défunts
+    path('dashboard/map/', map, name='dashboard_map'),
 ]
