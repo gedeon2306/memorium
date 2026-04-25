@@ -1,28 +1,56 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Map } from "lucide-react";
-
-// Liste des défunts (à remplacer par tes vraies données plus tard)
-const defunts = [
-  { id: 5,   nom: "Nguesso Paul",     profession: "Médecin",      deces: "10/02/2024", incin: "10/02/2025", famille: "Épouse : Marie Nguesso",    bientot: false },
-  { id: 12,  nom: "Moukala Élise",    profession: "Enseignante",  deces: "15/03/2024", incin: "15/03/2025", famille: "Fils : Pierre Moukala",      bientot: false },
-  { id: 23,  nom: "Ibara Louis",      profession: "Commerçant",   deces: "05/01/2024", incin: "05/01/2025", famille: "Fille : Claire Ibara",       bientot: false },
-  { id: 31,  nom: "Mabiala Yvette",   profession: "Infirmière",   deces: "20/05/2024", incin: "10/05/2025", famille: "Mari : Joseph Mabiala",      bientot: true  },
-  { id: 44,  nom: "Loemba Théophile", profession: "Enseignant",   deces: "01/06/2024", incin: "01/06/2025", famille: "Mère : Adèle Loemba",        bientot: false },
-  { id: 57,  nom: "Bouanga Rosine",   profession: "Comptable",    deces: "18/04/2024", incin: "05/05/2025", famille: "Frère : Denis Bouanga",      bientot: true  },
-  { id: 68,  nom: "Nkouka Marcel",    profession: "Ingénieur",    deces: "30/12/2023", incin: "30/12/2024", famille: "Femme : Pascaline Nkouka",   bientot: false },
-  { id: 79,  nom: "Yoka Bernadette",  profession: "Retraitée",    deces: "07/07/2024", incin: "07/07/2025", famille: "Fils : Arnaud Yoka",         bientot: false },
-  { id: 88,  nom: "Massamba Henri",   profession: "Avocat",       deces: "14/08/2024", incin: "14/08/2025", famille: "Fille : Sandrine Massamba",  bientot: false },
-  { id: 102, nom: "Ngoma Cécile",     profession: "Sage-femme",   deces: "22/09/2024", incin: "22/09/2025", famille: "Mari : Victor Ngoma",        bientot: false },
-  { id: 201, nom: "Dupont Marie",     profession: "Enseignante",  deces: "01/01/2025", incin: "01/01/2026", famille: "Fils : Jean Dupont",         bientot: false },
-];
+import { getDefuntsMap } from "@/app/actions/actions";
 
 const TOTAL = 250;
 
 export default function CartesPage() {
   const [selection, setSelection] = useState<number | null>(null);
   const ficheRef = useRef<HTMLDivElement>(null);
+  const [defunts, setDefunts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadDefunts = async () => {
+      try {
+        const data = await getDefuntsMap();
+        if (data && !data.error) {
+          // Transformer les données de l'API pour correspondre au format attendu
+          const transformedData = data.map((defunt: any) => ({
+            id: defunt.place,
+            nom: `${defunt.nom} ${defunt.prenom || ''}`.trim(),
+            profession: defunt.profession || 'Non spécifiée',
+            deces: new Date(defunt.date_deces).toLocaleDateString('fr-FR'),
+            incin: new Date(defunt.date_incineration).toLocaleDateString('fr-FR'),
+            famille: defunt.famille_details ? 
+              `${defunt.famille_details.nom_famille} (${defunt.famille_details.nom_garrant})` : 
+              'Non spécifiée',
+            bientot: isSoon(new Date(defunt.date_incineration))
+          }));
+          setDefunts(transformedData);
+        } else {
+          setError(data?.error || 'Erreur de chargement');
+        }
+      } catch (err) {
+        setError('Erreur de connexion au serveur');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDefunts();
+  }, []);
+
+  // Fonction pour vérifier si l'incinération est proche (dans les 30 jours) ou dépassée
+  function isSoon(incinerationDate: Date): boolean {
+    const today = new Date();
+    const timeDiff = incinerationDate.getTime() - today.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    return daysDiff <= 30; // Inclut les dates passées (daysDiff < 0) et les 30 prochains jours
+  }
 
   const defuntSelectionne = defunts.find((d) => d.id === selection);
 
@@ -43,6 +71,39 @@ export default function CartesPage() {
   const nbOccupes = defunts.length;
   const nbLibres = TOTAL - nbOccupes;
   const taux = Math.round((nbOccupes / TOTAL) * 100);
+
+  if (loading) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-6"
+      >
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="loading loading-spinner loading-lg text-primary"></div>
+            <p className="mt-4 text-neutral-400">Chargement de la carte du cimetière...</p>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (error) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-6"
+      >
+        <div className="alert alert-error">
+          <span>Erreur: {error}</span>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
