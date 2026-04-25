@@ -2218,5 +2218,22 @@ def lignes_paiements(request):
             )
 
 
+@extend_schema(
+    tags=["Map"],
+    summary="Récupérer la liste des défunts avec place assignée",
+    description="Retourne la liste de tous les défunts où le champ 'place' n'est pas null.",
+    responses={
+        200: DefuntSerializer(many=True),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def map(request):
+    
+    defunts_with_place = Defunt.objects.filter(place__isnull=False).order_by('place')
+    serializer = DefuntSerializer(defunts_with_place, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 
 
