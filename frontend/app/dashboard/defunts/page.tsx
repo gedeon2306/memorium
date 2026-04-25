@@ -106,7 +106,6 @@ export default function DefuntsPage() {
         setTotalCount(count);
         setTotalPages(Math.max(1, Math.ceil(count / PAGE_SIZE)));
         
-        // Extraire les familles de la réponse
         if (typeof res.results === "object" && "families" in res.results && Array.isArray(res.results.families)) {
           setFamilies(res.results.families);
         }
