@@ -1,6 +1,6 @@
 # Backend Mémorium - API Django REST Framework
 
-API REST complète pour l'application de gestion de cimetière privé Mémorium. Construite avec Django 6 et Django REST Framework.
+API REST complète et moderne pour l'application de gestion de cimetière privé Mémorium. Construite avec Django 6.0.3 et Django REST Framework 3.17.1, cette API offre une gestion complète des familles, défunts, paiements et utilisateurs avec une sécurité robuste et une documentation OpenAPI intégrée.
 
 ## Architecture
 
@@ -27,67 +27,104 @@ backend/
 |-- db.sqlite3            # Base de données SQLite
 ```
 
-## Modèles de données
+## 🚀 Technologies et dépendances
 
-### User (Utilisateur)
+### Framework principal
+- **Django 6.0.3** - Framework web Python haute performance
+- **Django REST Framework 3.17.1** - API REST puissante et flexible
+
+### Authentification et sécurité
+- **Simple JWT 5.5.1** - Tokens JWT sécurisés
+- **PyJWT 2.12.1** - Gestion tokens JWT
+- **Django CORS Headers 4.9.0** - Gestion CORS
+
+### Documentation et utilitaires
+- **DRF Spectacular 0.29.0** - Documentation OpenAPI 3.0
+- **Django Environ 0.13.0** - Gestion variables environnement
+- **Pillow 11.2.0** - Traitement et optimisation des images
+
+### Base de données
+- **SQLite** - Base de données par défaut (développement)
+- **Compatible PostgreSQL/MySQL** - Pour la production
+
+## 📊 Modèles de données
+### 👤 User (Utilisateur)
 - **Champs** : id, photo, name, email, role, created_at
 - **Rôles** : Administrateur, Assistant, Testeur
 - **Authentification** : Email + mot de passe, validation par code
-- **Sécurité** : Double authentification (DFA), JWT tokens
+- **Sécurité** : Double authentification (DFA), JWT tokens, gestion photos
+- **Permissions** : Rôles basés sur les permissions Django
 
-### Famille
+### 👨‍👩‍👧‍👦 Famille
 - **Champs** : id, nom_famille, nom_garrant, profession, telephone, email, created_at
 - **Relations** : 1-N avec Defunt, Paiement
+- **Validation** : Email unique, téléphone formaté
+- **Fonctionnalités** : Gestion des coordonnées, profession du garant
 
-### Defunt (Défunt)
+### 🕊️ Defunt (Défunt)
 - **Champs** : id, photo, nom, prenom, genre, age, profession, dates (naissance/décès/inhumation/incinération), statut, place
 - **Relations** : N-1 avec Famille, User
+- **Statuts** : Inhumé, Incinéré
+- **Fonctionnalités** : Gestion photos, emplacements, dates multiples, genre
 
-### Paiement
+### 💳 Paiement
 - **Champs** : id, num_facture, motif, montant, dates, moyen_paiement
 - **Relations** : N-1 avec Famille, Defunt, User
+- **Fonctionnalités** : Numérotation automatique, suivi moyens de paiement, historique complet
+- **Validation** : Montant positif, facture unique
 
-## Endpoints API
+## 🔗 Endpoints API
 
-### Authentification
-- `POST /api/auth/login/` - Connexion
-- `POST /api/auth/logout/` - Déconnexion
-- `POST /api/auth/register/` - Inscription
-- `POST /api/auth/verify-email/` - Validation email
-- `POST /api/auth/refresh/` - Rafraîchir token
+### 🔐 Authentification
+- `POST /api/auth/login/` - Connexion avec email/mot de passe
+- `POST /api/auth/logout/` - Déconnexion et invalidation token
+- `POST /api/auth/register/` - Inscription nouvel utilisateur
+- `POST /api/auth/verify-email/` - Validation email avec code
+- `POST /api/auth/refresh/` - Rafraîchissement token JWT
+- `POST /api/auth/forgot-password/` - Mot de passe oublié
+- `POST /api/auth/reset-password/` - Réinitialisation mot de passe
 
-### Utilisateurs
-- `GET /api/users/` - Lister utilisateurs (admin)
-- `POST /api/users/` - Créer utilisateur (admin)
-- `GET /api/users/{id}/` - Détails utilisateur
-- `PUT /api/users/{id}/` - Modifier utilisateur
-- `DELETE /api/users/{id}/` - Supprimer utilisateur
+### 👥 Utilisateurs
+- `GET /api/users/` - Lister utilisateurs (admin seulement)
+- `POST /api/users/` - Créer utilisateur (admin seulement)
+- `GET /api/users/{id}/` - Détails utilisateur authentifié
+- `PUT /api/users/{id}/` - Modifier utilisateur (propriétaire/admin)
+- `DELETE /api/users/{id}/` - Supprimer utilisateur (admin seulement)
+- `POST /api/users/{id}/photo/` - Upload photo profil
+- `GET /api/users/me/` - Profil utilisateur courant
 
-### Familles
-- `GET /api/familles/` - Lister familles
-- `POST /api/familles/` - Créer famille
-- `GET /api/familles/{id}/` - Détails famille
+### 👨‍👩‍👧‍👦 Familles
+- `GET /api/familles/` - Lister familles avec pagination et filtres
+- `POST /api/familles/` - Créer nouvelle famille
+- `GET /api/familles/{id}/` - Détails famille avec défunts associés
 - `PUT /api/familles/{id}/` - Modifier famille
-- `DELETE /api/familles/{id}/` - Supprimer famille
+- `DELETE /api/familles/{id}/` - Supprimer famille (vérification dépendances)
+- `GET /api/familles/search/` - Recherche avancée
 
-### Défunts
-- `GET /api/defunts/` - Lister défunts
-- `POST /api/defunts/` - Créer défunt
-- `GET /api/defunts/{id}/` - Détails défunt
+### 🕊️ Défunts
+- `GET /api/defunts/` - Lister défunts avec pagination et filtres
+- `POST /api/defunts/` - Créer nouveau défunt
+- `GET /api/defunts/{id}/` - Détails défunt avec famille
 - `PUT /api/defunts/{id}/` - Modifier défunt
 - `DELETE /api/defunts/{id}/` - Supprimer défunt
+- `POST /api/defunts/{id}/photo/` - Upload photo défunt
+- `GET /api/defunts/search/` - Recherche multi-critères
 
-### Paiements
-- `GET /api/paiements/` - Lister paiements
-- `POST /api/paiements/` - Créer paiement
+### 💳 Paiements
+- `GET /api/paiements/` - Lister paiements avec filtres
+- `POST /api/paiements/` - Créer nouveau paiement
 - `GET /api/paiements/{id}/` - Détails paiement
 - `PUT /api/paiements/{id}/` - Modifier paiement
 - `DELETE /api/paiements/{id}/` - Supprimer paiement
+- `GET /api/paiements/facture/{num}/` - Recherche par numéro facture
+- `GET /api/paiements/export/` - Export CSV/PDF
 
-### Statistiques
-- `GET /api/stats/overview/` - Vue d'ensemble
-- `GET /api/stats/defunts/` - Statistiques défunts
-- `GET /api/stats/paiements/` - Statistiques paiements
+### 📊 Statistiques
+- `GET /api/stats/overview/` - Vue d'ensemble complète
+- `GET /api/stats/defunts/` - Statistiques défunts (par statut, période)
+- `GET /api/stats/paiements/` - Statistiques paiements (par période, moyen)
+- `GET /api/stats/familles/` - Statistiques familles
+- `GET /api/stats/activity/` - Activité récente
 
 ## Installation
 
@@ -288,10 +325,13 @@ python manage.py loaddata backup.json
 
 ## Contributeurs
 
-- Architecture : Django REST Framework
-- Authentification : Simple JWT
-- Documentation : DRF Spectacular
-- Tests : Django Test Framework
+- **Architecture** : Django REST Framework 6.0.3
+- **Authentification** : Simple JWT 5.5.1
+- **Documentation** : DRF Spectacular 0.29.0
+- **Tests** : Django Test Framework
+- **Sécurité** : Django CORS Headers 4.9.0
+- **Images** : Pillow 11.2.0
+- **Environment** : Django Environ 0.13.0
 
 ## Support
 
@@ -300,3 +340,5 @@ Pour toute question technique sur l'API, contacter l'équipe backend.
 ---
 
 **Backend Mémorium** - API robuste et sécurisée pour la gestion funéraire
+
+*Version 1.0.0 - Dernière mise à jour : Avril 2026*

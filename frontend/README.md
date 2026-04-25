@@ -1,6 +1,6 @@
 # Frontend Mémorium - Application Next.js 16
 
-Interface utilisateur moderne et responsive pour l'application de gestion de cimetière privé Mémorium. Construite avec Next.js 16, React 19 et Tailwind CSS.
+Interface utilisateur moderne, responsive et intuitive pour l'application de gestion de cimetière privé Mémorium. Construite avec Next.js 16.2.1, React 19.2.4 et Tailwind CSS 4, cette application offre une expérience utilisateur exceptionnelle avec des animations fluides et un design moderne.
 
 ## Architecture
 
@@ -53,56 +53,60 @@ frontend/
 |-- postcss.config.mjs     # Configuration PostCSS
 ```
 
-## Technologies utilisées
+## 🚀 Technologies et dépendances
 
 ### Framework principal
 - **Next.js 16.2.1** - Framework React fullstack avec App Router
-- **React 19.2.4** - Bibliothèque UI avec dernières fonctionnalités
+- **React 19.2.4** - Bibliothèque UI avec dernières fonctionnalités et hooks
 - **TypeScript 5** - Typage statique et sécurité du code
 
 ### Styling et UI
-- **Tailwind CSS 4** - Framework CSS utility-first
-- **DaisyUI 5.5.19** - Composants UI pré-construits
-- **PostCSS** - Traitement CSS
+- **Tailwind CSS 4** - Framework CSS utility-first avec PostCSS
+- **DaisyUI 5.5.19** - Composants UI pré-construits et modernes
+- **PostCSS** - Traitement CSS optimisé
 
 ### Interactivité et animations
-- **Motion 12.38.0** - Animations fluides et transitions
-- **Lucide React 1.3.0** - Bibliothèque d'icônes modernes
-- **React Hot Toast 2.6.0** - Notifications élégantes
+- **Motion 12.38.0** - Animations fluides et transitions Framer
+- **Lucide React 1.3.0** - Bibliothèque d'icônes modernes et cohérentes
+- **React Hot Toast 2.6.0** - Notifications élégantes et non-intrusives
 
 ### Communication API
-- **Axios 1.14.0** - Client HTTP avec intercepteurs
-- **Middleware Next.js** - Gestion authentification
+- **Axios 1.14.0** - Client HTTP avec intercepteurs et gestion d'erreurs
+- **Middleware Next.js** - Gestion authentification et protection des routes
 
-### Développement
-- **ESLint 9** - Linting du code
-- **ESLint Config Next.js** - Configuration Next.js
+### Développement et qualité
+- **ESLint 9** - Linting du code avec configuration Next.js
+- **ESLint Config Next.js** - Règles optimisées pour Next.js 16
 
-## Fonctionnalités
+## ✨ Fonctionnalités principales
 
-### Interface utilisateur
-- **Design responsive** : Adaptation mobile, tablette, desktop
-- **Thème clair/sombre** : Personnalisation de l'interface
-- **Animations fluides** : Transitions et micro-interactions
-- **Navigation intuitive** : Menu latéral et breadcrumbs
+### 🎨 Interface utilisateur moderne
+- **Design responsive** : Adaptation parfaite mobile, tablette, desktop
+- **Thème clair/sombre** : Personnalisation complète de l'interface
+- **Animations fluides** : Transitions élégantes avec Motion Framer
+- **Navigation intuitive** : Menu latéral collapsible et breadcrumbs
+- **Micro-interactions** : Feedback visuel sur toutes les actions
 
-### Tableau de bord
-- **Vue d'ensemble** : Statistiques en temps réel
-- **Gestion rapide** : Actions principales accessibles
-- **Filtrage avancé** : Recherche et filtres multi-critères
-- **Export de données** : Téléchargement CSV/PDF
+### 📊 Tableau de bord avancé
+- **Vue d'ensemble** : Statistiques en temps réel avec graphiques
+- **Gestion rapide** : Actions principales accessibles en un clic
+- **Filtrage avancé** : Recherche et filtres multi-critères sur toutes les entités
+- **Export de données** : Téléchargement CSV/PDF avec personnalisation
+- **Widgets interactifs** : Composants réutilisables et configurables
 
-### Gestion des entités
-- **CRUD complet** : Créer, lire, modifier, supprimer
-- **Validation formulaire** : Contrôles en temps réel
-- **Upload de fichiers** : Photos et documents
-- **Gestion des erreurs** : Messages clairs et utiles
+### 🏗️ Gestion complète des entités
+- **CRUD complet** : Créer, lire, modifier, supprimer avec validation
+- **Validation formulaire** : Contrôles en temps réel et messages clairs
+- **Upload de fichiers** : Photos et documents avec optimisation automatique
+- **Gestion des erreurs** : Messages utiles et suggestions de correction
+- **Pagination intelligente** : Navigation fluide dans les grandes listes
 
-### Authentification
-- **Login sécurisé** : Email + mot de passe
-- **Validation email** : Code de confirmation
-- **Gestion session** : Tokens JWT automatiques
-- **Protection routes** : Middleware authentification
+### 🔐 Authentification et sécurité
+- **Login sécurisé** : Email + mot de passe avec validation
+- **Validation email** : Code de confirmation à 6 chiffres
+- **Gestion session** : Tokens JWT automatiques avec rafraîchissement
+- **Protection routes** : Middleware authentification avec redirections
+- **Mot de passe oublié** : Flux de récupération sécurisé
 
 ## Installation
 
@@ -130,9 +134,10 @@ npm run dev
 ### Scripts disponibles
 ```bash
 npm run dev        # Serveur développement (port 3000)
-npm run build      # Build production
+npm run build      # Build production optimisé
 npm run start      # Serveur production
-npm run lint       # Linting du code
+npm run lint       # Linting du code avec ESLint
+npm run type-check # Vérification des types TypeScript
 ```
 
 ## Variables d'environnement
@@ -148,56 +153,70 @@ NEXT_PUBLIC_APP_VERSION=1.0.0
 # Configuration (optionnel)
 NEXT_PUBLIC_ENABLE_ANALYTICS=false
 NEXT_PUBLIC_SENTRY_DSN=votre-dsn-sentry
+NEXT_PUBLIC_ENABLE_DARK_MODE=true
 ```
 
 ## Structure des composants
 
 ### Composants principaux
-- **Layout** : Structure globale avec sidebar et header
-- **Dashboard** : Tableau de bord avec widgets
-- **DataTable** : Tableau paginé et filtrable
-- **Form** : Formulaires avec validation
-- **Modal** : Fenêtres modales réutilisables
+- **Layout** : Structure globale avec sidebar collapsible et header responsive
+- **Dashboard** : Tableau de bord avec widgets interactifs et graphiques
+- **DataTable** : Tableau paginé, filtrable et triable avec recherche
+- **Form** : Formulaires avec validation en temps réel et feedback
+- **Modal** : Fenêtres modales réutilisables avec animations
+- **Card** : Cartes modernes pour l'affichage des informations
+- **Loading** : Indicateurs de chargement élégants
+- **ErrorBoundary** : Gestion des erreurs avec fallback UI
 
 ### Hooks personnalisés
-- **useAuth** : Gestion authentification
-- **useApi** : Communication avec l'API
-- **useLocalStorage** : Stockage local
-- **useDebounce** : Recherche avec délai
+- **useAuth** : Gestion authentification avec tokens JWT
+- **useApi** : Communication avec l'API avec gestion d'erreurs
+- **useLocalStorage** : Stockage local avec synchronisation
+- **useDebounce** : Recherche avec délai et optimisation
+- **useTheme** : Gestion du thème clair/sombre
+- **usePagination** : Pagination intelligente avec cache
+- **useModal** : Gestion des fenêtres modales
+- **useToast** : Notifications système
 
 ### Types TypeScript
-- **User** : Structure utilisateur
-- **Famille** : Structure famille
-- **Defunt** : Structure défunt
-- **Paiement** : Structure paiement
-- **APIResponse** : Réponses API génériques
+- **User** : Structure utilisateur avec permissions
+- **Famille** : Structure famille avec coordonnées
+- **Defunt** : Structure défunt avec dates et statuts
+- **Paiement** : Structure paiement avec facturation
+- **APIResponse** : Réponses API génériques avec pagination
+- **AuthTokens** : Tokens JWT et rafraîchissement
+- **FormData** : Types pour les formulaires
+- **FilterOptions** : Options de filtrage et recherche
 
 ## Routage
 
 ### Structure des routes
 ```
-/                          # Page d'accueil
-/auth/login               # Connexion
-/auth/register            # Inscription
-/auth/verify              # Validation email
+/                          # Page d'accueil publique
+/auth/login               # Connexion avec validation
+/auth/register            # Inscription nouvel utilisateur
+/auth/verify              # Validation email avec code
+/auth/forgot-password     # Mot de passe oublié
 /dashboard                # Tableau de bord (protégé)
-/dashboard/defunts        # Gestion défunts
-/dashboard/familles       # Gestion familles
-/dashboard/paiements      # Gestion paiements
-/dashboard/users          # Gestion utilisateurs
-/dashboard/stats          # Statistiques
-/dashboard/settings       # Paramètres
+/dashboard/defunts        # Gestion défunts avec CRUD
+/dashboard/familles       # Gestion familles avec recherche
+/dashboard/paiements      # Gestion paiements avec export
+/dashboard/users          # Gestion utilisateurs (admin)
+/dashboard/stats          # Statistiques avec graphiques
+/dashboard/settings       # Paramètres et préférences
 /dashboard/profil         # Profil utilisateur
-/dashboard/help           # Aide
-/dashboard/cartes         # Vue cartes
+/dashboard/help           # Aide et documentation
+/dashboard/cartes         # Vue cartes et plan cimetière
 ```
 
 ### Middleware
-- **Protection routes** : Vérification authentification
-- **Redirection** : Login/logout automatique
-- **Rafraîchissement token** : Maintenance session
+- **Protection routes** : Vérification authentification JWT
+- **Redirection** : Login/logout automatique selon le statut
+- **Rafraîchissement token** : Maintenance session transparente
+- **Logging** : Suivi des accès et erreurs
+- **Rate limiting** : Protection contre les abus
 
-## Styling
+## 🎨 Styling et design
 
 ### Configuration Tailwind
 ```javascript
@@ -211,7 +230,17 @@ module.exports = {
           50: '#eff6ff',
           500: '#3b82f6',
           600: '#2563eb',
+          700: '#1d4ed8',
+        },
+        secondary: {
+          50: '#f8fafc',
+          500: '#64748b',
+          600: '#475569',
         }
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'slide-up': 'slideUp 0.3s ease-out',
       }
     },
   },
@@ -220,55 +249,68 @@ module.exports = {
 ```
 
 ### Composants DaisyUI
-- **Button** : Boutons avec états et variantes
-- **Card** : Cartes modernes
-- **Table** : Tableaux stylisés
-- **Modal** : Fenêtres modales
-- **Dropdown** : Menus déroulants
+- **Button** : Boutons avec états, variantes et loading
+- **Card** : Cartes modernes avec images et actions
+- **Table** : Tableaux stylisés avec pagination
+- **Modal** : Fenêtres modales avec animations
+- **Dropdown** : Menus déroulants personnalisables
+- **Tabs** : Navigation par onglets
+- **Alert** : Messages d'alerte et notification
+- **Loading** : Spinners et indicateurs de progression
+- **Form** : Champs de formulaire stylisés
 
-## État et données
+## 📊 État et données
 
 ### Gestion de l'état
-- **Contexte Auth** : Utilisateur connecté
-- **Contexte Theme** : Préférences visuelles
-- **Local State** : État des composants
-- **Server State** : Données de l'API
+- **Contexte Auth** : Utilisateur connecté et permissions
+- **Contexte Theme** : Préférences visuelles (clair/sombre)
+- **Contexte Notifications** : Système de notifications global
+- **Local State** : État des composants avec useState
+- **Server State** : Données de l'API avec cache et invalidation
 
 ### Cache et optimisation
-- **Next.js Cache** : Mise en cache automatique
+- **Next.js Cache** : Mise en cache automatique des pages
 - **React Query** : Cache intelligent (optionnel)
-- **Image Optimization** : Optimisation images Next.js
-- **Bundle Splitting** : Division automatique du code
+- **Image Optimization** : Optimisation images Next.js avec WebP
+- **Bundle Splitting** : Division automatique du code par route
+- **Font Optimization** : Optimisation polices avec next/font
 
-## Performance
+## ⚡ Performance
 
 ### Optimisations
-- **Code Splitting** : Division par route
-- **Tree Shaking** : Suppression code inutilisé
-- **Image Optimization** : Redimensionnement automatique
-- **Font Optimization** : Optimisation polices
+- **Code Splitting** : Division par route et composant
+- **Tree Shaking** : Suppression code inutilisé automatiquement
+- **Image Optimization** : Redimensionnement automatique avec Next.js Image
+- **Font Optimization** : Optimisation polices avec chargement progressif
+- **Lazy Loading** : Chargement différé des composants lourds
+- **Memoization** : React.memo et useMemo pour optimiser les rendus
 
 ### Monitoring
-- **Web Vitals** : Métriques performance
-- **Error Boundaries** : Gestion erreurs
-- **Loading States** : Indicateurs de chargement
+- **Web Vitals** : Métriques performance Core Web Vitals
+- **Error Boundaries** : Gestion erreurs avec reporting
+- **Loading States** : Indicateurs de chargement pertinents
+- **Performance Budget** : Limites de taille et temps de chargement
 
-## Déploiement
+## 🚀 Déploiement
 
 ### Build production
 ```bash
-# Build optimisé
+# Build optimisé pour la production
 npm run build
+
+# Analyse du bundle
+npm run analyze
 
 # Lancement production
 npm start
 ```
 
 ### Plateformes compatibles
-- **Vercel** : Déploiement automatique
-- **Netlify** : Build et déploiement continu
-- **AWS Amplify** : Hébergement cloud
-- **Docker** : Conteneurisation
+- **Vercel** : Déploiement automatique avec preview deployments
+- **Netlify** : Build et déploiement continu avec forms
+- **AWS Amplify** : Hébergement cloud avec CI/CD
+- **Docker** : Conteneurisation pour environnements personnalisés
+- **Static hosting** : Export statique pour CDN
 
 ### Configuration Vercel
 ```json
@@ -276,11 +318,14 @@ npm start
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "installCommand": "npm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "env": {
+    "NEXT_PUBLIC_API_URL": "@api-url"
+  }
 }
 ```
 
-## Tests
+## 🧪 Tests
 
 ### Tests unitaires
 ```bash
@@ -289,27 +334,34 @@ npm test
 
 # Tests E2E Playwright
 npm run test:e2e
+
+# Tests d'accessibilité
+npm run test:a11y
 ```
 
 ### Tests visuels
-- **Storybook** : Documentation composants
-- **Chromatic** : Tests visuels automatisés
-- **Lighthouse** : Audit performance
+- **Storybook** : Documentation composants avec tests visuels
+- **Chromatic** : Tests visuels automatisés et régression
+- **Lighthouse CI** : Audit performance et accessibilité
+- **Visual Regression** : Détection des changements visuels
 
-## Accessibilité
+## ♿ Accessibilité
 
-### WCAG 2.1
-- **Navigation clavier** : Accessibilité complète
-- **Lecteurs écran** : ARIA labels
-- **Contraste** : Ratios conformes
-- **Focus visible** : État focus clair
+### WCAG 2.1 AA
+- **Navigation clavier** : Accessibilité complète sans souris
+- **Lecteurs écran** : ARIA labels et descriptions complètes
+- **Contraste** : Ratios conformes WCAG AA
+- **Focus visible** : État focus clair et cohérent
+- **Réduction mouvement** : Respect des préférences utilisateur
+- **Texte adaptable** : Zoom jusqu'à 200% sans perte de fonction
 
 ### Internationalisation
-- **i18n Ready** : Structure multilingue
-- **RTL Support** : Support langues RTL
-- **Dates locales** : Formatage adapté
+- **i18n Ready** : Structure multilingue avec next-intl
+- **RTL Support** : Support langues RTL (arabe, hébreu)
+- **Dates locales** : Formatage adapté selon la locale
+- **Devise locale** : Formatage monétaire adapté
 
-## Maintenance
+## 🔧 Maintenance
 
 ### Mises à jour
 ```bash
@@ -318,27 +370,44 @@ npm update
 
 # Audit sécurité
 npm audit
+npm audit fix
 
 # Mise à jour Next.js
 npm install next@latest
+
+# Mise à jour dépendances majeures
+npm install --save-interactive latest
 ```
 
 ### Monitoring
-- **Sentry** : Suivi erreurs
-- **Analytics** : Statistiques utilisation
+- **Sentry** : Suivi erreurs et performance
+- **Analytics** : Statistiques utilisation anonymisées
 - **Performance** : Métriques en temps réel
+- **Uptime** : Surveillance disponibilité
 
-## Contributeurs
+### Bonnes pratiques
+- **Code review** : Revue systématique des PR
+- **Documentation** : Mise à jour continue des README
+- **Tests** : Couverture minimale de 80%
+- **Sécurité** : Audit trimestriel des dépendances
 
-- **Architecture** : Next.js 16 App Router
-- **Styling** : Tailwind CSS + DaisyUI
-- **Animations** : Motion Framer
-- **Icônes** : Lucide React
+## 👥 Contributeurs
 
-## Support
+- **Architecture** : Next.js 16 App Router avec TypeScript
+- **Styling** : Tailwind CSS 4 + DaisyUI 5.5.19
+- **Animations** : Motion Framer 12.38.0
+- **Icônes** : Lucide React 1.3.0
+- **HTTP Client** : Axios 1.14.0 avec intercepteurs
+- **Notifications** : React Hot Toast 2.6.0
+- **Développement** : ESLint 9 + Prettier
+- **Performance** : Next.js optimizations + Web Vitals
+
+## 📞 Support
 
 Pour toute question sur l'interface utilisateur, contacter l'équipe frontend.
 
 ---
 
 **Frontend Mémorium** - Interface moderne et intuitive pour la gestion funéraire
+
+*Version 1.0.0 - Dernière mise à jour : Avril 2026*

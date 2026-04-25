@@ -53,8 +53,10 @@ memorium/
 - **Simple JWT 5.5.1** - Authentification JWT
 - **Django CORS Headers 4.9.0** - Gestion CORS
 - **DRF Spectacular 0.29.0** - Documentation API OpenAPI
+- **Django Environ 0.13.0** - Gestion variables environnement
 - **SQLite** - Base de données
 - **Pillow 11.2.0** - Traitement images
+- **PyJWT 2.12.1** - Tokens JWT
 
 ### Frontend
 - **Next.js 16.2.1** - Framework React fullstack
@@ -66,6 +68,8 @@ memorium/
 - **Motion 12.38.0** - Animations
 - **Axios 1.14.0** - Client HTTP
 - **React Hot Toast 2.6.0** - Notifications
+- **ESLint 9** - Linting du code
+- **PostCSS** - Traitement CSS
 
 ## Fonctionnalités principales
 
@@ -74,6 +78,8 @@ memorium/
 - Rôles : Administrateur, Assistant, Testeur
 - Double authentification (DFA)
 - Validation par email
+- Gestion des photos de profil
+- Interface d'administration complète
 
 ### Gestion des familles
 - Informations familiales complètes
@@ -82,22 +88,31 @@ memorium/
 
 ### Gestion des défunts
 - Informations personnelles (nom, prénom, âge, profession)
-- Dates importantes (naissance, décès, inhumation)
+- Dates importantes (naissance, décès, inhumation, incinération)
 - Statut (Inhumé, Incinéré)
 - Association avec familles
-- Gestion photos
+- Gestion photos avec optimisation
+- Gestion des emplacements (place)
+- Genre et informations détaillées
 
 ### Gestion des paiements
 - Facturation automatique
 - Suivi des moyens de paiement
 - Historique complet
 - Association défunts/familles
+- Numérotation automatique des factures
+- Suivi des motifs de paiement
+- Gestion des dates de paiement
 
 ### Tableau de bord
 - Statistiques en temps réel
-- Interface responsive
-- Navigation intuitive
-- Export de données
+- Interface responsive et moderne
+- Navigation intuitive avec sidebar
+- Export de données (CSV, PDF)
+- Vue d'ensemble complète
+- Widgets interactifs
+- Filtres avancés
+- Recherche multi-critères
 
 ## Installation
 
@@ -105,6 +120,7 @@ memorium/
 - Python 3.8+
 - Node.js 18+
 - npm ou yarn
+- Git
 
 ### Backend
 ```bash
@@ -178,13 +194,30 @@ NEXT_PUBLIC_APP_NAME=Mémorium
 3. Accéder à l'application : http://localhost:3000
 4. Se connecter avec le compte administrateur créé
 
-## API Documentation
+## 📚 Documentation
 
-L'API est documentée avec OpenAPI/Swagger :
-- Documentation interactive : http://localhost:8000/api/docs/
-- Schéma JSON : http://localhost:8000/api/schema/
+### Documentation API
+- **Documentation interactive** : http://localhost:8000/api/docs/
+- **Schéma JSON** : http://localhost:8000/api/schema/
+- **Redoc** : http://localhost:8000/api/redoc/
 
-## Déploiement
+### Documentation du code
+- **Backend** : `backend/README.md`
+- **Frontend** : `frontend/README.md`
+- **API** : `backend/api/README.md`
+
+## 🚀 Déploiement
+
+### Développement local
+```bash
+# Backend
+cd backend
+python manage.py runserver
+
+# Frontend
+cd frontend
+npm run dev
+```
 
 ### Production
 - Configurer `DEBUG=False`
@@ -192,8 +225,28 @@ L'API est documentée avec OpenAPI/Swagger :
 - Configurer un serveur web (Nginx + Gunicorn)
 - Mettre en place HTTPS
 - Configurer les variables d'environnement de production
+- Utiliser Docker pour la conteneurisation
 
-## Contribuer
+### Plateformes de déploiement
+- **Backend** : Heroku, DigitalOcean, AWS
+- **Frontend** : Vercel, Netlify, AWS Amplify
+
+## 🧪 Tests
+
+### Backend
+```bash
+cd backend
+python manage.py test
+```
+
+### Frontend
+```bash
+cd frontend
+npm run lint
+npm run build
+```
+
+## 🤝 Contribuer
 
 1. Forker le projet
 2. Créer une branche feature : `git checkout -b feature/nouvelle-fonctionnalité`
@@ -201,14 +254,16 @@ L'API est documentée avec OpenAPI/Swagger :
 4. Pusher la branche : `git push origin feature/nouvelle-fonctionnalité`
 5. Créer une Pull Request
 
-## Licence
+## 📄 Licence
 
 Ce projet est sous licence privée.
 
-## Support
+## 📞 Support
 
 Pour toute question ou problème, veuillez contacter l'équipe de développement.
 
 ---
 
 **Mémorium** - Gestion moderne et respectueuse des espaces mémoriels
+
+*Version 1.0.0 - Dernière mise à jour : Avril 2026*
