@@ -1000,7 +1000,31 @@ export async function deleteLignePaiement(payload: { id: string }): Promise<Dele
 }
 
 
+export async function getDefuntsMap() {
+  const token = await getToken();
+  const url = 'dashboard/map/';
 
+  try {
+    const response = await api.get(url, authConfig(token));
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return null;
+      try {
+        const response = await api.get(url, authConfig(newToken));
+        return response.data;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error };
+      }
+    }
+    const errorMessage =
+      error.response?.data?.error ||
+      error.response?.data?.message ||
+      "Une erreur est survenue";
+    return { error: errorMessage };
+  }
+}
 
 
 
