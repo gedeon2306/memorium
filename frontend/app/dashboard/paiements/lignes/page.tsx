@@ -121,11 +121,9 @@ function LignesPaiementContent() {
     loadLignesPaiement(currentPage, debouncedSearch, ordering);
   }, [currentPage, debouncedSearch, ordering, loadLignesPaiement]);
 
-  // Charger les defunts pour les modals
   useEffect(() => {
     const loadDefunts = async () => {
       try {
-        // Importer la fonction getDefuntsList
         const { getDefuntsList } = await import("@/app/actions/actions");
         const res = await getDefuntsList(1, "", "recent");
         

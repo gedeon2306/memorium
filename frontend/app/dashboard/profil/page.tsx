@@ -255,7 +255,6 @@ export default function ProfilPage() {
       if (result.error) {
         const serverMsg = result.error;
 
-        // Heuristique: tente d'afficher l'erreur sur le champ le plus probable.
         const nextErrs: Record<string, string> = {};
         let matchedField = false;
 
@@ -290,14 +289,12 @@ export default function ProfilPage() {
   };
 
   const handleChange = (index: number, value: string) => {
-    // Only allow digits
     if (!/^\d*$/.test(value)) return;
 
     const newCode = [...code];
-    newCode[index] = value.slice(-1); // Keep only last character
+    newCode[index] = value.slice(-1);
     setCode(newCode);
 
-    // Auto-focus next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -328,7 +325,6 @@ export default function ProfilPage() {
       });
       setCode(newCode);
 
-      // Focus last input if all filled
       if (pastedCode.length === 6) {
         inputRefs.current[5]?.blur();
       } else if (pastedCode.length > 0) {

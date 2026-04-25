@@ -18,7 +18,6 @@ export default function CartesPage() {
       try {
         const data = await getDefuntsMap();
         if (data && !data.error) {
-          // Transformer les données de l'API pour correspondre au format attendu
           const transformedData = data.map((defunt: any) => ({
             id: defunt.place,
             nom: `${defunt.nom} ${defunt.prenom || ''}`.trim(),
@@ -44,12 +43,11 @@ export default function CartesPage() {
     loadDefunts();
   }, []);
 
-  // Fonction pour vérifier si l'incinération est proche (dans les 30 jours) ou dépassée
   function isSoon(incinerationDate: Date): boolean {
     const today = new Date();
     const timeDiff = incinerationDate.getTime() - today.getTime();
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    return daysDiff <= 30; // Inclut les dates passées (daysDiff < 0) et les 30 prochains jours
+    return daysDiff <= 30;
   }
 
   const defuntSelectionne = defunts.find((d) => d.id === selection);

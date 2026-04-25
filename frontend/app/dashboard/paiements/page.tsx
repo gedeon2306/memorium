@@ -99,7 +99,6 @@ export default function PaiementsPage() {
         return;
       }
       
-      // Vérifier si la réponse a la structure du paginator
       if (typeof res === "object" && "results" in res && res.results && "results" in res.results) {
         setPaiements(res.results.results as PaiementRow[]);
         const count = typeof res.count === "number" ? res.count : res.results.results.length;

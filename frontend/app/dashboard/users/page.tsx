@@ -38,15 +38,14 @@ export default function UsersPage() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
   };
 
-  const [users, setUsers]             = useState<any[]>([]);
-  const [loading, setLoading]         = useState(true);
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages]   = useState(1);
-  const [totalCount, setTotalCount]   = useState(0);
-  const [search, setSearch]           = useState("");
-  const [ordering, setOrdering]       = useState("name-asc");
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [search, setSearch] = useState("");
+  const [ordering, setOrdering] = useState("name-asc");
 
-  // Ref vers le modal — permet d'appeler modalRef.current.open() depuis le bouton
   const modalRef = useRef<AddUserModalHandle>(null);
   const updateModalRef = useRef<UpdateUserModalHandle>(null);
   const deleteModalRef = useRef<DeleteUserModalHandle>(null);
