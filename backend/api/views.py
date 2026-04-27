@@ -37,7 +37,9 @@ from .serializers import (
     MyTokenObtainPairSerializer
 )
 
-from django.db.models import Q, Case, When, Value, IntegerField
+from django.db.models import Q, Case, When, Value, IntegerField, Count, Sum
+from django.utils import timezone
+from datetime import datetime, timedelta
 
 
 def landing_view(request):
@@ -2233,6 +2235,130 @@ def map(request):
     defunts_with_place = Defunt.objects.filter(place__isnull=False).order_by('place')
     serializer = DefuntSerializer(defunts_with_place, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=["Dashboard"],
+    summary="Récupérer les statistiques du tableau de bord",
+    description="Retourne les statistiques principales pour le tableau de bord : nombre de défunts, trous disponibles, utilisateurs, et transactions récentes.",
+    responses={
+        200: inline_serializer(
+            name="DashboardResponse",
+            fields={
+                "statistics": drf_serializers.DictField(),
+                "recent_transactions": drf_serializers.ListField(),
+                "progress_data": drf_serializers.ListField(),
+            }
+        ),
+        403: inline_serializer(
+            name="DashboardError",
+            fields={"error": drf_serializers.CharField()}
+        ),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dashboard(request):
+    
+    try:
+        # Statistiques principales
+        total_defunts = Defunt.objects.count()
+        total_users = User.objects.filter(is_active=True).count()
+        
+        # Statistiques par genre
+        defunts_masculins = Defunt.objects.filter(genre='M').count()
+        defunts_feminins = Defunt.objects.filter(genre='F').count()
+        
+        # Statistiques par âge (majeur/mineur)
+        defunts_majeurs = Defunt.objects.filter(age__gte=18).count()
+        defunts_mineurs = Defunt.objects.filter(age__lt=18).count()
+        
+        # Calcul des trous disponibles (simulé - basé sur le nombre total de places)
+        total_trous = 250  # Valeur fixe comme dans le frontend
+        trous_disponibles = total_trous - total_defunts
+        
+        # Transactions récentes (paiements et créations de défunts)
+        recent_paiements = Paiement.objects.select_related('user', 'famille').order_by('-date_paiement')[:3]
+        recent_defunts = Defunt.objects.select_related('user', 'famille').order_by('-created_at')[:2]
+        
+        # Combiner et formater les transactions
+        transactions = []
+        
+        # Ajouter les paiements récents
+        for paiement in recent_paiements:
+            user_name = paiement.user.name if paiement.user else "Système"
+            transactions.append({
+                "id": f"#P-{paiement.num_facture}",
+                "user": user_name,
+                "type": "Paiement",
+                "date": paiement.date_paiement.strftime("%d %B %Y"),
+                "status": "Validé"
+            })
+        
+        # Ajouter les défunts récents
+        for defunt in recent_defunts:
+            user_name = defunt.user.name if defunt.user else "Système"
+            transactions.append({
+                "id": f"#D-{str(defunt.id)[:8]}",
+                "user": user_name,
+                "type": "Ajout défunt",
+                "date": defunt.created_at.strftime("%d %B %Y"),
+                "status": "Validé"
+            })
+        
+        # Trier par date
+        transactions.sort(key=lambda x: x['date'], reverse=True)
+        transactions = transactions[:5]  # Limiter à 5 transactions
+        
+        # Données de progression pour les barres
+        progress_data = [
+            {
+                "label": "Trous occupés",
+                "value": round((total_defunts / total_trous) * 100) if total_trous > 0 else 0,
+                "color": "progress-primary"
+            },
+            {
+                "label": "Défunts Masculins",
+                "value": round((defunts_masculins / total_defunts) * 100) if total_defunts > 0 else 0,
+                "color": "progress-success"
+            },
+            {
+                "label": "Défunts Féminins",
+                "value": round((defunts_feminins / total_defunts) * 100) if total_defunts > 0 else 0,
+                "color": "progress-warning"
+            },
+            {
+                "label": "Défunts Majeurs",
+                "value": round((defunts_majeurs / total_defunts) * 100) if total_defunts > 0 else 0,
+                "color": "progress-error"
+            },
+            {
+                "label": "Défunts Mineurs",
+                "value": round((defunts_mineurs / total_defunts) * 100) if total_defunts > 0 else 0,
+                "color": "progress-info"
+            }
+        ]
+        
+        # Statistiques finales
+        statistics = {
+            "total_defunts": total_defunts,
+            "total_trous": total_trous,
+            "trous_disponibles": trous_disponibles,
+            "total_users": total_users,
+            "defunts_masculins": defunts_masculins,
+            "defunts_feminins": defunts_feminins,
+            "defunts_majeurs": defunts_majeurs,
+            "defunts_mineurs": defunts_mineurs
+        }
+        
+        return Response({
+            "statistics": statistics,
+            "recent_transactions": transactions,
+            "progress_data": progress_data
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return _error_server()
 
 
 
