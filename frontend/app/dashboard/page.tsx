@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import {
   TrendingUp,
   Venus,
@@ -15,34 +16,9 @@ import {
   User,
   PackageOpen,
   LayoutDashboard,
+  Loader2,
 } from "lucide-react";
-
-const cards = [
-  { label: "Défunts", value: "205", delta: "+12%", up: true, icon: Bird, color: "text-rose-400", bg: "bg-rose-400/10" },
-  { label: "Trous totals", value: "250", delta: "+4%", up: true, icon: Cuboid, color: "text-amber-400", bg: "bg-amber-400/10" },
-  { label: "Trous disponibles", value: "45", delta: "+8%", up: true, icon: PackageOpen, color: "text-sky-400", bg: "bg-sky-400/10" },
-  { label: "Utilisateurs", value: "12", delta: "-2%", up: false, icon: User, color: "text-violet-400", bg: "bg-violet-400/10" },
-  { label: "Défunts Masculins", value: "150", delta: "+5%", up: true, icon: Mars, color: "text-yellow-400", bg: "bg-yellow-400/10" },
-  { label: "Défunts Féminins", value: "55", delta: "+1%", up: true, icon: Venus, color: "text-emerald-400", bg: "bg-emerald-400/10" },
-  { label: "Défunts Majeurs", value: "150", delta: "+3%", up: true, icon: TrendingUp, color: "text-cyan-400", bg: "bg-cyan-400/10" },
-  { label: "Défunts Mineurs", value: "55", delta: "+22%", up: true, icon: TrendingDown, color: "text-orange-400", bg: "bg-orange-400/10" },
-];
-
-const transactions = [
-  { id: "#M-4821", user: "Camille Dubois", type: "Ajout souvenir", date: "30 mars 2026", status: "Validé" },
-  { id: "#M-4820", user: "Thomas Renard", type: "Archivage", date: "29 mars 2026", status: "En cours" },
-  { id: "#M-4819", user: "Sophie Martin", type: "Partage", date: "28 mars 2026", status: "Validé" },
-  { id: "#M-4818", user: "Lucas Bernard", type: "Suppression", date: "27 mars 2026", status: "Annulé" },
-  { id: "#M-4817", user: "Inès Lefèvre", type: "Export PDF", date: "26 mars 2026", status: "Validé" },
-];
-
-const progresses = [
-  { label: "Trous", value: 250, color: "progress-primary" },
-  { label: "Défunts Masculins", value: 150, color: "progress-success" },
-  { label: "Défunts Féminins", value: 55, color: "progress-warning" },
-  { label: "Défunts Majeurs", value: 150, color: "progress-error" },
-  { label: "Défunts Mineurs", value: 55, color: "progress-info" },
-];
+import { dashboard } from "@/app/actions/actions";
 
 const statusBadge: Record<string, string> = {
   Validé: "badge-success",
@@ -50,11 +26,11 @@ const statusBadge: Record<string, string> = {
   Annulé: "badge-error",
 };
 
-const user = {
-  name: "Elise Fontaine",
-};
-
 export default function DashboardPage() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+
   const containerVariants = {
     hidden: {},
     visible: { transition: { staggerChildren: 0.06 } },
@@ -64,6 +40,82 @@ export default function DashboardPage() {
     hidden: { opacity: 0, y: 16 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
   };
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const data = await dashboard();
+        if (data?.error) {
+          setError(data.error);
+        } else {
+          setDashboardData(data);
+        }
+      } catch (err) {
+        setError("Une erreur est survenue lors du chargement des données");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const handleRefresh = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await dashboard();
+      if (data?.error) {
+        setError(data.error);
+      } else {
+        setDashboardData(data);
+      }
+    } catch (err) {
+      setError("Une erreur est survenue lors du rafraîchissement");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Generate cards data from API
+  const generateCards = () => {
+    if (!dashboardData?.statistics) return [];
+    
+    const stats = dashboardData.statistics;
+    return [
+      { label: "Défunts", value: stats.total_defunts.toString(), delta: "+12%", up: true, icon: Bird, color: "text-rose-400", bg: "bg-rose-400/10" },
+      { label: "Trous totals", value: stats.total_trous.toString(), delta: "+4%", up: true, icon: Cuboid, color: "text-amber-400", bg: "bg-amber-400/10" },
+      { label: "Trous disponibles", value: stats.trous_disponibles.toString(), delta: "+8%", up: true, icon: PackageOpen, color: "text-sky-400", bg: "bg-sky-400/10" },
+      { label: "Utilisateurs", value: stats.total_users.toString(), delta: "-2%", up: false, icon: User, color: "text-violet-400", bg: "bg-violet-400/10" },
+      { label: "Défunts Masculins", value: stats.defunts_masculins.toString(), delta: "+5%", up: true, icon: Mars, color: "text-yellow-400", bg: "bg-yellow-400/10" },
+      { label: "Défunts Féminins", value: stats.defunts_feminins.toString(), delta: "+1%", up: true, icon: Venus, color: "text-emerald-400", bg: "bg-emerald-400/10" },
+      { label: "Défunts Majeurs", value: stats.defunts_majeurs.toString(), delta: "+3%", up: true, icon: TrendingUp, color: "text-cyan-400", bg: "bg-cyan-400/10" },
+      { label: "Défunts Mineurs", value: stats.defunts_mineurs.toString(), delta: "+22%", up: true, icon: TrendingDown, color: "text-orange-400", bg: "bg-orange-400/10" },
+    ];
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <div className="text-error text-center">
+          <p className="text-lg font-semibold">Erreur de chargement</p>
+          <p className="text-sm opacity-80">{error}</p>
+        </div>
+        <button onClick={handleRefresh} className="btn btn-primary btn-sm">
+          Réessayer
+        </button>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -80,16 +132,18 @@ export default function DashboardPage() {
             Tableau de bord
           </h1>
           <p className="mt-2 text-base text-neutral-400">
-            Bienvenue, {user.name.split(" ")[0]} — voici votre vue d'ensemble.
+            Bienvenue — voici votre vue d'ensemble.
           </p>
         </div>
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
+          onClick={handleRefresh}
+          disabled={loading}
           className="btn btn-primary btn-sm gap-2 shrink-0"
         >
-          <RotateCw size={14} />
-          Raffraichir
+          <RotateCw size={14} className={loading ? "animate-spin" : ""} />
+          {loading ? "Chargement..." : "Rafraîchir"}
         </motion.button>
       </motion.div>
 
@@ -98,7 +152,7 @@ export default function DashboardPage() {
         variants={itemVariants}
         className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4"
       >
-        {cards.map(({ label, value, delta, up, icon: Icon, color, bg }) => (
+        {generateCards().map(({ label, value, delta, up, icon: Icon, color, bg }) => (
           <motion.div
             key={label}
             variants={itemVariants}
@@ -149,7 +203,7 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions.map((tx, i) => (
+                    {dashboardData?.recent_transactions?.map((tx: any, i: number) => (
                       <motion.tr
                         key={tx.id}
                         initial={{ opacity: 0, x: -10 }}
@@ -162,7 +216,7 @@ export default function DashboardPage() {
                         <td className="px-2 py-3 whitespace-nowrap text-white/50 text-xs hidden sm:table-cell">{tx.type}</td>
                         <td className="px-2 py-3 whitespace-nowrap text-white/40 text-xs hidden md:table-cell">{tx.date}</td>
                         <td className="px-2 py-3 whitespace-nowrap">
-                          <span className={`badge badge-xs border-0 ${statusBadge[tx.status]}`}>
+                          <span className={`badge badge-xs border-0 ${statusBadge[tx.status] || 'badge-neutral'}`}>
                             {tx.status}
                           </span>
                         </td>
@@ -190,20 +244,20 @@ export default function DashboardPage() {
               </div>
 
               <div className="space-y-4">
-                {progresses.map(({ label, value, color }, i) => (
+                {dashboardData?.progress_data?.map((item: any, i: number) => (
                   <motion.div
-                    key={label}
+                    key={item.label}
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.4 + i * 0.06, duration: 0.35 }}
                   >
                     <div className="mb-1.5 flex items-center justify-between gap-2">
-                      <span className="text-xs text-white/50 truncate">{label}</span>
-                      <span className="text-xs font-medium text-white/70 shrink-0">{value}%</span>
+                      <span className="text-xs text-white/50 truncate">{item.label}</span>
+                      <span className="text-xs font-medium text-white/70 shrink-0">{item.value}%</span>
                     </div>
                     <progress
-                      className={`progress ${color} h-1.5 w-full bg-white/8`}
-                      value={value}
+                      className={`progress ${item.color} h-1.5 w-full bg-white/8`}
+                      value={item.value}
                       max="100"
                     />
                   </motion.div>
