@@ -118,9 +118,88 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6 w-full"
+      >
+        {/* Header skeleton */}
+        <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="h-10 w-64 bg-white/10 rounded-lg mb-2 animate-pulse"></div>
+            <div className="h-5 w-48 bg-white/5 rounded animate-pulse"></div>
+          </div>
+          <div className="h-8 w-24 bg-white/10 rounded-lg animate-pulse"></div>
+        </motion.div>
+
+        {/* Cards skeleton */}
+        <motion.div
+          variants={itemVariants}
+          className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="animate-pulse">
+              <div className="card glass border border-white/6 bg-white/3 shadow-lg min-w-0">
+                <div className="card-body p-3 sm:p-4">
+                  <div className="flex items-start justify-between gap-1">
+                    <div className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                      <div className="w-5 h-5 bg-white/20 rounded"></div>
+                    </div>
+                  </div>
+                  <div className="mt-3 h-7 bg-white/10 rounded w-16"></div>
+                  <div className="mt-1 h-4 bg-white/5 rounded w-20"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Table and progress skeleton */}
+        <div className="grid gap-5 lg:grid-cols-5">
+          {/* Table skeleton */}
+          <motion.div variants={itemVariants} className="lg:col-span-3 min-w-0">
+            <div className="card glass border border-white/6 bg-white/3 shadow-lg">
+              <div className="card-body p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="h-5 w-48 bg-white/10 rounded animate-pulse"></div>
+                  <div className="h-6 w-16 bg-white/5 rounded animate-pulse"></div>
+                </div>
+                <div className="space-y-3">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="h-10 bg-white/5 rounded w-full"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Progress skeleton */}
+          <motion.div variants={itemVariants} className="lg:col-span-2 min-w-0">
+            <div className="card glass border border-white/6 bg-white/3 shadow-lg h-full">
+              <div className="card-body p-4 sm:p-5">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="h-5 w-32 bg-white/10 rounded animate-pulse"></div>
+                  <div className="h-4 w-4 bg-white/5 rounded animate-pulse"></div>
+                </div>
+                <div className="space-y-[0.7rem]">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="mb-1.5 flex items-center justify-between gap-2">
+                        <div className="h-3 bg-white/5 rounded w-20"></div>
+                        <div className="h-3 bg-white/5 rounded w-8"></div>
+                      </div>
+                      <div className="h-1.5 bg-white/5 rounded w-full"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
     );
   }
 
