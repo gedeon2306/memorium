@@ -97,6 +97,27 @@ export default function DashboardPage() {
     ];
   };
 
+  // Generate progress data with color mapping
+  const generateProgressData = () => {
+    if (!dashboardData?.progress_data) return [];
+    
+    const progressColorMap: Record<string, string> = {
+      "progress-primary": "progress-primary",
+      "progress-secondary": "progress-secondary", 
+      "progress-success": "progress-success",
+      "progress-warning": "progress-warning",
+      "progress-error": "progress-error",
+      "progress-info": "progress-info",
+      "progress-accent": "progress-accent"
+    };
+
+    return dashboardData.progress_data.map((item: any) => ({
+      label: item.label,
+      value: item.value,
+      color: progressColorMap[item.color] || "progress-primary"
+    }));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -235,8 +256,8 @@ export default function DashboardPage() {
                 <TrendingUp size={14} className="text-white/30" />
               </div>
 
-              <div className="space-y-4">
-                {dashboardData?.progress_data?.map((item: any, i: number) => (
+              <div className="space-y-[0.7rem]">
+                {generateProgressData().map((item: any, i: number) => (
                   <motion.div
                     key={item.label}
                     initial={{ opacity: 0, x: 10 }}
