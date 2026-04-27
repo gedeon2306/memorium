@@ -20,6 +20,7 @@ from .views import (
     paiements,
     lignes_paiements,
     map,
+    dashboard,
 )
 
 urlpatterns = [
@@ -80,4 +81,7 @@ urlpatterns = [
     
     # Carte des défunts
     path('dashboard/map/', map, name='dashboard_map'),
+    
+    # Tableau de bord
+    path('dashboard/', dashboard, name='dashboard'),
 ]
