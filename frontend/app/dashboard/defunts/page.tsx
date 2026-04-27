@@ -6,6 +6,7 @@ import AddDefuntModal, { AddDefuntModalHandle } from "@/components/defuntsCompon
 import DeleteDefuntModal, { DeleteDefuntModalHandle } from "@/components/defuntsComponents/DeleteDefuntModal";
 import UpdateDefuntModal, { UpdateDefuntModalHandle } from "@/components/defuntsComponents/UpdateDefuntModal";
 import ChangeStatutModal, { ChangeStatutModalHandle } from "@/components/defuntsComponents/ChangeStatutModal";
+import ViewDefuntModal, { ViewDefuntModalHandle } from "@/components/defuntsComponents/ViewDefuntModal";
 import { motion } from "framer-motion";
 import {
   Bird,
@@ -78,6 +79,7 @@ export default function DefuntsPage() {
   const updateModalRef = useRef<UpdateDefuntModalHandle>(null);
   const changeStatutModalRef = useRef<ChangeStatutModalHandle>(null);
   const deleteModalRef = useRef<DeleteDefuntModalHandle>(null);
+  const viewModalRef = useRef<ViewDefuntModalHandle>(null);
 
   const debouncedSearch = useDebounce(search, 400);
 
@@ -156,6 +158,9 @@ export default function DefuntsPage() {
       <ChangeStatutModal
         ref={changeStatutModalRef}
         onSuccess={() => loadDefunts(currentPage, debouncedSearch, ordering)}
+      />
+      <ViewDefuntModal
+        ref={viewModalRef}
       />
       <DeleteDefuntModal
         ref={deleteModalRef}
@@ -275,7 +280,7 @@ export default function DefuntsPage() {
                             <li>
                               <button
                                 type="button"
-                                onClick={() => toast.error("Fonctionnalité bientôt disponible")}
+                                onClick={() => viewModalRef.current?.open(defunt)}
                                 className="justify-start gap-2 text-white/80 hover:text-white"
                               >
                                 <Eye size={14} />
