@@ -4,11 +4,9 @@ import { getLignesPaiementList } from "@/app/actions/actions";
 import Pagination from "@/components/uxComponents/Pagination";
 import { motion } from "framer-motion";
 import {
-  CreditCard,
   Search,
   ChevronsUpDown,
   Receipt,
-  Home,
   CreditCard as CreditCardIcon,
   List,
 } from "lucide-react";

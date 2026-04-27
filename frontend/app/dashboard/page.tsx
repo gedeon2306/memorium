@@ -10,8 +10,6 @@ import {
   Bird,
   RotateCw,
   ArrowUpRight,
-  ArrowDownRight,
-  MoreHorizontal,
   Cuboid,
   User,
   PackageOpen,
