@@ -19,6 +19,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { dashboard } from "@/app/actions/actions";
+import Link from "next/link";
+import { ROUTES } from "@/constants/routes";
 
 const statusBadge: Record<string, string> = {
   Validé: "badge-success",
@@ -180,10 +182,10 @@ export default function DashboardPage() {
             <div className="card-body p-4 sm:p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-white">5 dernières transactions</h2>
-                <button className="btn btn-ghost btn-xs gap-1 text-white/40 hover:text-white">
+                <Link href={ROUTES.DASHBOARD.PAIEMENTS} className="btn btn-ghost btn-xs gap-1 text-white/40 hover:text-white">
                   Voir tout
                   <ArrowUpRight size={12} />
-                </button>
+                </Link>
               </div>
 
               <div className="overflow-x-auto -mx-1 px-1">
@@ -195,7 +197,6 @@ export default function DashboardPage() {
                       <th className="bg-transparent font-normal hidden sm:table-cell">Type</th>
                       <th className="bg-transparent font-normal hidden md:table-cell">Date</th>
                       <th className="bg-transparent font-normal">Statut</th>
-                      <th className="bg-transparent font-normal" />
                     </tr>
                   </thead>
                   <tbody>
@@ -215,11 +216,6 @@ export default function DashboardPage() {
                           <span className={`badge badge-xs border-0 ${statusBadge[tx.status] || 'badge-neutral'}`}>
                             {tx.status}
                           </span>
-                        </td>
-                        <td className="px-2 py-3">
-                          <button className="btn btn-ghost btn-xs btn-square text-white/20 hover:text-white/60">
-                            <MoreHorizontal size={13} />
-                          </button>
                         </td>
                       </motion.tr>
                     ))}
