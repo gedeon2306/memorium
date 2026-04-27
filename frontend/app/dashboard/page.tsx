@@ -19,6 +19,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { dashboard } from "@/app/actions/actions";
+import Link from "next/link";
+import { ROUTES } from "@/constants/routes";
 
 const statusBadge: Record<string, string> = {
   Validé: "badge-success",
@@ -84,14 +86,14 @@ export default function DashboardPage() {
     
     const stats = dashboardData.statistics;
     return [
-      { label: "Défunts", value: stats.total_defunts.toString(), delta: "+12%", up: true, icon: Bird, color: "text-rose-400", bg: "bg-rose-400/10" },
-      { label: "Trous totals", value: stats.total_trous.toString(), delta: "+4%", up: true, icon: Cuboid, color: "text-amber-400", bg: "bg-amber-400/10" },
-      { label: "Trous disponibles", value: stats.trous_disponibles.toString(), delta: "+8%", up: true, icon: PackageOpen, color: "text-sky-400", bg: "bg-sky-400/10" },
-      { label: "Utilisateurs", value: stats.total_users.toString(), delta: "-2%", up: false, icon: User, color: "text-violet-400", bg: "bg-violet-400/10" },
-      { label: "Défunts Masculins", value: stats.defunts_masculins.toString(), delta: "+5%", up: true, icon: Mars, color: "text-yellow-400", bg: "bg-yellow-400/10" },
-      { label: "Défunts Féminins", value: stats.defunts_feminins.toString(), delta: "+1%", up: true, icon: Venus, color: "text-emerald-400", bg: "bg-emerald-400/10" },
-      { label: "Défunts Majeurs", value: stats.defunts_majeurs.toString(), delta: "+3%", up: true, icon: TrendingUp, color: "text-cyan-400", bg: "bg-cyan-400/10" },
-      { label: "Défunts Mineurs", value: stats.defunts_mineurs.toString(), delta: "+22%", up: true, icon: TrendingDown, color: "text-orange-400", bg: "bg-orange-400/10" },
+      { label: "Défunts", value: stats.total_defunts.toString(), icon: Bird, color: "text-rose-400", bg: "bg-rose-400/10" },
+      { label: "Trous totals", value: stats.total_trous.toString(), icon: Cuboid, color: "text-amber-400", bg: "bg-amber-400/10" },
+      { label: "Trous disponibles", value: stats.trous_disponibles.toString(), icon: PackageOpen, color: "text-sky-400", bg: "bg-sky-400/10" },
+      { label: "Utilisateurs", value: stats.total_users.toString(), icon: User, color: "text-violet-400", bg: "bg-violet-400/10" },
+      { label: "Défunts Masculins", value: stats.defunts_masculins.toString(), icon: Mars, color: "text-yellow-400", bg: "bg-yellow-400/10" },
+      { label: "Défunts Féminins", value: stats.defunts_feminins.toString(), icon: Venus, color: "text-emerald-400", bg: "bg-emerald-400/10" },
+      { label: "Défunts Majeurs", value: stats.defunts_majeurs.toString(), icon: TrendingUp, color: "text-cyan-400", bg: "bg-cyan-400/10" },
+      { label: "Défunts Mineurs", value: stats.defunts_mineurs.toString(), icon: TrendingDown, color: "text-orange-400", bg: "bg-orange-400/10" },
     ];
   };
 
@@ -152,7 +154,7 @@ export default function DashboardPage() {
         variants={itemVariants}
         className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4"
       >
-        {generateCards().map(({ label, value, delta, up, icon: Icon, color, bg }) => (
+        {generateCards().map(({ label, value, icon: Icon, color, bg }) => (
           <motion.div
             key={label}
             variants={itemVariants}
@@ -164,10 +166,6 @@ export default function DashboardPage() {
                 <div className={`flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl ${bg}`}>
                   <Icon size={25} className={color} />
                 </div>
-                <span className={`flex items-center gap-0.5 text-xs font-medium shrink-0 ${up ? "text-emerald-400" : "text-rose-400"}`}>
-                  {up ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
-                  {delta}
-                </span>
               </div>
               <p className="mt-3 text-xl sm:text-2xl font-bold text-white leading-none">{value}</p>
               <p className="text-sm font-bold text-white/40 mt-1 leading-snug">{label}</p>
@@ -184,10 +182,10 @@ export default function DashboardPage() {
             <div className="card-body p-4 sm:p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-white">5 dernières transactions</h2>
-                <button className="btn btn-ghost btn-xs gap-1 text-white/40 hover:text-white">
+                <Link href={ROUTES.DASHBOARD.PAIEMENTS} className="btn btn-ghost btn-xs gap-1 text-white/40 hover:text-white">
                   Voir tout
                   <ArrowUpRight size={12} />
-                </button>
+                </Link>
               </div>
 
               <div className="overflow-x-auto -mx-1 px-1">
@@ -199,7 +197,6 @@ export default function DashboardPage() {
                       <th className="bg-transparent font-normal hidden sm:table-cell">Type</th>
                       <th className="bg-transparent font-normal hidden md:table-cell">Date</th>
                       <th className="bg-transparent font-normal">Statut</th>
-                      <th className="bg-transparent font-normal" />
                     </tr>
                   </thead>
                   <tbody>
@@ -219,11 +216,6 @@ export default function DashboardPage() {
                           <span className={`badge badge-xs border-0 ${statusBadge[tx.status] || 'badge-neutral'}`}>
                             {tx.status}
                           </span>
-                        </td>
-                        <td className="px-2 py-3">
-                          <button className="btn btn-ghost btn-xs btn-square text-white/20 hover:text-white/60">
-                            <MoreHorizontal size={13} />
-                          </button>
                         </td>
                       </motion.tr>
                     ))}
