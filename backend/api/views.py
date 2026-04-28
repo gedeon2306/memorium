@@ -2507,27 +2507,37 @@ def stats(request):
         
         yearly_stats.reverse()  # Ordre chronologique
         
-        # Données de progression (pour barres horizontales)
+        # Données de progression (pour barres horizontales) - valeurs brutes
         progress_data = [
             {
                 "name": "Trous occupés",
-                "value": round((trous_occupes / total_trous) * 100) if total_trous > 0 else 0,
+                "value": trous_occupes,
+                "total": total_trous,
+                "type": "occupation"
             },
             {
                 "name": "Défunts Masculins",
-                "value": round((defunts_masculins / total_defunts) * 100) if total_defunts > 0 else 0,
+                "value": defunts_masculins,
+                "total": total_defunts,
+                "type": "gender"
             },
             {
                 "name": "Défunts Féminins",
-                "value": round((defunts_feminins / total_defunts) * 100) if total_defunts > 0 else 0,
+                "value": defunts_feminins,
+                "total": total_defunts,
+                "type": "gender"
             },
             {
                 "name": "Défunts Majeurs",
-                "value": round((defunts_majeurs / total_defunts) * 100) if total_defunts > 0 else 0,
+                "value": defunts_majeurs,
+                "total": total_defunts,
+                "type": "age"
             },
             {
                 "name": "Défunts Mineurs",
-                "value": round((defunts_mineurs / total_defunts) * 100) if total_defunts > 0 else 0,
+                "value": defunts_mineurs,
+                "total": total_defunts,
+                "type": "age"
             }
         ]
         

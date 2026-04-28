@@ -21,6 +21,7 @@ from .views import (
     lignes_paiements,
     map,
     dashboard,
+    stats,
 )
 
 urlpatterns = [
