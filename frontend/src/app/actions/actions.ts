@@ -1054,6 +1054,36 @@ export async function dashboard() {
 }
 
 
+export async function getStats(period: string = "tout"): Promise<any> {
+  const token = await getToken();
+  const params = new URLSearchParams();
+  if (period && period !== "tout") params.append("period", period);
+  const url = `dashboard/stats/?${params.toString()}`;
 
+  try {
+    const response = await api.get(url, authConfig(token))
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return { error: "Non authentifié" };
+      try {
+        const params = new URLSearchParams();
+        if (period && period !== "tout") params.append("period", period);
+        
+        const url = `dashboard/stats/?${params.toString()}`;
+        const response = await api.get(url, authConfig(newToken))
+        return response.data;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error || "Erreur lors du chargement des statistiques" };
+      }
+    }
+
+    const errorMessage = error.response?.data?.error || 
+                         error.response?.data?.message || 
+                         "Une erreur est survenue";
+    return { error: errorMessage };
+  }
+}
 
 
