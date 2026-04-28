@@ -10,23 +10,17 @@ import {
   TrendingDown,
   Bird,
   RotateCw,
-  ArrowUpRight,
   Cuboid,
   User,
   PackageOpen,
-  Calendar,
   Download,
-  Filter,
   BarChart3,
   PieChart,
   Activity,
   Users,
-  Clock,
   MapPin,
-  DollarSign,
-  Eye,
 } from "lucide-react";
-import { dashboard } from "@/app/actions/actions";
+import { dashboard, getStats } from "@/app/actions/actions";
 import {
   PieChart as RePieChart,
   Pie,
@@ -39,11 +33,30 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  AreaChart,
-  Area,
-  LineChart,
-  Line,
 } from "recharts";
+
+import type { PieLabelRenderProps } from "recharts";
+
+interface ChartEntry {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface ProgressEntry {
+  name: string;
+  value: number;
+  fill: string;
+  originalValue: number;
+  total: number;
+}
+
+interface Transaction {
+  type: string;
+  user: string;
+  date: string;
+  status: string;
+}
 
 const statusBadge: Record<string, string> = {
   Validé: "badge-success",
@@ -51,10 +64,17 @@ const statusBadge: Record<string, string> = {
   Annulé: "badge-error",
 };
 
+const renderCustomLabel = ({ name, percent }: PieLabelRenderProps): string => {
+  const label = name ?? "";
+  const pct = percent !== undefined ? (percent * 100).toFixed(0) : "0";
+  return `${label} ${pct}%`;
+};
+
 export default function StatsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<any>(null);
+  const [statsData, setStatsData] = useState<any>(null);
   const [selectedPeriod, setSelectedPeriod] = useState("30j");
 
   const containerVariants = {
@@ -68,15 +88,25 @@ export default function StatsPage() {
   };
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await dashboard();
-        if (data?.error) {
-          setError(data.error);
-        } else {
-          setDashboardData(data);
+        setError(null);
+
+        const dashboardResult = await dashboard();
+        if (dashboardResult?.error) {
+          setError(dashboardResult.error);
+          return;
         }
+
+        const statsResult = await getStats(selectedPeriod);
+        if (statsResult?.error) {
+          setError(statsResult.error);
+          return;
+        }
+
+        setDashboardData(dashboardResult);
+        setStatsData(statsResult);
       } catch (err) {
         setError("Une erreur est survenue lors du chargement des données");
       } finally {
@@ -84,19 +114,28 @@ export default function StatsPage() {
       }
     };
 
-    fetchDashboardData();
-  }, []);
+    fetchData();
+  }, [selectedPeriod]);
 
   const handleRefresh = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await dashboard();
-      if (data?.error) {
-        setError(data.error);
-      } else {
-        setDashboardData(data);
+
+      const dashboardResult = await dashboard();
+      if (dashboardResult?.error) {
+        setError(dashboardResult.error);
+        return;
       }
+
+      const statsResult = await getStats(selectedPeriod);
+      if (statsResult?.error) {
+        setError(statsResult.error);
+        return;
+      }
+
+      setDashboardData(dashboardResult);
+      setStatsData(statsResult);
     } catch (err) {
       setError("Une erreur est survenue lors du rafraîchissement");
     } finally {
@@ -104,10 +143,9 @@ export default function StatsPage() {
     }
   };
 
-  // Generate cards data from API
   const generateCards = () => {
     if (!dashboardData?.statistics) return [];
-    
+
     const stats = dashboardData.statistics;
     return [
       { label: "Défunts", value: stats.total_defunts.toString(), icon: Bird, color: "text-rose-400", bg: "bg-rose-400/10" },
@@ -121,63 +159,56 @@ export default function StatsPage() {
     ];
   };
 
-  // Generate data for charts
-  const generateGenderData = () => {
-    if (!dashboardData?.statistics) return [];
-    return [
-      { name: "Masculin", value: dashboardData.statistics.defunts_masculins, color: "#60A5FA" },
-      { name: "Féminin", value: dashboardData.statistics.defunts_feminins, color: "#F472B6" },
-    ];
+  const generateGenderData = (): ChartEntry[] => {
+    if (!statsData?.gender_stats) return [];
+    return statsData.gender_stats.map((item: ChartEntry) => ({
+      ...item,
+      color: item.name === "Masculin" ? "#60A5FA" : "#F472B6",
+    }));
   };
 
-  const generateAgeData = () => {
-    if (!dashboardData?.statistics) return [];
-    return [
-      { name: "Majeurs (18+)", value: dashboardData.statistics.defunts_majeurs, color: "#34D399" },
-      { name: "Mineurs (-18)", value: dashboardData.statistics.defunts_mineurs, color: "#FB923C" },
-    ];
+  const generateAgeData = (): ChartEntry[] => {
+    if (!statsData?.age_stats) return [];
+    return statsData.age_stats.map((item: ChartEntry) => ({
+      ...item,
+      color: item.name === "Majeurs (18+)" ? "#34D399" : "#FB923C",
+    }));
   };
 
   const generateMonthlyData = () => {
-    // Simulated monthly data - in real app, this would come from API
-    return [
-      { month: "Jan", défunts: 12, inhumations: 10 },
-      { month: "Fév", défunts: 15, inhumations: 13 },
-      { month: "Mar", défunts: 18, inhumations: 16 },
-      { month: "Avr", défunts: 14, inhumations: 12 },
-      { month: "Mai", défunts: 20, inhumations: 18 },
-      { month: "Jun", défunts: 16, inhumations: 14 },
-    ];
+    if (!statsData?.monthly_stats) return [];
+    return statsData.monthly_stats;
   };
 
-  const generateOccupancyData = () => {
-    if (!dashboardData?.statistics) return [];
-    const total = dashboardData.statistics.total_trous;
-    const occupied = total - dashboardData.statistics.trous_disponibles;
-    return [
-      { name: "Occupés", value: occupied, color: "#EF4444" },
-      { name: "Disponibles", value: dashboardData.statistics.trous_disponibles, color: "#10B981" },
-    ];
-  };
-
-  const generateProgressData = () => {
-    if (!dashboardData?.progress_data) return [];
-    
-    const progressColorMap: Record<string, string> = {
-      "progress-primary": "#3B82F6",
-      "progress-secondary": "#6B7280", 
-      "progress-success": "#10B981",
-      "progress-warning": "#F59E0B",
-      "progress-error": "#EF4444",
-      "progress-info": "#06B6D4",
-      "progress-accent": "#8B5CF6"
-    };
-
-    return dashboardData.progress_data.map((item: any) => ({
-      name: item.label,
-      value: item.value,
-      fill: progressColorMap[item.color] || "#3B82F6"
+  const generateOccupancyData = (): ChartEntry[] => {
+    if (!statsData?.occupancy_stats) return [];
+    return statsData.occupancy_stats.map((item: ChartEntry) => ({
+      ...item,
+      color: item.name === "Occupés" ? "#EF4444" : "#10B981",
     }));
+  };
+
+  const generateProgressData = (): ProgressEntry[] => {
+    if (!statsData?.progress_data) return [];
+
+    return statsData.progress_data.map((item: any) => {
+      const percentage = item.total > 0 ? Math.round((item.value / item.total) * 100) : 0;
+
+      let fill = "#3B82F6";
+      if (item.name === "Trous occupés") fill = "#3B82F6";
+      else if (item.name === "Défunts Masculins") fill = "#10B981";
+      else if (item.name === "Défunts Féminins") fill = "#F59E0B";
+      else if (item.name === "Défunts Majeurs") fill = "#EF4444";
+      else if (item.name === "Défunts Mineurs") fill = "#06B6D4";
+
+      return {
+        name: `${item.name} (${item.value}/${item.total})`,
+        value: percentage,
+        fill,
+        originalValue: item.value,
+        total: item.total,
+      };
+    });
   };
 
   if (loading) {
@@ -188,7 +219,6 @@ export default function StatsPage() {
         animate="visible"
         className="space-y-6 w-full"
       >
-        {/* Header skeleton */}
         <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="h-10 w-64 bg-white/10 rounded-lg mb-2 animate-pulse"></div>
@@ -200,7 +230,6 @@ export default function StatsPage() {
           </div>
         </motion.div>
 
-        {/* Cards skeleton */}
         <motion.div
           variants={itemVariants}
           className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4"
@@ -237,10 +266,7 @@ export default function StatsPage() {
             </div>
             <h2 className="text-xl font-semibold text-white mb-2">Erreur de chargement</h2>
             <p className="text-neutral-400 mb-4">{error}</p>
-            <button
-              onClick={handleRefresh}
-              className="btn btn-primary btn-sm"
-            >
+            <button onClick={handleRefresh} className="btn btn-primary btn-sm">
               <RotateCw className="w-4 h-4 mr-2" />
               Réessayer
             </button>
@@ -319,12 +345,8 @@ export default function StatsPage() {
                     </div>
                   </div>
                   <div className="mt-3">
-                    <div className="text-2xl sm:text-3xl font-bold text-white">
-                      {card.value}
-                    </div>
-                    <div className="text-xs sm:text-sm text-neutral-400 mt-1">
-                      {card.label}
-                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold text-white">{card.value}</div>
+                    <div className="text-xs sm:text-sm text-neutral-400 mt-1">{card.label}</div>
                   </div>
                 </div>
               </div>
@@ -350,18 +372,18 @@ export default function StatsPage() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={renderCustomLabel}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {genderData.map((entry, index) => (
+                    {genderData.map((entry: ChartEntry, index: number) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px' }}
-                    labelStyle={{ color: '#fff' }}
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "none", borderRadius: "8px" }}
+                    labelStyle={{ color: "#fff" }}
                   />
                 </RePieChart>
               </ResponsiveContainer>
@@ -389,19 +411,19 @@ export default function StatsPage() {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {ageData.map((entry, index) => (
+                    {ageData.map((entry: ChartEntry, index: number) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px' }}
-                    labelStyle={{ color: '#fff' }}
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "none", borderRadius: "8px" }}
+                    labelStyle={{ color: "#fff" }}
                   />
-                  <Legend 
-                    verticalAlign="middle" 
-                    align="right" 
+                  <Legend
+                    verticalAlign="middle"
+                    align="right"
                     layout="vertical"
-                    wrapperStyle={{ color: '#fff' }}
+                    wrapperStyle={{ color: "#fff" }}
                   />
                 </RePieChart>
               </ResponsiveContainer>
@@ -425,11 +447,11 @@ export default function StatsPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                   <XAxis dataKey="month" stroke="#fff" />
                   <YAxis stroke="#fff" />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px' }}
-                    labelStyle={{ color: '#fff' }}
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "none", borderRadius: "8px" }}
+                    labelStyle={{ color: "#fff" }}
                   />
-                  <Legend wrapperStyle={{ color: '#fff' }} />
+                  <Legend wrapperStyle={{ color: "#fff" }} />
                   <Bar dataKey="défunts" fill="#8B5CF6" />
                   <Bar dataKey="inhumations" fill="#10B981" />
                 </BarChart>
@@ -459,26 +481,32 @@ export default function StatsPage() {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {occupancyData.map((entry, index) => (
+                    {occupancyData.map((entry: ChartEntry, index: number) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px' }}
-                    labelStyle={{ color: '#fff' }}
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "none", borderRadius: "8px" }}
+                    labelStyle={{ color: "#fff" }}
                   />
-                  <Legend 
-                    verticalAlign="bottom" 
-                    align="center" 
+                  <Legend
+                    verticalAlign="bottom"
+                    align="center"
                     layout="horizontal"
-                    wrapperStyle={{ color: '#fff' }}
+                    wrapperStyle={{ color: "#fff" }}
                   />
                 </RePieChart>
               </ResponsiveContainer>
               <div className="mt-4 text-center">
                 <div className="text-2xl font-bold text-white">
-                  {dashboardData?.statistics?.total_trous ? 
-                    Math.round(((dashboardData.statistics.total_trous - dashboardData.statistics.trous_disponibles) / dashboardData.statistics.total_trous) * 100) : 0}%
+                  {dashboardData?.statistics?.total_trous
+                    ? Math.round(
+                        ((dashboardData.statistics.total_trous - dashboardData.statistics.trous_disponibles) /
+                          dashboardData.statistics.total_trous) *
+                          100
+                      )
+                    : 0}
+                  %
                 </div>
                 <div className="text-sm text-neutral-400">Taux d'occupation</div>
               </div>
@@ -487,7 +515,7 @@ export default function StatsPage() {
         </motion.div>
       </div>
 
-      {/* Progress Bars Chart */}
+      {/* ✅ FIXED: Progress Bars Chart — layout="vertical" with correct axis types */}
       <motion.div variants={itemVariants}>
         <div className="card glass border border-white/6 bg-white/3 shadow-lg">
           <div className="card-body p-6">
@@ -496,16 +524,17 @@ export default function StatsPage() {
               Répartitions détaillées
             </h3>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={progressData} layout="horizontal">
+              <BarChart data={progressData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                <XAxis type="number" stroke="#fff" />
-                <YAxis dataKey="name" type="category" stroke="#fff" width={120} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '8px' }}
-                  labelStyle={{ color: '#fff' }}
+                <XAxis type="number" stroke="#fff" domain={[0, 100]} unit="%" />
+                <YAxis dataKey="name" type="category" stroke="#fff" width={200} tick={{ fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "none", borderRadius: "8px" }}
+                  labelStyle={{ color: "#fff" }}
+                  formatter={(value: unknown) => [`${value}%`, "Pourcentage"]}
                 />
-                <Bar dataKey="value" fill="#8884d8">
-                  {progressData.map((entry, index) => (
+                <Bar dataKey="value" fill="#8884d8" radius={[0, 4, 4, 0]}>
+                  {progressData.map((entry: ProgressEntry, index: number) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Bar>
@@ -524,12 +553,17 @@ export default function StatsPage() {
               Activité récente
             </h3>
             <div className="space-y-3">
-              {dashboardData?.recent_transactions?.map((transaction: any, index: number) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+              {dashboardData?.recent_transactions?.map((transaction: Transaction, index: number) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                >
                   <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${
-                      transaction.status === 'Validé' ? 'bg-green-400' : 'bg-yellow-400'
-                    }`}></div>
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        transaction.status === "Validé" ? "bg-green-400" : "bg-yellow-400"
+                      }`}
+                    ></div>
                     <div>
                       <div className="text-sm font-medium text-white">{transaction.type}</div>
                       <div className="text-xs text-neutral-400">{transaction.user}</div>
@@ -537,7 +571,7 @@ export default function StatsPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-xs text-neutral-400">{transaction.date}</div>
-                    <div className={`badge badge-xs ${statusBadge[transaction.status] || 'badge-neutral'}`}>
+                    <div className={`badge badge-xs ${statusBadge[transaction.status] ?? "badge-neutral"}`}>
                       {transaction.status}
                     </div>
                   </div>
