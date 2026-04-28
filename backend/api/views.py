@@ -2361,5 +2361,188 @@ def dashboard(request):
         return _error_server()
 
 
+@extend_schema(
+    tags=["Statistics"],
+    summary="Récupérer les statistiques détaillées",
+    description="Retourne des statistiques détaillées pour les graphiques et analyses : répartition par genre, âge, occupation, et données temporelles. Supporte le filtrage par période.",
+    parameters=[
+        {
+            "name": "period",
+            "required": False,
+            "type": "str",
+            "enum": ["7j", "30j", "90j", "1an", "tout"],
+            "description": "Période de filtrage des données"
+        }
+    ],
+    responses={
+        200: inline_serializer(
+            name="StatsResponse",
+            fields={
+                "gender_stats": drf_serializers.ListField(),
+                "age_stats": drf_serializers.ListField(),
+                "occupancy_stats": drf_serializers.ListField(),
+                "monthly_stats": drf_serializers.ListField(),
+                "yearly_stats": drf_serializers.ListField(),
+                "progress_data": drf_serializers.ListField(),
+            }
+        ),
+        403: inline_serializer(
+            name="StatsError",
+            fields={"error": drf_serializers.CharField()}
+        ),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def stats(request):
+    
+    try:
+        # Récupérer le paramètre de période
+        period = request.GET.get('period', 'tout')
+        
+        # Calculer la date de début selon la période
+        from django.utils import timezone
+        from datetime import datetime, timedelta
+        
+        date_debut = None
+        if period == '7j':
+            date_debut = timezone.now() - timedelta(days=7)
+        elif period == '30j':
+            date_debut = timezone.now() - timedelta(days=30)
+        elif period == '90j':
+            date_debut = timezone.now() - timedelta(days=90)
+        elif period == '1an':
+            date_debut = timezone.now() - timedelta(days=365)
+        # 'tout' garde date_debut = None (pas de filtrage)
+        
+        # Filtrer les défunts selon la période
+        defunts_queryset = Defunt.objects.all()
+        if date_debut:
+            defunts_queryset = defunts_queryset.filter(created_at__gte=date_debut)
+        
+        # Statistiques par genre
+        defunts_masculins = defunts_queryset.filter(genre='M').count()
+        defunts_feminins = defunts_queryset.filter(genre='F').count()
+        total_defunts = defunts_queryset.count()
+        
+        gender_stats = [
+            {"name": "Masculin", "value": defunts_masculins},
+            {"name": "Féminin", "value": defunts_feminins},
+        ]
+        
+        # Statistiques par âge
+        defunts_majeurs = defunts_queryset.filter(age__gte=18).count()
+        defunts_mineurs = defunts_queryset.filter(age__lt=18).count()
+        
+        age_stats = [
+            {"name": "Majeurs (18+)", "value": defunts_majeurs},
+            {"name": "Mineurs (-18)", "value": defunts_mineurs},
+        ]
+        
+        # Statistiques d'occupation
+        total_trous = 250  # Valeur fixe comme dans le frontend
+        trous_disponibles = total_trous - total_defunts
+        trous_occupes = total_defunts
+        
+        occupancy_stats = [
+            {"name": "Occupés", "value": trous_occupes},
+            {"name": "Disponibles", "value": trous_disponibles},
+        ]
+        
+        # Statistiques mensuelles (6 derniers mois)
+        monthly_stats = []
+        for i in range(6):
+            month_start = timezone.now().replace(day=1) - timedelta(days=i*30)
+            month_end = month_start + timedelta(days=30)
+            
+            # Appliquer le filtre de période si nécessaire
+            month_defunts_queryset = Defunt.objects.filter(
+                created_at__gte=month_start,
+                created_at__lt=month_end
+            )
+            if date_debut and month_start < date_debut:
+                month_defunts_queryset = month_defunts_queryset.filter(created_at__gte=date_debut)
+            
+            defunts_month = month_defunts_queryset.count()
+            
+            inhumations_month = Defunt.objects.filter(
+                date_inhumation__gte=month_start.date(),
+                date_inhumation__lt=month_end.date()
+            )
+            if date_debut:
+                inhumations_month = inhumations_month.filter(date_inhumation__gte=date_debut.date())
+            inhumations_month = inhumations_month.count()
+            
+            month_name = month_start.strftime("%b")
+            monthly_stats.append({
+                "month": month_name,
+                "défunts": defunts_month,
+                "inhumations": inhumations_month
+            })
+        
+        monthly_stats.reverse()  # Ordre chronologique
+        
+        # Statistiques annuelles (5 dernières années)
+        yearly_stats = []
+        current_year = timezone.now().year
+        
+        for i in range(5):
+            year = current_year - i
+            year_defunts_queryset = Defunt.objects.filter(created_at__year=year)
+            if date_debut:
+                year_defunts_queryset = year_defunts_queryset.filter(created_at__gte=date_debut)
+            
+            defunts_year = year_defunts_queryset.count()
+            
+            inhumations_year = Defunt.objects.filter(date_inhumation__year=year)
+            if date_debut:
+                inhumations_year = inhumations_year.filter(date_inhumation__gte=date_debut.date())
+            inhumations_year = inhumations_year.count()
+            
+            yearly_stats.append({
+                "year": str(year),
+                "défunts": defunts_year,
+                "inhumations": inhumations_year
+            })
+        
+        yearly_stats.reverse()  # Ordre chronologique
+        
+        # Données de progression (pour barres horizontales)
+        progress_data = [
+            {
+                "name": "Trous occupés",
+                "value": round((trous_occupes / total_trous) * 100) if total_trous > 0 else 0,
+            },
+            {
+                "name": "Défunts Masculins",
+                "value": round((defunts_masculins / total_defunts) * 100) if total_defunts > 0 else 0,
+            },
+            {
+                "name": "Défunts Féminins",
+                "value": round((defunts_feminins / total_defunts) * 100) if total_defunts > 0 else 0,
+            },
+            {
+                "name": "Défunts Majeurs",
+                "value": round((defunts_majeurs / total_defunts) * 100) if total_defunts > 0 else 0,
+            },
+            {
+                "name": "Défunts Mineurs",
+                "value": round((defunts_mineurs / total_defunts) * 100) if total_defunts > 0 else 0,
+            }
+        ]
+        
+        return Response({
+            "gender_stats": gender_stats,
+            "age_stats": age_stats,
+            "occupancy_stats": occupancy_stats,
+            "monthly_stats": monthly_stats,
+            "yearly_stats": yearly_stats,
+            "progress_data": progress_data
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return _error_server()
+
+
 
 
