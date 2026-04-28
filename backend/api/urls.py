@@ -84,4 +84,7 @@ urlpatterns = [
     
     # Tableau de bord
     path('dashboard/', dashboard, name='dashboard'),
+    
+    # Statistiques détaillées
+    path('dashboard/stats/', stats, name='dashboard_stats'),
 ]
