@@ -80,6 +80,7 @@ export default function StatsPage() {
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [statsData, setStatsData] = useState<any>(null);
   const [selectedPeriod, setSelectedPeriod] = useState("30j");
+  const [isMobile, setIsMobile] = useState(false);
 
   const containerVariants = {
     hidden: {},
@@ -90,6 +91,13 @@ export default function StatsPage() {
     hidden: { opacity: 0, y: 16 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
   };
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -152,41 +160,40 @@ export default function StatsPage() {
 
     const stats = dashboardData.statistics;
     const financialStats = statsData?.financial_stats;
-    
+
     const cards = [
       { label: "Défunts", value: stats.total_defunts.toString(), icon: Bird, color: "text-rose-400", bg: "bg-rose-400/10" },
       { label: "Trous totaux", value: stats.total_trous.toString(), icon: Cuboid, color: "text-amber-400", bg: "bg-amber-400/10" },
       { label: "Trous disponibles", value: stats.trous_disponibles.toString(), icon: PackageOpen, color: "text-sky-400", bg: "bg-sky-400/10" },
       { label: "Utilisateurs", value: stats.total_users.toString(), icon: User, color: "text-violet-400", bg: "bg-violet-400/10" },
     ];
-    
-    // Ajouter les cartes financières si disponibles
+
     if (financialStats) {
       cards.push(
-        { 
-          label: "Revenus totaux", 
-          value: `${financialStats.total_revenus.toFixed(2)}F`, 
-          icon: DollarSign, 
-          color: "text-green-400", 
-          bg: "bg-green-400/10" 
+        {
+          label: "Revenus totaux",
+          value: `${financialStats.total_revenus.toFixed(2)}F`,
+          icon: DollarSign,
+          color: "text-green-400",
+          bg: "bg-green-400/10",
         },
-        { 
-          label: "Nb. Paiements", 
-          value: financialStats.nombre_paiements.toString(), 
-          icon: CreditCard, 
-          color: "text-blue-400", 
-          bg: "bg-blue-400/10" 
+        {
+          label: "Nb. Paiements",
+          value: financialStats.nombre_paiements.toString(),
+          icon: CreditCard,
+          color: "text-blue-400",
+          bg: "bg-blue-400/10",
         },
-        { 
-          label: "Panier moyen", 
-          value: `${financialStats.montant_moyen.toFixed(2)}F`, 
-          icon: Wallet, 
-          color: "text-purple-400", 
-          bg: "bg-purple-400/10" 
+        {
+          label: "Panier moyen",
+          value: `${financialStats.montant_moyen.toFixed(2)}F`,
+          icon: Wallet,
+          color: "text-purple-400",
+          bg: "bg-purple-400/10",
         }
       );
     }
-    
+
     return cards;
   };
 
@@ -244,9 +251,9 @@ export default function StatsPage() {
 
   const generatePaymentData = (): ChartEntry[] => {
     if (!statsData?.financial_stats?.paiement_stats) return [];
-    
-    const colors = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
-    
+
+    const colors = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899"];
+
     return statsData.financial_stats.paiement_stats.map((item: any, index: number) => ({
       ...item,
       color: colors[index % colors.length],
@@ -332,6 +339,12 @@ export default function StatsPage() {
   const paymentData = generatePaymentData();
   const revenueMonthlyData = generateRevenueMonthlyData();
 
+  // Responsive values
+  const chartHeight = isMobile ? 200 : 250;
+  const progressChartHeight = isMobile ? 240 : 300;
+  const yAxisWidth = isMobile ? 50 : 185;
+  const yAxisFontSize = isMobile ? 9 : 11;  
+
   return (
     <motion.div
       variants={containerVariants}
@@ -394,7 +407,7 @@ export default function StatsPage() {
                     </div>
                   </div>
                   <div className="mt-3">
-                    <div className="text-2xl sm:text-3xl font-bold text-white">{card.value}</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-white truncate">{card.value}</div>
                     <div className="text-xs sm:text-sm text-neutral-400 mt-1">{card.label}</div>
                   </div>
                 </div>
@@ -409,12 +422,12 @@ export default function StatsPage() {
         {/* Gender Distribution Pie Chart */}
         <motion.div variants={itemVariants}>
           <div className="card glass border border-white/6 bg-white/3 shadow-lg">
-            <div className="card-body p-6">
+            <div className="card-body p-4 sm:p-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <PieChart className="w-5 h-5" />
                 Répartition par genre
               </h3>
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={chartHeight}>
                 <RePieChart>
                   <Pie
                     data={genderData}
@@ -422,7 +435,7 @@ export default function StatsPage() {
                     cy="50%"
                     labelLine={false}
                     label={renderCustomLabel}
-                    outerRadius={80}
+                    outerRadius={isMobile ? 65 : 80}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -443,19 +456,19 @@ export default function StatsPage() {
         {/* Age Distribution Donut Chart */}
         <motion.div variants={itemVariants}>
           <div className="card glass border border-white/6 bg-white/3 shadow-lg">
-            <div className="card-body p-6">
+            <div className="card-body p-4 sm:p-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 Répartition par âge
               </h3>
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={chartHeight}>
                 <RePieChart>
                   <Pie
                     data={ageData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
+                    innerRadius={isMobile ? 45 : 60}
+                    outerRadius={isMobile ? 65 : 80}
                     fill="#8884d8"
                     paddingAngle={5}
                     dataKey="value"
@@ -472,7 +485,7 @@ export default function StatsPage() {
                     verticalAlign="middle"
                     align="right"
                     layout="vertical"
-                    wrapperStyle={{ color: "#fff" }}
+                    wrapperStyle={{ color: "#fff", fontSize: isMobile ? "11px" : "13px" }}
                   />
                 </RePieChart>
               </ResponsiveContainer>
@@ -486,21 +499,34 @@ export default function StatsPage() {
         {/* Monthly Statistics Bar Chart */}
         <motion.div variants={itemVariants}>
           <div className="card glass border border-white/6 bg-white/3 shadow-lg">
-            <div className="card-body p-6">
+            <div className="card-body p-4 sm:p-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <BarChart3 className="w-5 h-5" />
                 Statistiques mensuelles
               </h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={monthlyData}>
+              <ResponsiveContainer width="100%" height={chartHeight}>
+                <BarChart
+                  data={monthlyData}
+                  margin={{ top: 5, right: 10, left: -20, bottom: isMobile ? 20 : 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis dataKey="month" stroke="#fff" />
-                  <YAxis stroke="#fff" />
+                  <XAxis
+                    dataKey="month"
+                    stroke="#fff"
+                    tick={{ fontSize: 11 }}
+                    interval={0}
+                    angle={isMobile ? -35 : 0}
+                    textAnchor={isMobile ? "end" : "middle"}
+                    height={isMobile ? 45 : 30}
+                  />
+                  <YAxis stroke="#fff" tick={{ fontSize: 11 }} width={28} />
                   <Tooltip
                     contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "none", borderRadius: "8px" }}
                     labelStyle={{ color: "#fff" }}
                   />
-                  <Legend wrapperStyle={{ color: "#fff" }} />
+                  <Legend
+                    wrapperStyle={{ color: "#fff", fontSize: isMobile ? "11px" : "13px" }}
+                  />
                   <Bar dataKey="défunts" fill="#8B5CF6" />
                   <Bar dataKey="inhumations" fill="#10B981" />
                 </BarChart>
@@ -512,12 +538,12 @@ export default function StatsPage() {
         {/* Cemetery Occupancy */}
         <motion.div variants={itemVariants}>
           <div className="card glass border border-white/6 bg-white/3 shadow-lg">
-            <div className="card-body p-6">
+            <div className="card-body p-4 sm:p-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <MapPin className="w-5 h-5" />
                 Occupation du cimetière
               </h3>
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={chartHeight}>
                 <RePieChart>
                   <Pie
                     data={occupancyData}
@@ -525,8 +551,8 @@ export default function StatsPage() {
                     cy="50%"
                     startAngle={180}
                     endAngle={0}
-                    innerRadius={60}
-                    outerRadius={80}
+                    innerRadius={isMobile ? 45 : 60}
+                    outerRadius={isMobile ? 65 : 80}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -542,11 +568,11 @@ export default function StatsPage() {
                     verticalAlign="bottom"
                     align="center"
                     layout="horizontal"
-                    wrapperStyle={{ color: "#fff" }}
+                    wrapperStyle={{ color: "#fff", fontSize: isMobile ? "11px" : "13px" }}
                   />
                 </RePieChart>
               </ResponsiveContainer>
-              <div className="mt-4 text-center">
+              <div className="mt-2 text-center">
                 <div className="text-2xl font-bold text-white">
                   {dashboardData?.statistics?.total_trous
                     ? Math.round(
@@ -567,16 +593,35 @@ export default function StatsPage() {
       {/* Progress Bars Chart */}
       <motion.div variants={itemVariants}>
         <div className="card glass border border-white/6 bg-white/3 shadow-lg">
-          <div className="card-body p-6">
+          <div className="card-body p-4 sm:p-6">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <BarChart3 className="w-5 h-5" />
               Répartitions détaillées
             </h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={progressData} layout="vertical">
+            <ResponsiveContainer width="100%" height={progressChartHeight}>
+              <BarChart
+                data={progressData}
+                layout="vertical"
+                margin={{ top: 5, right: 20, left: isMobile ? 10 : 0, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                <XAxis type="number" stroke="#fff" domain={[0, 100]} unit="%" />
-                <YAxis dataKey="name" type="category" stroke="#fff" width={200} tick={{ fontSize: 12 }} />
+                <XAxis
+                  type="number"
+                  stroke="#fff"
+                  domain={[0, 100]}
+                  unit="%"
+                  tick={{ fontSize: 11 }}
+                />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  stroke="#fff"
+                  width={yAxisWidth}
+                  tick={{ fontSize: yAxisFontSize, fill: "#fff" }}
+                  tickFormatter={(value: string) =>
+                    isMobile && value.length > 14 ? value.slice(0, 14) + "…" : value
+                  }
+                />
                 <Tooltip
                   contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "none", borderRadius: "8px" }}
                   labelStyle={{ color: "#fff" }}
@@ -599,12 +644,12 @@ export default function StatsPage() {
           {/* Payment Methods Pie Chart */}
           <motion.div variants={itemVariants}>
             <div className="card glass border border-white/6 bg-white/3 shadow-lg">
-              <div className="card-body p-6">
+              <div className="card-body p-4 sm:p-6">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   <CreditCard className="w-5 h-5" />
                   Répartition des moyens de paiement
                 </h3>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={chartHeight}>
                   <RePieChart>
                     <Pie
                       data={paymentData}
@@ -612,7 +657,7 @@ export default function StatsPage() {
                       cy="50%"
                       labelLine={false}
                       label={renderCustomLabel}
-                      outerRadius={80}
+                      outerRadius={isMobile ? 65 : 80}
                       fill="#8884d8"
                       dataKey="value"
                     >
@@ -625,7 +670,9 @@ export default function StatsPage() {
                       labelStyle={{ color: "#fff" }}
                       formatter={(value: unknown) => [`${value} FCFA`, "Montant"]}
                     />
-                    <Legend wrapperStyle={{ color: "#fff" }} />
+                    <Legend
+                      wrapperStyle={{ color: "#fff", fontSize: isMobile ? "11px" : "13px" }}
+                    />
                   </RePieChart>
                 </ResponsiveContainer>
               </div>
@@ -635,22 +682,35 @@ export default function StatsPage() {
           {/* Revenue Monthly Chart */}
           <motion.div variants={itemVariants}>
             <div className="card glass border border-white/6 bg-white/3 shadow-lg">
-              <div className="card-body p-6">
+              <div className="card-body p-4 sm:p-6">
                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   <TrendingUpIcon className="w-5 h-5" />
                   Revenus mensuels
                 </h3>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={revenueMonthlyData}>
+                <ResponsiveContainer width="100%" height={chartHeight}>
+                  <BarChart
+                    data={revenueMonthlyData}
+                    margin={{ top: 5, right: 10, left: -20, bottom: isMobile ? 20 : 5 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                    <XAxis dataKey="month" stroke="#fff" />
-                    <YAxis stroke="#fff" />
+                    <XAxis
+                      dataKey="month"
+                      stroke="#fff"
+                      tick={{ fontSize: 11 }}
+                      interval={0}
+                      angle={isMobile ? -35 : 0}
+                      textAnchor={isMobile ? "end" : "middle"}
+                      height={isMobile ? 45 : 30}
+                    />
+                    <YAxis stroke="#fff" tick={{ fontSize: 11 }} width={28} />
                     <Tooltip
                       contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "none", borderRadius: "8px" }}
                       labelStyle={{ color: "#fff" }}
                       formatter={(value: unknown) => [`${value} FCFA`, "Revenus"]}
                     />
-                    <Legend wrapperStyle={{ color: "#fff" }} />
+                    <Legend
+                      wrapperStyle={{ color: "#fff", fontSize: isMobile ? "11px" : "13px" }}
+                    />
                     <Bar dataKey="revenus" fill="#10B981" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -663,7 +723,7 @@ export default function StatsPage() {
       {/* Recent Activity */}
       <motion.div variants={itemVariants}>
         <div className="card glass border border-white/6 bg-white/3 shadow-lg">
-          <div className="card-body p-6">
+          <div className="card-body p-4 sm:p-6">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <Activity className="w-5 h-5" />
               Activité récente
@@ -674,18 +734,18 @@ export default function StatsPage() {
                   key={index}
                   className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`w-2 h-2 rounded-full ${
+                      className={`w-2 h-2 shrink-0 rounded-full ${
                         transaction.status === "Validé" ? "bg-green-400" : "bg-yellow-400"
                       }`}
                     ></div>
-                    <div>
-                      <div className="text-sm font-medium text-white">{transaction.type}</div>
-                      <div className="text-xs text-neutral-400">{transaction.user}</div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-white truncate">{transaction.type}</div>
+                      <div className="text-xs text-neutral-400 truncate">{transaction.user}</div>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0 ml-2">
                     <div className="text-xs text-neutral-400">{transaction.date}</div>
                     <div className={`badge badge-xs ${statusBadge[transaction.status] ?? "badge-neutral"}`}>
                       {transaction.status}
