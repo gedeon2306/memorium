@@ -2507,6 +2507,86 @@ def stats(request):
         
         yearly_stats.reverse()  # Ordre chronologique
         
+        # Statistiques financières
+        paiements_queryset = Paiement.objects.all()
+        if date_debut:
+            paiements_queryset = paiements_queryset.filter(date_paiement__gte=date_debut)
+        
+        # Statistiques générales sur l'argent
+        total_revenus = paiements_queryset.aggregate(
+            total=models.Sum('total_amount')
+        )['total'] or Decimal('0.00')
+        
+        nombre_paiements = paiements_queryset.count()
+        
+        # Montant moyen par paiement
+        montant_moyen = total_revenus / nombre_paiements if nombre_paiements > 0 else Decimal('0.00')
+        
+        # Statistiques par moyen de paiement
+        paiement_stats = []
+        moyens_paiement = LignePaiement.objects.values('moyen_paiement').annotate(
+            total_montant=models.Sum('montant'),
+            nombre_transactions=models.Count('id')
+        ).order_by('-total_montant')
+        
+        if date_debut:
+            moyens_paiement = moyens_paiement.filter(
+                paiement__date_paiement__gte=date_debut
+            )
+        
+        for moyen in moyens_paiement:
+            paiement_stats.append({
+                "name": moyen['moyen_paiement'],
+                "value": float(moyen['total_montant']),
+                "count": moyen['nombre_transactions']
+            })
+        
+        # Statistiques mensuelles des revenus (6 derniers mois)
+        revenue_monthly_stats = []
+        for i in range(6):
+            month_start = timezone.now().replace(day=1) - timedelta(days=i*30)
+            month_end = month_start + timedelta(days=30)
+            
+            month_revenus = Paiement.objects.filter(
+                date_paiement__gte=month_start,
+                date_paiement__lt=month_end
+            )
+            if date_debut and month_start < date_debut:
+                month_revenus = month_revenus.filter(date_paiement__gte=date_debut)
+            
+            month_total = month_revenus.aggregate(
+                total=models.Sum('total_amount')
+            )['total'] or Decimal('0.00')
+            
+            month_name = month_start.strftime("%b")
+            revenue_monthly_stats.append({
+                "month": month_name,
+                "revenus": float(month_total),
+                "nombre_paiements": month_revenus.count()
+            })
+        
+        revenue_monthly_stats.reverse()  # Ordre chronologique
+        
+        # Statistiques annuelles des revenus (5 dernières années)
+        revenue_yearly_stats = []
+        for i in range(5):
+            year = current_year - i
+            year_revenus = Paiement.objects.filter(date_paiement__year=year)
+            if date_debut:
+                year_revenus = year_revenus.filter(date_paiement__gte=date_debut)
+            
+            year_total = year_revenus.aggregate(
+                total=models.Sum('total_amount')
+            )['total'] or Decimal('0.00')
+            
+            revenue_yearly_stats.append({
+                "year": str(year),
+                "revenus": float(year_total),
+                "nombre_paiements": year_revenus.count()
+            })
+        
+        revenue_yearly_stats.reverse()  # Ordre chronologique
+        
         # Données de progression (pour barres horizontales) - valeurs brutes
         progress_data = [
             {
@@ -2547,7 +2627,15 @@ def stats(request):
             "occupancy_stats": occupancy_stats,
             "monthly_stats": monthly_stats,
             "yearly_stats": yearly_stats,
-            "progress_data": progress_data
+            "progress_data": progress_data,
+            "financial_stats": {
+                "total_revenus": float(total_revenus),
+                "nombre_paiements": nombre_paiements,
+                "montant_moyen": float(montant_moyen),
+                "paiement_stats": paiement_stats,
+                "revenue_monthly_stats": revenue_monthly_stats,
+                "revenue_yearly_stats": revenue_yearly_stats
+            }
         }, status=status.HTTP_200_OK)
         
     except Exception as e:

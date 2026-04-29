@@ -19,6 +19,10 @@ import {
   Activity,
   Users,
   MapPin,
+  DollarSign,
+  CreditCard,
+  TrendingUp as TrendingUpIcon,
+  Wallet,
 } from "lucide-react";
 import { dashboard, getStats } from "@/app/actions/actions";
 import {
@@ -147,16 +151,43 @@ export default function StatsPage() {
     if (!dashboardData?.statistics) return [];
 
     const stats = dashboardData.statistics;
-    return [
+    const financialStats = statsData?.financial_stats;
+    
+    const cards = [
       { label: "Défunts", value: stats.total_defunts.toString(), icon: Bird, color: "text-rose-400", bg: "bg-rose-400/10" },
       { label: "Trous totaux", value: stats.total_trous.toString(), icon: Cuboid, color: "text-amber-400", bg: "bg-amber-400/10" },
       { label: "Trous disponibles", value: stats.trous_disponibles.toString(), icon: PackageOpen, color: "text-sky-400", bg: "bg-sky-400/10" },
       { label: "Utilisateurs", value: stats.total_users.toString(), icon: User, color: "text-violet-400", bg: "bg-violet-400/10" },
-      { label: "Défunts Masculins", value: stats.defunts_masculins.toString(), icon: Mars, color: "text-yellow-400", bg: "bg-yellow-400/10" },
-      { label: "Défunts Féminins", value: stats.defunts_feminins.toString(), icon: Venus, color: "text-emerald-400", bg: "bg-emerald-400/10" },
-      { label: "Défunts Majeurs", value: stats.defunts_majeurs.toString(), icon: TrendingUp, color: "text-cyan-400", bg: "bg-cyan-400/10" },
-      { label: "Défunts Mineurs", value: stats.defunts_mineurs.toString(), icon: TrendingDown, color: "text-orange-400", bg: "bg-orange-400/10" },
     ];
+    
+    // Ajouter les cartes financières si disponibles
+    if (financialStats) {
+      cards.push(
+        { 
+          label: "Revenus totaux", 
+          value: `${financialStats.total_revenus.toFixed(2)}F`, 
+          icon: DollarSign, 
+          color: "text-green-400", 
+          bg: "bg-green-400/10" 
+        },
+        { 
+          label: "Nb. Paiements", 
+          value: financialStats.nombre_paiements.toString(), 
+          icon: CreditCard, 
+          color: "text-blue-400", 
+          bg: "bg-blue-400/10" 
+        },
+        { 
+          label: "Panier moyen", 
+          value: `${financialStats.montant_moyen.toFixed(2)}F`, 
+          icon: Wallet, 
+          color: "text-purple-400", 
+          bg: "bg-purple-400/10" 
+        }
+      );
+    }
+    
+    return cards;
   };
 
   const generateGenderData = (): ChartEntry[] => {
@@ -209,6 +240,22 @@ export default function StatsPage() {
         total: item.total,
       };
     });
+  };
+
+  const generatePaymentData = (): ChartEntry[] => {
+    if (!statsData?.financial_stats?.paiement_stats) return [];
+    
+    const colors = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+    
+    return statsData.financial_stats.paiement_stats.map((item: any, index: number) => ({
+      ...item,
+      color: colors[index % colors.length],
+    }));
+  };
+
+  const generateRevenueMonthlyData = () => {
+    if (!statsData?.financial_stats?.revenue_monthly_stats) return [];
+    return statsData.financial_stats.revenue_monthly_stats;
   };
 
   if (loading) {
@@ -282,6 +329,8 @@ export default function StatsPage() {
   const ageData = generateAgeData();
   const monthlyData = generateMonthlyData();
   const occupancyData = generateOccupancyData();
+  const paymentData = generatePaymentData();
+  const revenueMonthlyData = generateRevenueMonthlyData();
 
   return (
     <motion.div
@@ -515,7 +564,7 @@ export default function StatsPage() {
         </motion.div>
       </div>
 
-      {/* ✅ FIXED: Progress Bars Chart — layout="vertical" with correct axis types */}
+      {/* Progress Bars Chart */}
       <motion.div variants={itemVariants}>
         <div className="card glass border border-white/6 bg-white/3 shadow-lg">
           <div className="card-body p-6">
@@ -543,6 +592,73 @@ export default function StatsPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Financial Charts Section */}
+      {paymentData.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Payment Methods Pie Chart */}
+          <motion.div variants={itemVariants}>
+            <div className="card glass border border-white/6 bg-white/3 shadow-lg">
+              <div className="card-body p-6">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5" />
+                  Répartition des moyens de paiement
+                </h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <RePieChart>
+                    <Pie
+                      data={paymentData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={renderCustomLabel}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {paymentData.map((entry: ChartEntry, index: number) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "none", borderRadius: "8px" }}
+                      labelStyle={{ color: "#fff" }}
+                      formatter={(value: unknown) => [`${value} FCFA`, "Montant"]}
+                    />
+                    <Legend wrapperStyle={{ color: "#fff" }} />
+                  </RePieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Revenue Monthly Chart */}
+          <motion.div variants={itemVariants}>
+            <div className="card glass border border-white/6 bg-white/3 shadow-lg">
+              <div className="card-body p-6">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <TrendingUpIcon className="w-5 h-5" />
+                  Revenus mensuels
+                </h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={revenueMonthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis dataKey="month" stroke="#fff" />
+                    <YAxis stroke="#fff" />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "rgba(0,0,0,0.8)", border: "none", borderRadius: "8px" }}
+                      labelStyle={{ color: "#fff" }}
+                      formatter={(value: unknown) => [`${value} FCFA`, "Revenus"]}
+                    />
+                    <Legend wrapperStyle={{ color: "#fff" }} />
+                    <Bar dataKey="revenus" fill="#10B981" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Recent Activity */}
       <motion.div variants={itemVariants}>
