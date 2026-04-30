@@ -27,7 +27,7 @@ backend/
 |-- db.sqlite3            # Base de données SQLite
 ```
 
-## 🚀 Technologies et dépendances
+## Technologies et dépendances
 
 ### Framework principal
 - **Django 6.0.3** - Framework web Python haute performance
@@ -47,35 +47,35 @@ backend/
 - **SQLite** - Base de données par défaut (développement)
 - **Compatible PostgreSQL/MySQL** - Pour la production
 
-## 📊 Modèles de données
-### 👤 User (Utilisateur)
+## Modèles de données
+### User (Utilisateur)
 - **Champs** : id, photo, name, email, role, created_at
 - **Rôles** : Administrateur, Assistant, Testeur
 - **Authentification** : Email + mot de passe, validation par code
 - **Sécurité** : Double authentification (DFA), JWT tokens, gestion photos
 - **Permissions** : Rôles basés sur les permissions Django
 
-### 👨‍👩‍👧‍👦 Famille
+### Famille
 - **Champs** : id, nom_famille, nom_garrant, profession, telephone, email, created_at
 - **Relations** : 1-N avec Defunt, Paiement
 - **Validation** : Email unique, téléphone formaté
 - **Fonctionnalités** : Gestion des coordonnées, profession du garant
 
-### 🕊️ Defunt (Défunt)
+### Defunt (Défunt)
 - **Champs** : id, photo, nom, prenom, genre, age, profession, dates (naissance/décès/inhumation/incinération), statut, place
 - **Relations** : N-1 avec Famille, User
 - **Statuts** : Inhumé, Incinéré
 - **Fonctionnalités** : Gestion photos, emplacements, dates multiples, genre
 
-### 💳 Paiement
+### Paiement
 - **Champs** : id, num_facture, motif, montant, dates, moyen_paiement
 - **Relations** : N-1 avec Famille, Defunt, User
 - **Fonctionnalités** : Numérotation automatique, suivi moyens de paiement, historique complet
 - **Validation** : Montant positif, facture unique
 
-## 🔗 Endpoints API
+## Endpoints API
 
-### 🔐 Authentification
+### Authentification
 - `POST /api/auth/login/` - Connexion avec email/mot de passe
 - `POST /api/auth/logout/` - Déconnexion et invalidation token
 - `POST /api/auth/register/` - Inscription nouvel utilisateur
@@ -84,7 +84,7 @@ backend/
 - `POST /api/auth/forgot-password/` - Mot de passe oublié
 - `POST /api/auth/reset-password/` - Réinitialisation mot de passe
 
-### 👥 Utilisateurs
+### Utilisateurs
 - `GET /api/users/` - Lister utilisateurs (admin seulement)
 - `POST /api/users/` - Créer utilisateur (admin seulement)
 - `GET /api/users/{id}/` - Détails utilisateur authentifié
@@ -93,7 +93,7 @@ backend/
 - `POST /api/users/{id}/photo/` - Upload photo profil
 - `GET /api/users/me/` - Profil utilisateur courant
 
-### 👨‍👩‍👧‍👦 Familles
+### Familles
 - `GET /api/familles/` - Lister familles avec pagination et filtres
 - `POST /api/familles/` - Créer nouvelle famille
 - `GET /api/familles/{id}/` - Détails famille avec défunts associés
@@ -101,7 +101,7 @@ backend/
 - `DELETE /api/familles/{id}/` - Supprimer famille (vérification dépendances)
 - `GET /api/familles/search/` - Recherche avancée
 
-### 🕊️ Défunts
+### Défunts
 - `GET /api/defunts/` - Lister défunts avec pagination et filtres
 - `POST /api/defunts/` - Créer nouveau défunt
 - `GET /api/defunts/{id}/` - Détails défunt avec famille
@@ -110,7 +110,7 @@ backend/
 - `POST /api/defunts/{id}/photo/` - Upload photo défunt
 - `GET /api/defunts/search/` - Recherche multi-critères
 
-### 💳 Paiements
+### Paiements
 - `GET /api/paiements/` - Lister paiements avec filtres
 - `POST /api/paiements/` - Créer nouveau paiement
 - `GET /api/paiements/{id}/` - Détails paiement
@@ -119,7 +119,7 @@ backend/
 - `GET /api/paiements/facture/{num}/` - Recherche par numéro facture
 - `GET /api/paiements/export/` - Export CSV/PDF
 
-### 📊 Statistiques
+### Statistiques
 - `GET /api/stats/overview/` - Vue d'ensemble complète
 - `GET /api/stats/defunts/` - Statistiques défunts (par statut, période)
 - `GET /api/stats/paiements/` - Statistiques paiements (par période, moyen)

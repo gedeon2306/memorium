@@ -247,7 +247,7 @@ NEXT_PUBLIC_APP_NAME=Mémorium
 3. Accéder à l'application : http://localhost:3000
 4. Se connecter avec le compte administrateur créé
 
-## 📚 Documentation
+## Documentation
 
 ### Documentation API
 - **Documentation interactive** : http://localhost:8000/api/docs/
@@ -259,7 +259,7 @@ NEXT_PUBLIC_APP_NAME=Mémorium
 - **Frontend** : `frontend/README.md`
 - **API** : `backend/api/README.md`
 
-## 🚀 Déploiement
+## Déploiement
 
 ### Développement local
 ```bash
@@ -284,7 +284,7 @@ npm run dev
 - **Backend** : Heroku, DigitalOcean, AWS
 - **Frontend** : Vercel, Netlify, AWS Amplify
 
-## 🧪 Tests
+## Tests
 
 ### Backend
 ```bash
@@ -299,7 +299,7 @@ npm run lint
 npm run build
 ```
 
-## 🤝 Contribuer
+## Contribuer
 
 1. Forker le projet
 2. Créer une branche feature : `git checkout -b feature/nouvelle-fonctionnalité`
@@ -307,11 +307,11 @@ npm run build
 4. Pusher la branche : `git push origin feature/nouvelle-fonctionnalité`
 5. Créer une Pull Request
 
-## 📄 Licence
+## Licence
 
 Ce projet est sous licence privée.
 
-## 📞 Support
+## Support
 
 Pour toute question ou problème, veuillez contacter l'équipe de développement.
 

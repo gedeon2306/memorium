@@ -84,7 +84,7 @@ frontend/
 |-- postcss.config.mjs     # Configuration PostCSS
 ```
 
-## 🚀 Technologies et dépendances
+## Technologies et dépendances
 
 ### Framework principal
 - **Next.js 16.2.1** - Framework React fullstack avec App Router
@@ -109,30 +109,30 @@ frontend/
 - **ESLint 9** - Linting du code avec configuration Next.js
 - **ESLint Config Next.js** - Règles optimisées pour Next.js 16
 
-## ✨ Fonctionnalités principales
+## Fonctionnalités principales
 
-### 🎨 Interface utilisateur moderne
+### Interface utilisateur moderne
 - **Design responsive** : Adaptation parfaite mobile, tablette, desktop
 - **Thème clair/sombre** : Personnalisation complète de l'interface
 - **Animations fluides** : Transitions élégantes avec Motion Framer
 - **Navigation intuitive** : Menu latéral collapsible et breadcrumbs
 - **Micro-interactions** : Feedback visuel sur toutes les actions
 
-### 📊 Tableau de bord avancé
+### Tableau de bord avancé
 - **Vue d'ensemble** : Statistiques en temps réel avec graphiques
 - **Gestion rapide** : Actions principales accessibles en un clic
 - **Filtrage avancé** : Recherche et filtres multi-critères sur toutes les entités
 - **Export de données** : Téléchargement CSV/PDF avec personnalisation
 - **Widgets interactifs** : Composants réutilisables et configurables
 
-### 🏗️ Gestion complète des entités
+### Gestion complète des entités
 - **CRUD complet** : Créer, lire, modifier, supprimer avec validation
 - **Validation formulaire** : Contrôles en temps réel et messages clairs
 - **Upload de fichiers** : Photos et documents avec optimisation automatique
 - **Gestion des erreurs** : Messages utiles et suggestions de correction
 - **Pagination intelligente** : Navigation fluide dans les grandes listes
 
-### 🔐 Authentification et sécurité
+### Authentification et sécurité
 - **Login sécurisé** : Email + mot de passe avec validation
 - **Validation email** : Code de confirmation à 6 chiffres
 - **Gestion session** : Tokens JWT automatiques avec rafraîchissement
@@ -247,7 +247,7 @@ NEXT_PUBLIC_ENABLE_DARK_MODE=true
 - **Logging** : Suivi des accès et erreurs
 - **Rate limiting** : Protection contre les abus
 
-## 🎨 Styling et design
+## Styling et design
 
 ### Configuration Tailwind
 ```javascript
@@ -290,7 +290,7 @@ module.exports = {
 - **Loading** : Spinners et indicateurs de progression
 - **Form** : Champs de formulaire stylisés
 
-## 📊 État et données
+## État et données
 
 ### Gestion de l'état
 - **Contexte Auth** : Utilisateur connecté et permissions
@@ -306,7 +306,7 @@ module.exports = {
 - **Bundle Splitting** : Division automatique du code par route
 - **Font Optimization** : Optimisation polices avec next/font
 
-## ⚡ Performance
+## Performance
 
 ### Optimisations
 - **Code Splitting** : Division par route et composant
@@ -322,7 +322,7 @@ module.exports = {
 - **Loading States** : Indicateurs de chargement pertinents
 - **Performance Budget** : Limites de taille et temps de chargement
 
-## 🚀 Déploiement
+## Déploiement
 
 ### Build production
 ```bash
@@ -356,7 +356,7 @@ npm start
 }
 ```
 
-## 🧪 Tests
+## Tests
 
 ### Tests unitaires
 ```bash
@@ -376,7 +376,7 @@ npm run test:a11y
 - **Lighthouse CI** : Audit performance et accessibilité
 - **Visual Regression** : Détection des changements visuels
 
-## ♿ Accessibilité
+## Accessibilité
 
 ### WCAG 2.1 AA
 - **Navigation clavier** : Accessibilité complète sans souris
@@ -392,7 +392,7 @@ npm run test:a11y
 - **Dates locales** : Formatage adapté selon la locale
 - **Devise locale** : Formatage monétaire adapté
 
-## 🔧 Maintenance
+## Maintenance
 
 ### Mises à jour
 ```bash
@@ -422,7 +422,7 @@ npm install --save-interactive latest
 - **Tests** : Couverture minimale de 80%
 - **Sécurité** : Audit trimestriel des dépendances
 
-## 👥 Contributeurs
+## Contributeurs
 
 - **Architecture** : Next.js 16 App Router avec TypeScript
 - **Styling** : Tailwind CSS 4 + DaisyUI 5.5.19
@@ -433,7 +433,7 @@ npm install --save-interactive latest
 - **Développement** : ESLint 9 + Prettier
 - **Performance** : Next.js optimizations + Web Vitals
 
-## 📞 Support
+## Support
 
 Pour toute question sur l'interface utilisateur, contacter l'équipe frontend.
 
