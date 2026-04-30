@@ -89,16 +89,17 @@ export type DeleteEntityResult =
 
 export async function getUserProfil() {
   const token = await getToken();
+  const url = "user/profil/"
 
   try {
-    const response = await api.get('user/profil/', authConfig(token))
+    const response = await api.get(url, authConfig(token))
     return response.data;
   } catch (error: any) {
     if (error?.response?.status === 401) {
       const newToken = await refreshAccessToken();
       if (!newToken) return null;
       try {
-        const response = await api.get('user/profil/', authConfig(newToken))
+        const response = await api.get(url, authConfig(newToken))
         return response.data;
       } catch (retryError: any) {
         return { error: retryError.response?.data?.error || "Erreur lors de la mise à jour" };
@@ -269,8 +270,6 @@ export async function uploadProfilPhoto(file: File) {
 
 export async function getUsersList(page: number = 1,search: string = "",ordering: string = "name-asc") {
   const token = await getToken();
-
-  // Construction de l'URL avec les query params
   const params = new URLSearchParams({ page: String(page) });
   if (search)   params.append("search", search);
   if (ordering) params.append("ordering", ordering);
@@ -1087,3 +1086,28 @@ export async function getStats(period: string = "tout"): Promise<any> {
 }
 
 
+export async function getNotifications() {
+  const token = await getToken();
+  const url = 'notifications/';
+
+  try {
+    const response = await api.get(url, authConfig(token));
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return null;
+      try {
+        const response = await api.get(url, authConfig(newToken));
+        return response.data;
+      } catch (retryError: any) {
+        return { error: retryError.response?.data?.error };
+      }
+    }
+    const errorMessage =
+      error.response?.data?.error ||
+      error.response?.data?.message ||
+      "Une erreur est survenue";
+    return { error: errorMessage };
+  }
+}
