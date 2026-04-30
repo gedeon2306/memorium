@@ -40,6 +40,7 @@ import {
 } from "recharts";
 
 import type { PieLabelRenderProps } from "recharts";
+import toast from "react-hot-toast";
 
 interface ChartEntry {
   name: string;
@@ -381,7 +382,7 @@ export default function StatsPage() {
           >
             <RotateCw className="w-4 h-4" />
           </button>
-          <button className="btn btn-primary btn-sm">
+          <button className="btn btn-primary btn-sm" onClick={()=>toast.error('Bientôt disponible')}>
             <Download className="w-4 h-4 mr-2" />
             Exporter
           </button>
