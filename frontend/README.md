@@ -2,6 +2,23 @@
 
 Interface utilisateur moderne, responsive et intuitive pour l'application de gestion de cimetière privé Mémorium. Construite avec Next.js 16.2.1, React 19.2.4 et Tailwind CSS 4, cette application offre une expérience utilisateur exceptionnelle avec des animations fluides et un design moderne.
 
+## Statut du frontend
+
+**Version actuelle : 1.0.0**  
+**Statut : Fonctionnel et en développement actif**  
+**Dernière mise à jour : Avril 2026**
+
+### Fonctionnalités implémentées
+- **Authentification complète** avec validation email
+- **Dashboard interactif** avec statistiques en temps réel
+- **Gestion des défunts** avec photos et modal de visualisation
+- **Gestion des familles** avec association automatique
+- **Gestion des paiements** avec facturation et export
+- **Cartographie interactive** du cimetière
+- **Centre d'aide** avec documentation intégrée
+- **Interface responsive** avec animations fluides
+- **Système de notifications** avec React Hot Toast
+
 ## Architecture
 
 ```
@@ -18,19 +35,25 @@ frontend/
 |   |-- auth/              # Pages authentification
 |   |   |-- login/         # Page connexion
 |   |   |-- register/      # Page inscription
-|   |   |-- verify/        # Page validation email
+|   |   |-- confirm/       # Page validation email
+|   |   |-- confirm-code/  # Code de confirmation
+|   |   |-- email-send/    # Email envoyé
+|   |   |-- forgot-password/ # Mot de passe oublié
+|   |   |-- reset-password/ # Réinitialiser mot de passe
 |   |-- dashboard/         # Tableau de bord principal
-|   |   |-- page.tsx       # Dashboard principal
+|   |   |-- page.tsx       # Dashboard avec statistiques
 |   |   |-- layout.tsx     # Layout dashboard
 |   |   |-- defunts/       # Gestion défunts
 |   |   |-- familles/      # Gestion familles
 |   |   |-- paiements/     # Gestion paiements
+|   |   |   |-- lignes/    # Détails paiements
 |   |   |-- users/         # Gestion utilisateurs
-|   |   |-- stats/         # Statistiques
+|   |   |-- stats/         # Statistiques détaillées
 |   |   |-- settings/      # Paramètres
 |   |   |-- profil/        # Profil utilisateur
-|   |   |-- help/          # Aide
-|   |   |-- cartes/        # Vue cartes
+|   |   |-- help/          # Centre d'aide complet
+|   |   |-- cartes/        # Vue cartographique
+|   |   |-- 403/           # Page accès refusé
 |   |-- layout.tsx         # Layout principal
 |   |-- page.tsx           # Page d'accueil
 |   |-- not-found.tsx      # Page 404
@@ -40,6 +63,13 @@ frontend/
 |-- public/                # Assets statiques
 |-- src/                   # Composants et utilitaires
 |   |-- components/        # Composants réutilisables
+|   |   |-- uxComponents/  # Composants UI (Navbar, Sidebar, Modal, etc.)
+|   |   |-- defuntsComponents/ # Composants spécifiques défunts
+|   |   |-- famillesComponents/ # Composants spécifiques familles
+|   |   |-- paiementsComponents/ # Composants spécifiques paiements
+|   |-- constants/         # Constantes (routes, api)
+|   |   |-- routes.ts      # Définition des routes
+|   |   |-- api.ts         # Configuration API
 |   |-- hooks/             # Hooks personnalisés
 |   |-- utils/             # Utilitaires
 |   |-- types/             # Types TypeScript
@@ -48,8 +78,9 @@ frontend/
 |-- next.config.ts         # Configuration Next.js
 |-- tailwind.config.ts     # Configuration Tailwind
 |-- tsconfig.json          # Configuration TypeScript
-|-- eslint.config.mjs      # Configuration ESLint
 |-- middleware.ts          # Middleware authentification
+|-- .env.example           # Variables environnement exemple
+|-- eslint.config.mjs      # Configuration ESLint
 |-- postcss.config.mjs     # Configuration PostCSS
 ```
 

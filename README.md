@@ -1,6 +1,22 @@
 # Mémorium - Application de gestion d'un cimetière privé
 
-Application web fullstack moderne pour la gestion complète d'un cimetière privé. Mémorium permet de gérer les familles, les défunts, les paiements et les utilisateurs avec une interface intuitive et sécurisée.
+Application web fullstack moderne pour la gestion complète d'un cimetière privé. Mémorium permet de gérer les familles, les défunts, les paiements et les utilisateurs avec une interface intuitive, sécurisée et entièrement responsive.
+
+## Statut du projet
+
+**Version actuelle : 1.0.0**  
+**Statut : En développement actif**  
+**Dernière mise à jour : Avril 2026**
+
+### Fonctionnalités implémentées
+- **Gestion des défunts** complète avec photos et association familiale
+- **Gestion des familles** avec coordonnées et garant
+- **Gestion des paiements** avec facturation et export
+- **Tableau de bord** avec statistiques en temps réel
+- **Cartographie** du cimetière avec gestion des emplacements
+- **Système d'aide** intégré avec documentation
+- **Authentification** sécurisée avec rôles et permissions
+- **Interface moderne** avec animations et design responsive
 
 ## Architecture du projet
 
@@ -25,17 +41,37 @@ memorium/
 |
 |-- frontend/               # Application Next.js 16
 |   |-- app/               # App Router Next.js
-|   |   |-- api/           # Client API
+|   |   |-- api/           # Client API et utilitaires
 |   |   |-- auth/          # Pages authentification
+|   |   |   |-- login/     # Connexion
+|   |   |   |-- register/  # Inscription
+|   |   |   |-- confirm/   # Validation email
+|   |   |   |-- forgot-password/ # Réinitialisation mot de passe
 |   |   |-- dashboard/     # Tableau de bord principal
-|   |   |   |-- defunts/  # Gestion défunts
-|   |   |   |-- familles/ # Gestion familles
-|   |   |   |-- paiements/# Gestion paiements
-|   |   |   |-- users/    # Gestion utilisateurs
-|   |   |   |-- stats/    # Statistiques
-|   |   |   |-- settings/ # Paramètres
-|   |   |-- layout.tsx    # Layout principal
+|   |   |   |-- page.tsx   # Dashboard avec statistiques
+|   |   |   |-- layout.tsx # Layout dashboard
+|   |   |   |-- defunts/   # Gestion défunts
+|   |   |   |-- familles/  # Gestion familles
+|   |   |   |-- paiements/ # Gestion paiements
+|   |   |   |-- users/     # Gestion utilisateurs
+|   |   |   |-- stats/     # Statistiques détaillées
+|   |   |   |-- settings/  # Paramètres
+|   |   |   |-- help/      # Centre d'aide
+|   |   |   |-- cartes/    # Vue cartographique
+|   |   |   |-- profil/    # Profil utilisateur
+|   |   |-- layout.tsx     # Layout principal
 |   |   |-- page.tsx       # Page d'accueil
+|   |   |-- not-found.tsx  # Page 404
+|   |-- src/               # Composants et utilitaires
+|   |   |-- components/    # Composants réutilisables
+|   |   |   |-- uxComponents/ # Composants UI (Navbar, Sidebar, etc.)
+|   |   |   |-- defuntsComponents/ # Composants défunts
+|   |   |   |-- famillesComponents/ # Composants familles
+|   |   |   |-- paiementsComponents/ # Composants paiements
+|   |   |-- constants/      # Constantes (routes, api)
+|   |   |-- hooks/         # Hooks personnalisés
+|   |   |-- utils/         # Utilitaires
+|   |   |-- types/         # Types TypeScript
 |   |-- public/           # Assets statiques
 |   |-- package.json      # Dépendances Node.js
 |   |-- next.config.ts    # Configuration Next.js
@@ -74,45 +110,62 @@ memorium/
 ## Fonctionnalités principales
 
 ### Gestion des utilisateurs
-- Authentification par email/mot de passe
-- Rôles : Administrateur, Assistant, Testeur
-- Double authentification (DFA)
-- Validation par email
-- Gestion des photos de profil
-- Interface d'administration complète
+- **Authentification sécurisée** par email/mot de passe
+- **Rôles et permissions** : Administrateur, Assistant, Testeur
+- **Validation par email** avec système de confirmation
+- **Gestion des photos de profil** avec optimisation
+- **Interface d'administration** complète
+- **Middleware de protection** des routes
 
 ### Gestion des familles
-- Informations familiales complètes
-- Coordonnées (téléphone, email)
-- Profession du garant
+- **Informations familiales** complètes et structurées
+- **Coordonnées multiples** (téléphone, email, adresse)
+- **Profession du garant** avec validation
+- **Association automatique** avec les défunts
+- **Historique des modifications**
 
 ### Gestion des défunts
-- Informations personnelles (nom, prénom, âge, profession)
-- Dates importantes (naissance, décès, inhumation, incinération)
-- Statut (Inhumé, Incinéré)
-- Association avec familles
-- Gestion photos avec optimisation
-- Gestion des emplacements (place)
-- Genre et informations détaillées
+- **Informations personnelles** complètes (nom, prénom, âge, profession)
+- **Dates importantes** (naissance, décès, inhumation, incinération)
+- **Statut détaillé** (Inhumé, Incinéré)
+- **Association avec familles** automatique
+- **Gestion photos** avec optimisation et redimensionnement
+- **Gestion des emplacements** (place, zone)
+- **Genre et informations** détaillées
+- **Modal de visualisation** avec impression
 
 ### Gestion des paiements
-- Facturation automatique
-- Suivi des moyens de paiement
-- Historique complet
-- Association défunts/familles
-- Numérotation automatique des factures
-- Suivi des motifs de paiement
-- Gestion des dates de paiement
+- **Facturation automatique** avec numérotation
+- **Suivi des moyens de paiement** (carte, chèque, espèces, virement)
+- **Historique complet** avec filtres et recherche
+- **Association défunts/familles** intelligente
+- **Export des factures** en PDF
+- **Suivi des motifs de paiement**
+- **Validation et annulation** des paiements
 
 ### Tableau de bord
-- Statistiques en temps réel
-- Interface responsive et moderne
-- Navigation intuitive avec sidebar
-- Export de données (CSV, PDF)
-- Vue d'ensemble complète
-- Widgets interactifs
-- Filtres avancés
-- Recherche multi-critères
+- **Statistiques en temps réel** avec graphiques interactifs
+- **Interface responsive** et moderne avec animations
+- **Navigation intuitive** avec sidebar et navbar
+- **Export de données** (CSV, PDF) - En développement
+- **Vue d'ensemble** complète avec widgets
+- **Filtres avancés** sur toutes les données
+- **Recherche multi-critères** instantanée
+
+### Cartographie
+- **Vue cartographique** du cimetière
+- **Gestion des emplacements** avec drag & drop
+- **Recherche sur la carte** par défunt ou famille
+- **Visualisation des places** occupées/libres
+- **Interface interactive** avec zoom et navigation
+
+### Centre d'aide
+- **Documentation complète** intégrée
+- **Recherche dans l'aide** avec filtres
+- **Sections dépliables** par fonctionnalité
+- **Support technique** avec coordonnées
+- **FAQ** avec réponses détaillées
+- **Ressources additionnelles** (guides, tutoriels)
 
 ## Installation
 
