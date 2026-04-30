@@ -57,7 +57,7 @@ const ViewDefuntModal = forwardRef<ViewDefuntModalHandle, ViewDefuntModalProps>(
 
     const handlePrint = () => {
       close();
-      toast.success("Bientôt disponible");
+      toast.error("Bientôt disponible");
     };
 
     const formatDate = (dateString: string) => {
