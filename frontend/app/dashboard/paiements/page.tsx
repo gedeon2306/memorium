@@ -16,6 +16,7 @@ import {
   SquarePen,
   Trash2,
   Receipt,
+  Printer,
 } from "lucide-react";
 import { useCallback, useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
@@ -146,6 +147,10 @@ export default function PaiementsPage() {
       style: 'currency',
       currency: 'XAF'
     }).format(parseFloat(amount));
+  };
+
+  const handlePrint = () => {
+    toast.error("Bientôt disponible");
   };
 
   
@@ -281,6 +286,16 @@ export default function PaiementsPage() {
                                 <Eye size={14} />
                                 Voir
                               </Link>
+                            </li>
+                            <li>
+                              <button
+                                type="button"
+                                onClick={handlePrint}
+                                className="justify-start gap-2 text-white/80 hover:text-white"
+                              >
+                                <Printer size={14} />
+                                Imprimer
+                              </button>
                             </li>
                             <li>
                               <button
