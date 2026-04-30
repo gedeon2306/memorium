@@ -22,6 +22,7 @@ from .views import (
     map,
     dashboard,
     stats,
+    notifications,
 )
 
 urlpatterns = [
@@ -88,4 +89,7 @@ urlpatterns = [
     
     # Statistiques détaillées
     path('dashboard/stats/', stats, name='dashboard_stats'),
+    
+    # Notifications
+    path('notifications/', notifications, name='notifications'),
 ]

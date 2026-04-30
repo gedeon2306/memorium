@@ -2642,5 +2642,72 @@ def stats(request):
         return _error_server()
 
 
+@extend_schema(
+    tags=["Notifications"],
+    summary="Vérifier les notifications de l'utilisateur",
+    description="Retourne les notifications incluant la vérification du mot de passe par défaut et le calcul des incinérations prévues.",
+    responses={
+        200: inline_serializer(
+            name="NotificationsResponse",
+            fields={
+                "password_notification": drf_serializers.CharField(),
+                "incinerations_prevues": drf_serializers.ListField(
+                    child=drf_serializers.DictField()
+                ),
+            }
+        ),
+        401: inline_serializer(
+            name="UnauthorizedError",
+            fields={"error": drf_serializers.CharField()}
+        ),
+    },
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def notifications(request):
+    user = request.user
+    
+    password_notification = None
+    default_passwords = ['memoriumUtilisateurDefaut', 'password', '12345678', 'admin123', 'default', 'password123']
+    
+    for default_pwd in default_passwords:
+        if user.check_password(default_pwd):
+            password_notification = "Votre mot de passe est un mot de passe par défaut. Pour des raisons de sécurité, veuillez le changer dès que possible."
+            break
+
+    incinerations_prevues = []
+    
+    try:
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        today = timezone.now().date()
+        future_date_limit = today + timedelta(days=365)
+        
+        defunts_avec_incineration = Defunt.objects.filter(
+            date_incineration__gt=today,
+            date_incineration__lte=future_date_limit
+        ).order_by('date_incineration')
+        
+        for defunt in defunts_avec_incineration:
+            jours_restants = (defunt.date_incineration - today).days
+            
+            incinerations_prevues.append({
+                "defunt_id": str(defunt.id),
+                "nom": f"{defunt.nom} {defunt.prenom or ''}".strip(),
+                "date_incineration": defunt.date_incineration.strftime('%d/%m/%Y'),
+                "jours_restants": jours_restants,
+                "lieu": defunt.place if defunt.place else "Non spécifié",
+                "famille": defunt.famille.nom_famille if defunt.famille else "Non spécifié",
+                "urgence": "Urgent" if jours_restants <= 7 else "Prochain" if jours_restants <= 30 else "Planifié"
+            })
+            
+    except Exception:
+        incinerations_prevues = []
+    
+    return Response({
+        "password_notification": password_notification,
+        "incinerations_prevues": incinerations_prevues
+    }, status=status.HTTP_200_OK)
 
 
