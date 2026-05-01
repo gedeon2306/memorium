@@ -5,22 +5,36 @@ import {
   Maximize2,
   Minimize2,
   Moon,
-  Search,
   ChevronRight,
   Menu,
   X,
   LogOut,
-  Sun,
-  Monitor,
   Palette,
+  AlertTriangle,
+  Calendar,
 } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/hooks/useTheme";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type user = {
   id: string,
   photo: string,
   name: string,
+}
+
+type notifications = {
+  password_notification: string | null;
+  incinerations_prevues: Array<{
+    defunt_id: string;
+    nom: string;
+    date_incineration: string;
+    jours_restants: number;
+    lieu: string;
+    famille: string;
+    urgence: string;
+  }>;
 }
 
 interface NavbarProps {
@@ -29,6 +43,7 @@ interface NavbarProps {
   onLogout: () => void;
   isLoggingOut: boolean;
   user: user | null;
+  notifications: notifications | null;
 }
 
 export default function Navbar({
@@ -37,10 +52,19 @@ export default function Navbar({
   onLogout,
   isLoggingOut,
   user,
+  notifications,
 }: NavbarProps) {
   const { theme, changeTheme, themes } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [notifications] = useState(6);
+  const router = useRouter();
+
+  const getNotificationCount = () => {
+    if (!notifications) return 0;
+    let count = 0;
+    if (notifications.password_notification) count++;
+    count += notifications.incinerations_prevues.length;
+    return count;
+  };
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -97,28 +121,49 @@ export default function Navbar({
         <div className="dropdown dropdown-end">
           <button className="btn btn-ghost btn-sm btn-square relative text-white/40 hover:text-white">
             <Bell size={17} />
-            {notifications > 0 && (
+            {getNotificationCount() > 0 && (
               <span className="absolute right-0 top-1 flex h-3 w-3 pb-0.5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-                {notifications}
+                {getNotificationCount()}
               </span>
             )}
           </button>
-          <ul className="dropdown-content z-50 menu p-2 shadow bg-neutral-900/95 text-white/50 hover:text-white/80 rounded-lg border border-white/10">
-            <li>
-              <a>
-                <Sun size={16} /> Notif 1
-              </a>
-            </li>
-            <li>
-              <a>
-                <Moon size={16} /> Sombre
-              </a>
-            </li>
-            <li>
-              <a>
-                <Monitor size={16} /> Auto
-              </a>
-            </li>
+          <ul className="dropdown-content z-50 menu p-3 shadow bg-neutral-900/95 text-white/50 hover:text-white/80 rounded-lg border border-white/10 max-h-96 overflow-y-auto w-80 min-w-[320px] sm:w-96 sm:min-w-[384px]">
+            {notifications?.password_notification && (
+              <li>
+                <Link href="/dashboard/profil" className="flex items-center gap-3 p-2 hover:bg-white/5">
+                  <AlertTriangle size={16} className="text-amber-500" />
+                  <div className="flex-1">
+                    <p className="text-sm text-white/80">Sécurité du compte</p>
+                    <p className="text-xs text-white/50">{notifications.password_notification}</p>
+                  </div>
+                </Link>
+              </li>
+            )}
+            {notifications?.incinerations_prevues.map((incineration) => (
+              <li key={incineration.defunt_id}>
+                <Link href="/dashboard/cartes" className="flex items-center gap-3 p-2 hover:bg-white/5">
+                  <Calendar size={16} className={incineration.urgence === 'Urgent' ? 'text-red-500' : incineration.urgence === 'Prochain' ? 'text-amber-500' : 'text-blue-500'} />
+                  <div className="flex-1">
+                    <p className="text-sm text-white/80">{incineration.nom}</p>
+                    <p className="text-xs text-white/50">
+                      Incinération: {incineration.date_incineration} ({incineration.jours_restants} jours)
+                    </p>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded ${
+                    incineration.urgence === 'Urgent' ? 'bg-red-500/20 text-red-400' :
+                    incineration.urgence === 'Prochain' ? 'bg-amber-500/20 text-amber-400' :
+                    'bg-blue-500/20 text-blue-400'
+                  }`}>
+                    {incineration.urgence}
+                  </span>
+                </Link>
+              </li>
+            ))}
+            {(!notifications?.password_notification && notifications?.incinerations_prevues.length === 0) && (
+              <li className="p-4 text-center text-white/30">
+                Aucune notification
+              </li>
+            )}
           </ul>
         </div>
 

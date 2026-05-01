@@ -7,7 +7,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 import toast from "react-hot-toast";
-import { getUserProfil } from '@/app/actions/actions';
+import { getUserProfil, getNotifications } from '@/app/actions/actions';
 
 type user = {
   id: string,
@@ -15,6 +15,19 @@ type user = {
   name: string, 
   email: string, 
   role: string
+}
+
+type notifications = {
+  password_notification: string | null;
+  incinerations_prevues: Array<{
+    defunt_id: string;
+    nom: string;
+    date_incineration: string;
+    jours_restants: number;
+    lieu: string;
+    famille: string;
+    urgence: string;
+  }>;
 }
 
 export default function DashboardLayout({
@@ -25,6 +38,7 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [user, setUser] = useState<user | null>(null)
+  const [notifications, setNotifications] = useState<notifications | null>(null)
   const router = useRouter();
 
   const loadProfil = async () => {
@@ -36,8 +50,18 @@ export default function DashboardLayout({
     }
   };
 
+  const loadNotifications = async () => {
+    try {
+      const res = await getNotifications();
+      setNotifications(res)
+    } catch (err) {
+      toast.error("Erreur lors du chargement des notifications");
+    }
+  };
+
   useEffect(() => {
     loadProfil();
+    loadNotifications();
   }, []);
 
   const handleLogout = async () => {
@@ -79,6 +103,7 @@ export default function DashboardLayout({
           onLogout={handleLogout}
           isLoggingOut={isLoggingOut}
           user={user}
+          notifications={notifications}
         />
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-7">
