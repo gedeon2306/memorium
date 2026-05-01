@@ -17,6 +17,7 @@ import { useState } from "react";
 import { useTheme } from "@/hooks/useTheme";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ROUTES } from "@/constants/routes";
 
 type user = {
   id: string,
@@ -27,13 +28,11 @@ type user = {
 type notifications = {
   password_notification: string | null;
   incinerations_prevues: Array<{
-    defunt_id: string;
+    titre: string;
     nom: string;
     date_incineration: string;
     jours_restants: number;
-    lieu: string;
-    famille: string;
-    urgence: string;
+    statut: string;
   }>;
 }
 
@@ -44,6 +43,7 @@ interface NavbarProps {
   isLoggingOut: boolean;
   user: user | null;
   notifications: notifications | null;
+  isLoadingNotifications: boolean;
 }
 
 export default function Navbar({
@@ -53,6 +53,7 @@ export default function Navbar({
   isLoggingOut,
   user,
   notifications,
+  isLoadingNotifications,
 }: NavbarProps) {
   const { theme, changeTheme, themes } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -120,8 +121,12 @@ export default function Navbar({
         {/* Notifications Dropdown */}
         <div className="dropdown dropdown-end">
           <button className="btn btn-ghost btn-sm btn-square relative text-white/40 hover:text-white">
-            <Bell size={17} />
-            {getNotificationCount() > 0 && (
+            {isLoadingNotifications ? (
+              <span className="loading loading-spinner w-4 h-4 text-white/60"></span>
+            ) : (
+              <Bell size={17} />
+            )}
+            {!isLoadingNotifications && getNotificationCount() > 0 && (
               <span className="absolute right-0 top-1 flex h-3 w-3 pb-0.5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
                 {getNotificationCount()}
               </span>
@@ -130,7 +135,7 @@ export default function Navbar({
           <ul className="dropdown-content z-50 menu p-3 shadow bg-neutral-900/95 text-white/50 hover:text-white/80 rounded-lg border border-white/10 max-h-96 overflow-y-auto w-80 min-w-[320px] sm:w-96 sm:min-w-[384px]">
             {notifications?.password_notification && (
               <li>
-                <Link href="/dashboard/profil" className="flex items-center gap-3 p-2 hover:bg-white/5">
+                <Link href={ROUTES.DASHBOARD.PROFIL} className="flex items-center gap-3 p-2 hover:bg-white/5">
                   <AlertTriangle size={16} className="text-amber-500" />
                   <div className="flex-1">
                     <p className="text-sm text-white/80">Sécurité du compte</p>
@@ -139,22 +144,29 @@ export default function Navbar({
                 </Link>
               </li>
             )}
-            {notifications?.incinerations_prevues.map((incineration) => (
-              <li key={incineration.defunt_id}>
-                <Link href="/dashboard/cartes" className="flex items-center gap-3 p-2 hover:bg-white/5">
-                  <Calendar size={16} className={incineration.urgence === 'Urgent' ? 'text-red-500' : incineration.urgence === 'Prochain' ? 'text-amber-500' : 'text-blue-500'} />
+            {notifications?.incinerations_prevues.map((incineration, index) => (
+              <li key={index}>
+                <Link href={ROUTES.DASHBOARD.CARTES} className="flex items-center gap-3 p-2 hover:bg-white/5">
+                  <Calendar size={16} className={
+                    incineration.statut === 'Dépassé' ? 'text-red-600' :
+                    incineration.statut === 'Urgent' ? 'text-red-500' : 
+                    'text-amber-500'
+                  } />
                   <div className="flex-1">
-                    <p className="text-sm text-white/80">{incineration.nom}</p>
+                    <p className="text-sm text-white/80 font-medium">{incineration.titre}</p>
                     <p className="text-xs text-white/50">
-                      Incinération: {incineration.date_incineration} ({incineration.jours_restants} jours)
+                      {incineration.statut === 'Dépassé' ? 
+                        `Date d'incinération prévue : ${incineration.date_incineration} (${Math.abs(incineration.jours_restants)} jours de retard)` :
+                        `Date d'incinération prévue : ${incineration.date_incineration} (${incineration.jours_restants} jours)`
+                      }
                     </p>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded ${
-                    incineration.urgence === 'Urgent' ? 'bg-red-500/20 text-red-400' :
-                    incineration.urgence === 'Prochain' ? 'bg-amber-500/20 text-amber-400' :
-                    'bg-blue-500/20 text-blue-400'
+                    incineration.statut === 'Dépassé' ? 'bg-red-600/20 text-red-300' :
+                    incineration.statut === 'Urgent' ? 'bg-red-500/20 text-red-400' :
+                    'bg-amber-500/20 text-amber-400'
                   }`}>
-                    {incineration.urgence}
+                    {incineration.statut}
                   </span>
                 </Link>
               </li>
