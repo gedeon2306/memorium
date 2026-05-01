@@ -37,15 +37,19 @@ export default function DashboardLayout({
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [user, setUser] = useState<user | null>(null)
   const [notifications, setNotifications] = useState<notifications | null>(null)
+  const [isLoadingUser, setIsLoadingUser] = useState(false)
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false)
   const router = useRouter();
 
   const loadProfil = async () => {
+    setIsLoadingUser(true);
     try {
       const res = await getUserProfil();
       setUser(res)
     } catch (err) {
       toast.error("Erreur lors du chargement");
+    } finally {
+      setIsLoadingUser(false);
     }
   };
 
@@ -95,6 +99,7 @@ export default function DashboardLayout({
         onLogout={handleLogout}
         isLoggingOut={isLoggingOut}
         user={user}
+        isLoadingUser={isLoadingUser}
       />
       {/* Main Content */}
       <div className="relative z-10 flex flex-1 flex-col min-w-0 overflow-hidden">
