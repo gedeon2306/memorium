@@ -6,7 +6,6 @@ export type Theme = typeof THEMES[number];
 export const useTheme = () => {
   const [theme, setTheme] = useState<Theme>('halloween');
 
-  // Au chargement, on lit le thème sauvegardé
   useEffect(() => {
     const saved = localStorage.getItem('theme') as Theme;
     if (saved && THEMES.includes(saved)) {

@@ -1,4 +1,3 @@
-// src/constants/routes.ts
 export const ROUTES = {
   HOME: '/',
   AUTH: {
