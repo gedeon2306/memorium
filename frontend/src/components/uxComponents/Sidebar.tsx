@@ -44,6 +44,7 @@ interface SidebarProps {
   onLogout: () => void;
   isLoggingOut: boolean;
   user: user | null;
+  isLoadingUser: boolean;
 }
 
 export default function Sidebar({
@@ -52,6 +53,7 @@ export default function Sidebar({
   onLogout,
   isLoggingOut,
   user,
+  isLoadingUser,
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -102,37 +104,53 @@ export default function Sidebar({
             </div>
 
             {/* User info */}
-            <div
-              onClick={() => handleNavClick(ROUTES.DASHBOARD.PROFIL)}
-              className="mx-3 mt-4 rounded-2xl border border-white/8 bg-white/4 p-3 cursor-pointer transition-all duration-200 hover:bg-white/8 hover:border-white/15"
-            >
-              <div className="flex items-center gap-3">
-                <div className="avatar">
-                  <div className="h-10 w-10 rounded-xl ring-1 ring-primary/30 overflow-hidden">
-                    <img 
-                      src={user?.photo ? user?.photo : "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka"} 
-                      alt={`${user?.name}${user?.id}`} 
-                    />
+            {isLoadingUser ? (
+              <div className="mx-3 mt-4 rounded-2xl border border-white/8 bg-white/4 p-3">
+                <div className="flex items-center gap-3">
+                  <div className="skeleton h-10 w-10 rounded-xl"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="skeleton h-4 w-24 rounded"></div>
+                    <div className="skeleton h-3 w-32 rounded"></div>
                   </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-white">
-                    {user?.name}
-                  </p>
-                  <p className="truncate text-xs text-white/40">{user?.email}</p>
+                <div className="mt-2 flex items-center justify-between">
+                  <div className="skeleton h-5 w-16 rounded"></div>
+                  <div className="skeleton h-1.5 w-1.5 rounded-full"></div>
                 </div>
               </div>
-              <div className="mt-2 flex items-center justify-between">
-                <span className="badge badge-sm badge-outline badge-ghost">
-                  {user?.role}
-                </span>
-                {pathname === ROUTES.DASHBOARD.PROFIL ? (
-                  <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
-                ) : (
-                  <ChevronRight size={12} className="text-white/30" />
-                )}
+            ) : (
+              <div
+                onClick={() => handleNavClick(ROUTES.DASHBOARD.PROFIL)}
+                className="mx-3 mt-4 rounded-2xl border border-white/8 bg-white/4 p-3 cursor-pointer transition-all duration-200 hover:bg-white/8 hover:border-white/15"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="avatar">
+                    <div className="h-10 w-10 rounded-xl ring-1 ring-primary/30 overflow-hidden">
+                      <img 
+                        src={user?.photo ? user?.photo : "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka"} 
+                        alt={`${user?.name}${user?.id}`} 
+                      />
+                    </div>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-white">
+                      {user?.name}
+                    </p>
+                    <p className="truncate text-xs text-white/40">{user?.email}</p>
+                  </div>
+                </div>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="badge badge-sm badge-outline badge-ghost">
+                    {user?.role}
+                  </span>
+                  {pathname === ROUTES.DASHBOARD.PROFIL ? (
+                    <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+                  ) : (
+                    <ChevronRight size={12} className="text-white/30" />
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Nav links */}
             <nav className="mt-4 flex-1 space-y-0.5 px-3 overflow-y-auto">
