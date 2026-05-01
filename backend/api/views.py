@@ -2682,24 +2682,30 @@ def notifications(request):
         from datetime import timedelta
         
         today = timezone.now().date()
-        future_date_limit = today + timedelta(days=365)
+        one_month_later = today + timedelta(days=30)
         
+        # Récupérer les défunts avec date d'incinération dépassée ou dans le mois
         defunts_avec_incineration = Defunt.objects.filter(
-            date_incineration__gt=today,
-            date_incineration__lte=future_date_limit
+            date_incineration__lte=one_month_later
         ).order_by('date_incineration')
         
         for defunt in defunts_avec_incineration:
             jours_restants = (defunt.date_incineration - today).days
             
+            # Déterminer le statut
+            if jours_restants < 0:
+                statut = "Dépassé"
+            elif jours_restants <= 7:
+                statut = "Urgent"
+            else:
+                statut = "Prochain"
+            
             incinerations_prevues.append({
-                "defunt_id": str(defunt.id),
+                "titre": f"{statut} - {defunt.nom} {defunt.prenom or ''}".strip(),
                 "nom": f"{defunt.nom} {defunt.prenom or ''}".strip(),
                 "date_incineration": defunt.date_incineration.strftime('%d/%m/%Y'),
                 "jours_restants": jours_restants,
-                "lieu": defunt.place if defunt.place else "Non spécifié",
-                "famille": defunt.famille.nom_famille if defunt.famille else "Non spécifié",
-                "urgence": "Urgent" if jours_restants <= 7 else "Prochain" if jours_restants <= 30 else "Planifié"
+                "statut": statut
             })
             
     except Exception:

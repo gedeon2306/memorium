@@ -20,13 +20,11 @@ type user = {
 type notifications = {
   password_notification: string | null;
   incinerations_prevues: Array<{
-    defunt_id: string;
+    titre: string;
     nom: string;
     date_incineration: string;
     jours_restants: number;
-    lieu: string;
-    famille: string;
-    urgence: string;
+    statut: string;
   }>;
 }
 
@@ -39,6 +37,7 @@ export default function DashboardLayout({
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [user, setUser] = useState<user | null>(null)
   const [notifications, setNotifications] = useState<notifications | null>(null)
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false)
   const router = useRouter();
 
   const loadProfil = async () => {
@@ -51,11 +50,14 @@ export default function DashboardLayout({
   };
 
   const loadNotifications = async () => {
+    setIsLoadingNotifications(true);
     try {
       const res = await getNotifications();
       setNotifications(res)
     } catch (err) {
       toast.error("Erreur lors du chargement des notifications");
+    } finally {
+      setIsLoadingNotifications(false);
     }
   };
 
@@ -104,6 +106,7 @@ export default function DashboardLayout({
           isLoggingOut={isLoggingOut}
           user={user}
           notifications={notifications}
+          isLoadingNotifications={isLoadingNotifications}
         />
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-7">
