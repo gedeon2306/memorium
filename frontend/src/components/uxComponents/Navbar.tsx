@@ -119,7 +119,7 @@ export default function Navbar({
         </div>
 
         {/* Notifications Dropdown */}
-        <div className="dropdown dropdown-end">
+        <div className="dropdown dropdown-end sm:dropdown-end">
           <button className="btn btn-ghost btn-sm btn-square relative text-white/40 hover:text-white">
             {isLoadingNotifications ? (
               <span className="loading loading-spinner w-4 h-4 text-white/60"></span>
@@ -132,7 +132,7 @@ export default function Navbar({
               </span>
             )}
           </button>
-          <ul className="dropdown-content z-50 menu p-3 shadow bg-neutral-900/95 text-white/50 hover:text-white/80 rounded-lg border border-white/10 max-h-96 overflow-y-auto w-80 min-w-[320px] sm:w-96 sm:min-w-[384px]">
+          <ul className="dropdown-content z-50 menu p-3 shadow bg-neutral-900/95 text-white/50 hover:text-white/80 rounded-lg border border-white/10 max-h-96 overflow-y-auto w-[calc(100vw-2rem)] max-w-sm sm:max-w-96 fixed left-1/2 -translate-x-1/2 sm:static sm:translate-x-0">
             {notifications?.password_notification && (
               <li>
                 <Link href={ROUTES.DASHBOARD.PROFIL} className="flex items-center gap-3 p-2 hover:bg-white/5">
@@ -145,32 +145,32 @@ export default function Navbar({
               </li>
             )}
             {notifications?.incinerations_prevues.map((incineration, index) => (
-              <li key={index}>
-                <Link href={ROUTES.DASHBOARD.CARTES} className="flex items-center gap-3 p-2 hover:bg-white/5">
-                  <Calendar size={16} className={
-                    incineration.statut === 'Dépassé' ? 'text-red-600' :
-                    incineration.statut === 'Urgent' ? 'text-red-500' : 
-                    'text-amber-500'
-                  } />
-                  <div className="flex-1">
-                    <p className="text-sm text-white/80 font-medium">{incineration.titre}</p>
-                    <p className="text-xs text-white/50">
-                      {incineration.statut === 'Dépassé' ? 
-                        `Date d'incinération prévue : ${incineration.date_incineration} (${Math.abs(incineration.jours_restants)} jours de retard)` :
-                        `Date d'incinération prévue : ${incineration.date_incineration} (${incineration.jours_restants} jours)`
-                      }
-                    </p>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    incineration.statut === 'Dépassé' ? 'bg-red-600/20 text-red-300' :
-                    incineration.statut === 'Urgent' ? 'bg-red-500/20 text-red-400' :
-                    'bg-amber-500/20 text-amber-400'
-                  }`}>
-                    {incineration.statut}
-                  </span>
-                </Link>
-              </li>
-            ))}
+            <li key={index}>
+              <Link href={ROUTES.DASHBOARD.CARTES} className="flex items-start gap-3 p-2 hover:bg-white/5 rounded-lg">
+                <Calendar size={16} className={`mt-0.5 shrink-0 ${
+                  incineration.statut === 'Dépassé' ? 'text-red-600' :
+                  incineration.statut === 'Urgent' ? 'text-red-500' : 
+                  'text-amber-500'
+                }`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white/80 font-medium truncate">{incineration.titre}</p>
+                  <p className="text-xs text-white/50 leading-relaxed">
+                    {incineration.statut === 'Dépassé' ? 
+                      `Date d'incinération : ${incineration.date_incineration} (${Math.abs(incineration.jours_restants)} jours de retard)` :
+                      `Date d'incinération : ${incineration.date_incineration} (${incineration.jours_restants} jours)`
+                    }
+                  </p>
+                </div>
+                <span className={`text-xs px-2 py-1 rounded shrink-0 self-start ${
+                  incineration.statut === 'Dépassé' ? 'bg-red-600/20 text-red-300' :
+                  incineration.statut === 'Urgent' ? 'bg-red-500/20 text-red-400' :
+                  'bg-amber-500/20 text-amber-400'
+                }`}>
+                  {incineration.statut}
+                </span>
+              </Link>
+            </li>
+          ))}
             {(!notifications?.password_notification && notifications?.incinerations_prevues.length === 0) && (
               <li className="p-4 text-center text-white/30">
                 Aucune notification
