@@ -140,7 +140,7 @@ export default function Navbar({
           </div>
           <ul
             tabIndex={0}
-            className="dropdown-content z-[9999] menu p-3 shadow-xl bg-neutral-900 border border-white/10 rounded-lg max-h-96 overflow-y-auto mt-1 w-[calc(100vw-2rem)] max-w-sm sm:w-80 fixed sm:static left-1/2 sm:left-auto -translate-x-1/2 sm:translate-x-0 top-14 sm:top-auto"
+            className="dropdown-content z-[9999] menu p-3 shadow-xl bg-neutral-900 border border-white/10 rounded-lg max-h-96 overflow-y-auto mt-1 w-[80vw] max-w-sm right-0"
           >
             {notifications?.password_notification && (
               <li>
