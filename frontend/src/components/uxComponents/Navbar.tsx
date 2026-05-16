@@ -78,7 +78,7 @@ export default function Navbar({
   };
 
   return (
-    <header className="flex items-center gap-3 border-b border-white/5 bg-neutral-950/60 px-5 py-3 backdrop-blur-xl shrink-0">
+    <header className="flex items-center gap-3 border-b border-white/5 bg-neutral-950/60 px-5 py-3 backdrop-blur-xl shrink-0 relative z-[9999]">
       <button
         onClick={() => onSidebarToggle(!sidebarOpen)}
         className="btn btn-ghost btn-sm btn-square text-white/50 hover:text-white shrink-0"
@@ -96,14 +96,14 @@ export default function Navbar({
       <div className="ml-auto flex items-center gap-1 shrink-0">
 
         {/* Theme Dropdown */}
-        <div className="dropdown dropdown-end">
+        <div className="dropdown dropdown-end relative z-[9999]">
           {/* tabIndex requis pour que le dropdown fonctionne au clic sur mobile */}
           <div tabIndex={0} role="button" className="btn btn-ghost btn-sm btn-square text-white/40 hover:text-white">
             <Moon size={17} />
           </div>
           <ul
             tabIndex={0}
-            className="dropdown-content z-100 menu p-2 shadow-xl bg-neutral-900 border border-white/10 rounded-lg w-44 mt-1"
+            className="dropdown-content z-[9999] menu p-2 shadow-xl bg-neutral-900 border border-white/10 rounded-lg w-44 mt-1"
           >
             {themes.map((t) => (
               <li key={t}>
@@ -124,7 +124,7 @@ export default function Navbar({
         </div>
 
         {/* Notifications Dropdown */}
-        <div className="dropdown dropdown-end">
+        <div className="dropdown dropdown-end relative z-[9999]">
           {/* tabIndex requis pour que le dropdown fonctionne au clic sur mobile */}
           <div tabIndex={0} role="button" className="btn btn-ghost btn-sm btn-square relative text-white/40 hover:text-white">
             {isLoadingNotifications ? (
@@ -140,7 +140,7 @@ export default function Navbar({
           </div>
           <ul
             tabIndex={0}
-            className="dropdown-content z-100 menu p-3 shadow-xl bg-neutral-900 border border-white/10 rounded-lg w-80 max-h-96 overflow-y-auto mt-1"
+            className="dropdown-content z-[9999] menu p-3 shadow-xl bg-neutral-900 border border-white/10 rounded-lg w-80 max-h-96 overflow-y-auto mt-1"
           >
             {notifications?.password_notification && (
               <li>
