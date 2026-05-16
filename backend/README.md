@@ -150,6 +150,12 @@ source venv/bin/activate
 # Installer dépendances
 pip install -r requirements.txt
 
+# Problèmes installation des dépendances (Pillow)
+# Supprimer la ligne Pillow==12.2.0
+
+pip install -r requirements.txt
+pip install pillow
+
 # Configurer variables environnement
 cp .env.example .env
 # Éditer .env avec vos configurations
