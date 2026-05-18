@@ -11,19 +11,18 @@ import {
   LogOut,
   Palette,
   AlertTriangle,
-  Calendar,
+  Flame,
 } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "@/hooks/useTheme";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
 
 type user = {
-  id: string,
-  photo: string,
-  name: string,
-}
+  id: string;
+  photo: string;
+  name: string;
+};
 
 type notifications = {
   password_notification: string | null;
@@ -34,7 +33,7 @@ type notifications = {
     jours_restants: number;
     statut: string;
   }>;
-}
+};
 
 interface NavbarProps {
   sidebarOpen: boolean;
@@ -57,7 +56,6 @@ export default function Navbar({
 }: NavbarProps) {
   const { theme, changeTheme, themes } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const router = useRouter();
 
   const getNotificationCount = () => {
     if (!notifications) return 0;
@@ -76,6 +74,31 @@ export default function Navbar({
       setIsFullscreen(false);
     }
   };
+
+  const getStatutColors = (statut: string) => {
+    if (statut === "Dépassé")
+      return {
+        badge: "bg-red-500/15 text-red-400",
+        icon: "text-red-500",
+        iconBg: "bg-red-500/10",
+        delay: "text-red-400",
+      };
+    if (statut === "Urgent")
+      return {
+        badge: "bg-red-400/15 text-red-300",
+        icon: "text-red-400",
+        iconBg: "bg-red-400/10",
+        delay: "text-red-300",
+      };
+    return {
+      badge: "bg-amber-500/15 text-amber-400",
+      icon: "text-amber-500",
+      iconBg: "bg-amber-500/10",
+      delay: "text-amber-400",
+    };
+  };
+
+  const notifCount = getNotificationCount();
 
   return (
     <header className="flex items-center gap-3 border-b border-white/5 bg-neutral-950/60 px-5 py-3 backdrop-blur-xl shrink-0 relative z-[9999]">
@@ -97,7 +120,6 @@ export default function Navbar({
 
         {/* Theme Dropdown */}
         <div className="dropdown dropdown-end relative z-[9999]">
-          {/* tabIndex requis pour que le dropdown fonctionne au clic sur mobile */}
           <div tabIndex={0} role="button" className="btn btn-ghost btn-sm btn-square text-white/40 hover:text-white">
             <Moon size={17} />
           </div>
@@ -125,67 +147,114 @@ export default function Navbar({
 
         {/* Notifications Dropdown */}
         <div className="dropdown dropdown-end relative z-[9999]">
-          {/* tabIndex requis pour que le dropdown fonctionne au clic sur mobile */}
-          <div tabIndex={0} role="button" className="btn btn-ghost btn-sm btn-square relative text-white/40 hover:text-white">
+          <div
+            tabIndex={0}
+            role="button"
+            className="btn btn-ghost btn-sm btn-square relative text-white/40 hover:text-white"
+          >
             {isLoadingNotifications ? (
               <span className="loading loading-spinner w-4 h-4 text-white/60"></span>
             ) : (
               <Bell size={17} />
             )}
-            {!isLoadingNotifications && getNotificationCount() > 0 && (
-              <span className="absolute right-0 top-1 flex h-3 w-3 pb-0.5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-                {getNotificationCount()}
+            {!isLoadingNotifications && notifCount > 0 && (
+              <span className="absolute right-0 top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-white">
+                {notifCount}
               </span>
             )}
           </div>
-          <ul
+
+          {/* Dropdown panel — largeur adaptée mobile */}
+          <div
             tabIndex={0}
-            className="dropdown-content z-[9999] menu p-3 shadow-xl bg-neutral-900 border border-white/10 rounded-lg max-h-96 overflow-y-auto mt-1 w-[80vw] max-w-sm right-0"
+            className="dropdown-content z-[9999] shadow-2xl bg-neutral-900 border border-white/10 rounded-xl mt-2 overflow-hidden"
+            style={{
+              width: "min(340px, calc(100vw - 1.5rem))",
+              position: "fixed",
+              right: "0.75rem",
+              left: "auto",
+            }}
           >
-            {notifications?.password_notification && (
-              <li>
-                <Link href={ROUTES.DASHBOARD.PROFIL} className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg">
-                  <AlertTriangle size={16} className="text-amber-500 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white/80">Sécurité du compte</p>
-                    <p className="text-xs text-white/50 leading-relaxed">{notifications.password_notification}</p>
-                  </div>
-                </Link>
-              </li>
-            )}
-            {notifications?.incinerations_prevues.map((incineration, index) => (
-              <li key={index}>
-                <Link href={ROUTES.DASHBOARD.CARTES} className="flex items-start gap-3 p-2 hover:bg-white/5 rounded-lg">
-                  <Calendar size={16} className={`mt-0.5 shrink-0 ${
-                    incineration.statut === 'Dépassé' ? 'text-red-600' :
-                    incineration.statut === 'Urgent' ? 'text-red-500' :
-                    'text-amber-500'
-                  }`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white/80 font-medium truncate">{incineration.titre}</p>
-                    <p className="text-xs text-white/50 leading-relaxed">
-                      {incineration.statut === 'Dépassé' ?
-                        `Date d'incinération : ${incineration.date_incineration} (${Math.abs(incineration.jours_restants)} jours de retard)` :
-                        `Date d'incinération : ${incineration.date_incineration} (${incineration.jours_restants} jours)`
-                      }
-                    </p>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded shrink-0 self-start ${
-                    incineration.statut === 'Dépassé' ? 'bg-red-600/20 text-red-300' :
-                    incineration.statut === 'Urgent' ? 'bg-red-500/20 text-red-400' :
-                    'bg-amber-500/20 text-amber-400'
-                  }`}>
-                    {incineration.statut}
-                  </span>
-                </Link>
-              </li>
-            ))}
-            {(!notifications?.password_notification && (!notifications?.incinerations_prevues || notifications.incinerations_prevues.length === 0)) && (
-              <li className="p-4 text-center text-white/30 pointer-events-none">
-                Aucune notification
-              </li>
-            )}
-          </ul>
+            {/* Header */}
+            <div className="flex items-center justify-between px-3 py-2.5 border-b border-white/[0.06]">
+              <span className="text-xs font-medium text-white/50 uppercase tracking-wider">
+                Notifications
+              </span>
+              {notifCount > 0 && (
+                <span className="text-xs text-white/30">{notifCount} non lue{notifCount > 1 ? "s" : ""}</span>
+              )}
+            </div>
+
+            {/* Liste */}
+            <ul className="max-h-80 overflow-y-auto divide-y divide-white/[0.05]">
+
+              {/* Notification mot de passe */}
+              {notifications?.password_notification && (
+                <li>
+                  <Link
+                    href={ROUTES.DASHBOARD.PROFIL}
+                    className="flex items-start gap-3 px-3 py-3 hover:bg-white/[0.04] transition-colors"
+                  >
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center mt-0.5">
+                      <AlertTriangle size={15} className="text-amber-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white/85 leading-tight mb-0.5">
+                        Sécurité du compte
+                      </p>
+                      <p className="text-xs text-white/40 leading-relaxed line-clamp-2">
+                        {notifications.password_notification}
+                      </p>
+                    </div>
+                  </Link>
+                </li>
+              )}
+
+              {/* Notifications incinérations */}
+              {notifications?.incinerations_prevues.map((inc, index) => {
+                const colors = getStatutColors(inc.statut);
+                const delayLabel =
+                  inc.statut === "Dépassé"
+                    ? `${Math.abs(inc.jours_restants)} j. de retard`
+                    : `dans ${inc.jours_restants} j.`;
+                return (
+                  <li key={index}>
+                    <Link
+                      href={ROUTES.DASHBOARD.CARTES}
+                      className="flex items-center gap-3 px-3 py-3 hover:bg-white/[0.04] transition-colors"
+                    >
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-lg ${colors.iconBg} flex items-center justify-center`}>
+                        <Flame size={15} className={colors.icon} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white/85 truncate leading-tight mb-0.5">
+                          {inc.titre}
+                        </p>
+                        <p className="text-xs text-white/40 leading-tight">
+                          {inc.date_incineration}{" "}
+                          <span className={`font-medium ${colors.delay}`}>
+                            · {delayLabel}
+                          </span>
+                        </p>
+                      </div>
+                      <span className={`flex-shrink-0 text-[10px] font-semibold px-2 py-1 rounded-md tracking-wide ${colors.badge}`}>
+                        {inc.statut}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+
+              {/* État vide */}
+              {!notifications?.password_notification &&
+                (!notifications?.incinerations_prevues ||
+                  notifications.incinerations_prevues.length === 0) && (
+                  <li className="px-3 py-8 text-center text-white/25 text-sm pointer-events-none">
+                    Aucune notification
+                  </li>
+                )}
+            </ul>
+          </div>
         </div>
 
         <button
@@ -211,7 +280,11 @@ export default function Navbar({
         <div className="avatar ml-2">
           <div className="h-8 w-8 rounded-xl overflow-hidden ring-1 ring-primary/30">
             <img
-              src={user?.photo ? user?.photo : "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka"}
+              src={
+                user?.photo
+                  ? user?.photo
+                  : "https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=Aneka"
+              }
               alt={`${user?.name}${user?.id}`}
             />
           </div>
