@@ -264,7 +264,7 @@ export default function PaiementsPage() {
                   >
                     <div className="rounded-xl border border-white/6 bg-white/3 p-4 flex flex-col justify-between min-h-48 hover:border-white/12 transition-all duration-300 hover:bg-white/5">
                       {/* Actions dropdown */}
-                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="absolute top-2 right-2 transition-opacity duration-200 opacity-100 md:opacity-0 md:group-hover:opacity-100">
                         <div className="dropdown dropdown-end">
                           <button
                             type="button"
