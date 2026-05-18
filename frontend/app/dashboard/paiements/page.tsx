@@ -260,7 +260,7 @@ export default function PaiementsPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + i * 0.05, duration: 0.35 }}
-                    className="group relative overflow-hidden"
+                    className="group relative"
                   >
                     <div className="rounded-xl border border-white/6 bg-white/3 p-4 flex flex-col justify-between min-h-48 hover:border-white/12 transition-all duration-300 hover:bg-white/5">
                       {/* Actions dropdown */}
