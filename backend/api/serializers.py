@@ -39,6 +39,19 @@ class DefuntSerializer(serializers.ModelSerializer):
         read_only_fields = ['user', 'id', 'created_at']
 
 
+class LignePaiementSerializer(serializers.ModelSerializer):
+    defunt_nom = serializers.ReadOnlyField(source='defunt.nom')
+    paiement_num_facture = serializers.ReadOnlyField(source='paiement.num_facture')
+    
+    class Meta:
+        model = LignePaiement
+        fields = [
+            'id', 'paiement', 'paiement_num_facture', 'motif', 
+            'montant', 'moyen_paiement', 'defunt', 'defunt_nom'
+        ]
+        read_only_fields = ['id', 'paiement_num_facture']
+
+
 class PaiementSerializer(serializers.ModelSerializer):
     famille_nom = serializers.ReadOnlyField(source='famille.nom_famille')
     user_name = serializers.ReadOnlyField(source='user.name')
@@ -55,19 +68,6 @@ class PaiementSerializer(serializers.ModelSerializer):
     @extend_schema_field(LignePaiementSerializer(many=True))
     def get_lignes_paiement(self, obj):
         return LignePaiementSerializer(obj.lignes.all(), many=True).data
-
-
-class LignePaiementSerializer(serializers.ModelSerializer):
-    defunt_nom = serializers.ReadOnlyField(source='defunt.nom')
-    paiement_num_facture = serializers.ReadOnlyField(source='paiement.num_facture')
-    
-    class Meta:
-        model = LignePaiement
-        fields = [
-            'id', 'paiement', 'paiement_num_facture', 'motif', 
-            'montant', 'moyen_paiement', 'defunt', 'defunt_nom'
-        ]
-        read_only_fields = ['id', 'paiement_num_facture']
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
