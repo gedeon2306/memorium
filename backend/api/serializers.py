@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from drf_spectacular.utils import extend_schema_field
 from .models import User, Famille, Defunt, Paiement, LignePaiement
 
 class UserSerializer(serializers.ModelSerializer):
@@ -51,6 +52,7 @@ class PaiementSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['user', 'id', 'date_paiement']
     
+    @extend_schema_field(LignePaiementSerializer(many=True))
     def get_lignes_paiement(self, obj):
         return LignePaiementSerializer(obj.lignes.all(), many=True).data
 

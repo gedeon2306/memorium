@@ -22,7 +22,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from drf_spectacular.utils import extend_schema, inline_serializer
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
 
 from rest_framework import serializers as drf_serializers
@@ -646,18 +646,18 @@ def reset_password_confirm(request):
     summary="Confirmer le nouvel email de l'utilisateur connecté",
     description="L'email doit être unique et valide. Email de confirmation est envoyé avec un code.",
     request=inline_serializer(
-        name="ConfirmEmailRequest",
+        name="RequestNewEmailChange",
         fields={
             "email": drf_serializers.EmailField(),
         }
     ),
     responses={
         200: inline_serializer(
-            name="ConfirmEmailSuccess",
+            name="RequestNewEmailChangeSuccess",
             fields={"message": drf_serializers.CharField()}
         ),
         400: inline_serializer(
-            name="ConfirmEmailError",
+            name="RequestNewEmailChangeError",
             fields={"error": drf_serializers.CharField()}
         ),
     },
@@ -754,7 +754,7 @@ def profil(request):
     summary="Confirmer et mettre à jour l'email",
     description="Vérifie le code reçu par email et met à jour l'adresse email de l'utilisateur.",
     request=inline_serializer(
-        name="ConfirmEmailRequest",
+        name="ConfirmNewEmailFields",
         fields={
             "email": drf_serializers.EmailField(),
             "code": drf_serializers.CharField(),
@@ -762,11 +762,11 @@ def profil(request):
     ),
     responses={
         200: inline_serializer(
-            name="ConfirmEmailSuccess",
+            name="ConfirmNewEmailSuccessResponse",
             fields={"message": drf_serializers.CharField()}
         ),
         400: inline_serializer(
-            name="ConfirmEmailError",
+            name="ConfirmNewEmailErrorResponse",
             fields={"error": drf_serializers.CharField()}
         ),
     },
@@ -2366,13 +2366,14 @@ def dashboard(request):
     summary="Récupérer les statistiques détaillées",
     description="Retourne des statistiques détaillées pour les graphiques et analyses : répartition par genre, âge, occupation, et données temporelles. Supporte le filtrage par période.",
     parameters=[
-        {
-            "name": "period",
-            "required": False,
-            "type": "str",
-            "enum": ["7j", "30j", "90j", "1an", "tout"],
-            "description": "Période de filtrage des données"
-        }
+        OpenApiParameter(
+            name='period',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description='Période de filtrage des données',
+            enum=['7j', '30j', '90j', '1an', 'tout']
+        )
     ],
     responses={
         200: inline_serializer(
